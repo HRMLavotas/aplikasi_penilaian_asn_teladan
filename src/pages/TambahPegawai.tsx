@@ -162,9 +162,16 @@ const TambahPegawai = () => {
       navigate("/pegawai");
     } catch (error) {
       console.error("Error adding pegawai:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error !== null && "message" in error
+            ? (error as any).message
+            : "Unknown error occurred";
+
       toast({
         title: "Error",
-        description: "Gagal menambahkan data pegawai",
+        description: `Gagal menambahkan data pegawai: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
