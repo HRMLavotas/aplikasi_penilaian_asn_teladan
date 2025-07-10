@@ -14,7 +14,210 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pegawai: {
+        Row: {
+          bebas_temuan: boolean
+          bukti_inovasi: string | null
+          bukti_penghargaan: string | null
+          created_at: string
+          id: string
+          jabatan: string
+          masa_kerja_tahun: number
+          memiliki_inovasi: boolean
+          memiliki_penghargaan: boolean
+          nama: string
+          nip: string
+          status_jabatan: string
+          tidak_hukuman_disiplin: boolean
+          tidak_pemeriksaan_disiplin: boolean
+          unit_kerja_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bebas_temuan?: boolean
+          bukti_inovasi?: string | null
+          bukti_penghargaan?: string | null
+          created_at?: string
+          id?: string
+          jabatan: string
+          masa_kerja_tahun?: number
+          memiliki_inovasi?: boolean
+          memiliki_penghargaan?: boolean
+          nama: string
+          nip: string
+          status_jabatan: string
+          tidak_hukuman_disiplin?: boolean
+          tidak_pemeriksaan_disiplin?: boolean
+          unit_kerja_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bebas_temuan?: boolean
+          bukti_inovasi?: string | null
+          bukti_penghargaan?: string | null
+          created_at?: string
+          id?: string
+          jabatan?: string
+          masa_kerja_tahun?: number
+          memiliki_inovasi?: boolean
+          memiliki_penghargaan?: boolean
+          nama?: string
+          nip?: string
+          status_jabatan?: string
+          tidak_hukuman_disiplin?: boolean
+          tidak_pemeriksaan_disiplin?: boolean
+          unit_kerja_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pegawai_unit_kerja_id_fkey"
+            columns: ["unit_kerja_id"]
+            isOneToOne: false
+            referencedRelation: "unit_kerja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      penilaian: {
+        Row: {
+          analisis_ai_kekurangan: string | null
+          analisis_ai_kelebihan: string | null
+          analisis_ai_kontra: string | null
+          analisis_ai_pro: string | null
+          created_at: string
+          id: string
+          inovasi_dampak_score: number
+          inspiratif_score: number
+          integritas_moralitas_score: number
+          kerjasama_kolaborasi_score: number
+          kinerja_perilaku_score: number
+          komunikasi_score: number
+          leadership_score: number
+          pegawai_id: string
+          penilai_user_id: string
+          persentase_akhir: number | null
+          prestasi_score: number
+          rekam_jejak_score: number
+          skp_2_tahun_terakhir_baik: boolean
+          skp_peningkatan_prestasi: boolean
+          tahun_penilaian: number
+          updated_at: string
+        }
+        Insert: {
+          analisis_ai_kekurangan?: string | null
+          analisis_ai_kelebihan?: string | null
+          analisis_ai_kontra?: string | null
+          analisis_ai_pro?: string | null
+          created_at?: string
+          id?: string
+          inovasi_dampak_score: number
+          inspiratif_score: number
+          integritas_moralitas_score: number
+          kerjasama_kolaborasi_score: number
+          kinerja_perilaku_score: number
+          komunikasi_score: number
+          leadership_score: number
+          pegawai_id: string
+          penilai_user_id: string
+          persentase_akhir?: number | null
+          prestasi_score: number
+          rekam_jejak_score: number
+          skp_2_tahun_terakhir_baik?: boolean
+          skp_peningkatan_prestasi?: boolean
+          tahun_penilaian?: number
+          updated_at?: string
+        }
+        Update: {
+          analisis_ai_kekurangan?: string | null
+          analisis_ai_kelebihan?: string | null
+          analisis_ai_kontra?: string | null
+          analisis_ai_pro?: string | null
+          created_at?: string
+          id?: string
+          inovasi_dampak_score?: number
+          inspiratif_score?: number
+          integritas_moralitas_score?: number
+          kerjasama_kolaborasi_score?: number
+          kinerja_perilaku_score?: number
+          komunikasi_score?: number
+          leadership_score?: number
+          pegawai_id?: string
+          penilai_user_id?: string
+          persentase_akhir?: number | null
+          prestasi_score?: number
+          rekam_jejak_score?: number
+          skp_2_tahun_terakhir_baik?: boolean
+          skp_peningkatan_prestasi?: boolean
+          tahun_penilaian?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "penilaian_pegawai_id_fkey"
+            columns: ["pegawai_id"]
+            isOneToOne: false
+            referencedRelation: "pegawai"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          nama_lengkap: string | null
+          unit_kerja_id: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          nama_lengkap?: string | null
+          unit_kerja_id?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nama_lengkap?: string | null
+          unit_kerja_id?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_unit_kerja_id_fkey"
+            columns: ["unit_kerja_id"]
+            isOneToOne: false
+            referencedRelation: "unit_kerja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_kerja: {
+        Row: {
+          created_at: string
+          id: string
+          nama_unit_kerja: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nama_unit_kerja: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nama_unit_kerja?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
