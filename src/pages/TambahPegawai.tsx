@@ -52,13 +52,6 @@ const TambahPegawai = () => {
     unit_kerja_nama: "",
     status_jabatan: "",
     masa_kerja_tahun: 0,
-    bebas_temuan: false,
-    tidak_hukuman_disiplin: false,
-    tidak_pemeriksaan_disiplin: false,
-    memiliki_inovasi: false,
-    bukti_inovasi: "",
-    memiliki_penghargaan: false,
-    bukti_penghargaan: "",
   });
 
   useEffect(() => {
