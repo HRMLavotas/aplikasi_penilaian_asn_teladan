@@ -268,34 +268,45 @@ const FormEvaluasi = () => {
     try {
       if (!pegawai) return;
 
-      const prompt = `Analyze the following performance data for an ASN candidate for the 'Teladan' award. Provide a concise analysis of their pros, cons, strengths, and weaknesses based on the provided scores and information. Focus on aspects relevant to their suitability for the award.
+      const prompt = `Analyze the following performance data for an ASN candidate for the 'Anugerah ASN Teladan Tahun 2025' award. Provide a comprehensive analysis of their pros, cons, strengths, and weaknesses based on the new evaluation criteria with proper weightings. Focus on aspects relevant to their suitability for the award.
 
 **Candidate Information:**
 - Name: ${pegawai.nama}
 - NIP: ${pegawai.nip}
 - Jabatan: ${pegawai.jabatan}
 - Unit Kerja: ${pegawai.unit_kerja?.nama_unit_kerja}
-
-**Eligibility Criteria:**
-- Jabatan: ${pegawai.status_jabatan}
+- Status Jabatan: ${pegawai.status_jabatan}
 - Masa Kerja: ${pegawai.masa_kerja_tahun} tahun
-- Memiliki Inovasi: ${pegawai.memiliki_inovasi ? "Ya" : "Tidak"}
-- Memiliki Penghargaan: ${pegawai.memiliki_penghargaan ? "Ya" : "Tidak"}
 
-**Core Values ASN BerAKHLAK Scores (1-100, higher is better):**
-- Berorientasi Pelayanan: ${penilaian.berorientasi_pelayanan_score}
-- Akuntabel: ${penilaian.akuntabel_score}
-- Kompeten: ${penilaian.kompeten_score}
-- Harmonis: ${penilaian.harmonis_score}
-- Loyal: ${penilaian.loyal_score}
-- Adaptif: ${penilaian.adaptif_score}
-- Kolaboratif: ${penilaian.kolaboratif_score}
+**Evaluation Criteria with Weightings:**
 
-**SKP (2 Tahun Terakhir):**
-- Kategori Baik: ${penilaian.skp_2_tahun_terakhir_baik ? "Ya" : "Tidak"}
-- Peningkatan Prestasi: ${penilaian.skp_peningkatan_prestasi ? "Ya" : "Tidak"}
+**1. Kriteria Integritas (30% total):**
+- Bebas Temuan (10%): ${penilaian.bebas_temuan ? "✓ Ya" : "✗ Tidak"}
+- Tidak Ada Hukuman Disiplin (10%): ${penilaian.tidak_hukuman_disiplin ? "✓ Ya" : "✗ Tidak"}
+- Tidak Dalam Pemeriksaan (10%): ${penilaian.tidak_pemeriksaan_disiplin ? "✓ Ya" : "✗ Tidak"}
 
-Provide analysis in Indonesian language. Format:
+**2. Prestasi & Inovasi (30% total):**
+- Memiliki Inovasi (20%): ${penilaian.memiliki_inovasi ? "✓ Ya" : "✗ Tidak"}
+${penilaian.memiliki_inovasi && penilaian.bukti_inovasi ? `  Bukti: ${penilaian.bukti_inovasi}` : ""}
+- Memiliki Penghargaan (10%): ${penilaian.memiliki_penghargaan ? "✓ Ya" : "✗ Tidak"}
+${penilaian.memiliki_penghargaan && penilaian.bukti_penghargaan ? `  Bukti: ${penilaian.bukti_penghargaan}` : ""}
+
+**3. Kriteria SKP (20% total):**
+- SKP 2 Tahun Terakhir Baik (10%): ${penilaian.skp_2_tahun_terakhir_baik ? "✓ Ya" : "✗ Tidak"}
+- SKP Menunjukkan Peningkatan Prestasi (10%): ${penilaian.skp_peningkatan_prestasi ? "✓ Ya" : "✗ Tidak"}
+
+**4. Core Values ASN BerAKHLAK (20% total, 2.857% each):**
+- Berorientasi Pelayanan: ${penilaian.berorientasi_pelayanan_score}/100
+- Akuntabel: ${penilaian.akuntabel_score}/100
+- Kompeten: ${penilaian.kompeten_score}/100
+- Harmonis: ${penilaian.harmonis_score}/100
+- Loyal: ${penilaian.loyal_score}/100
+- Adaptif: ${penilaian.adaptif_score}/100
+- Kolaboratif: ${penilaian.kolaboratif_score}/100
+
+**Total Calculated Score: ${calculatePreviewScore().toFixed(2)}%**
+
+Provide analysis in Indonesian language considering the weighted evaluation system. Format:
 **Pros:**
 - [Point 1]
 - [Point 2]
