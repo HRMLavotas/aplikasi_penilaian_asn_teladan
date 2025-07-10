@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -88,19 +88,12 @@ const Pegawai = () => {
   const { toast } = useToast();
   const { user, isSuperAdmin, isLoading: authLoading, isInitialized } = useAuth();
 
-  useEffect(() => {
-    if (!authLoading && isInitialized && !user) {
-      navigate("/auth");
-      return;
-    }
+  const fetchData = useCallback(async () => {
+    if (!user) return;
     
-    if (user) {
-      fetchData();
-    }
-  }, [user, authLoading, isInitialized]);
-
-  const fetchData = async () => {
     try {
+      setIsLoading(true);
+      
       // First, fetch unit kerja since it's needed for both admin and regular users
       const { data: unitData, error: unitError } = await supabase
         .from("unit_kerja")
@@ -109,7 +102,7 @@ const Pegawai = () => {
 
       if (unitError) throw unitError;
       setUnitKerja(unitData || []);
-
+      
       // Then fetch pegawai data with proper typing
       let query = supabase
         .from("pegawai")
@@ -124,7 +117,7 @@ const Pegawai = () => {
         )
         .order("created_at", { ascending: false });
 
-      if (!isSuperAdmin && user?.id) {
+      if (!isSuperAdmin) {
         query = query.eq("user_id", user.id);
       }
 
@@ -150,16 +143,41 @@ const Pegawai = () => {
 
       setPegawai(formattedData);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
       toast({
-        title: "Error",
-        description: "Gagal memuat data pegawai",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Gagal memuat data pegawai. Silakan coba lagi.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, isSuperAdmin, toast]);
+
+  useEffect(() => {
+    if (!authLoading && isInitialized && !user) {
+      navigate("/auth");
+      return;
+    }
+    
+    if (user) {
+      fetchData();
+    }
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!session) {
+          navigate("/auth");
+        }
+      }
+    );
+    
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [user, authLoading, isInitialized, navigate, fetchData]);
 
   const handleDelete = async (id: string, ownerId: string) => {
     try {

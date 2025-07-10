@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { User } from "@supabase/supabase-js";
@@ -34,7 +34,7 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isLoading: authLoading, isInitialized, signOut: authSignOut } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalPegawai: 0,
@@ -45,19 +45,27 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
+    if (!user) return;
+    
     try {
+      setIsLoading(true);
+      
       // Get total pegawai
-      const { count: totalPegawai } = await supabase
+      const { count: totalPegawai, error: pegawaiError } = await supabase
         .from("pegawai")
         .select("*", { count: "exact", head: true });
+      
+      if (pegawaiError) throw pegawaiError;
 
       // Get evaluations for current year
       const currentYear = new Date().getFullYear();
-      const { data: evaluations } = await supabase
+      const { data: evaluations, error: evalError } = await supabase
         .from("penilaian")
         .select("pegawai_id, persentase_akhir")
         .eq("tahun_penilaian", currentYear);
+      
+      if (evalError) throw evalError;
 
       // Calculate stats
       const evaluasiSelesai = evaluations?.length || 0;
@@ -81,44 +89,45 @@ const Dashboard = () => {
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
+      toast({
+        title: "Error",
+        description: "Gagal memuat data statistik. Silakan coba lagi.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [user, toast]);
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    if (!authLoading && isInitialized && !user) {
+      navigate("/auth");
+      return;
+    }
 
-      if (!session) {
-        navigate("/auth");
-      } else {
-        await fetchStats();
+    if (user) {
+      fetchStats();
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!session) {
+          navigate("/auth");
+        } else if (event === 'SIGNED_IN') {
+          fetchStats();
+        }
       }
-      setIsLoading(false);
+    );
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
-
-    getSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (!session) {
-        navigate("/auth");
-      } else {
-        fetchStats();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const { signOut } = useAuth();
+  }, [user, authLoading, isInitialized, navigate, fetchStats]);
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
+    const { error } = await authSignOut();
     if (error) {
       toast({
         title: "Error",

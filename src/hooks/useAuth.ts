@@ -9,6 +9,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     let mounted = true;
+    let authSubscription: { subscription: { unsubscribe: () => void } } | null = null;
 
     const checkAuth = async () => {
       try {
@@ -20,6 +21,8 @@ export const useAuth = () => {
           console.error('Error getting user:', error);
           setUser(null);
           setIsSuperAdmin(false);
+          setIsLoading(false);
+          setIsInitialized(true);
           return;
         }
 
@@ -46,9 +49,8 @@ export const useAuth = () => {
       }
     };
 
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // Subscribe to auth changes
+    const { data } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
         
@@ -61,12 +63,25 @@ export const useAuth = () => {
         } else {
           setIsSuperAdmin(false);
         }
+        
+        // Set initialized to true when we get the first auth state
+        if (!isInitialized) {
+          setIsInitialized(true);
+          setIsLoading(false);
+        }
       }
     );
+    
+    authSubscription = data;
+    
+    // Initial check
+    checkAuth();
 
     return () => {
       mounted = false;
-      subscription?.unsubscribe();
+      if (authSubscription?.subscription) {
+        authSubscription.subscription.unsubscribe();
+      }
     };
   }, []);
 
