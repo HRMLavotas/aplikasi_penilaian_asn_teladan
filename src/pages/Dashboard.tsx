@@ -104,6 +104,8 @@ const Dashboard = () => {
       setUser(session?.user ?? null);
       if (!session) {
         navigate("/auth");
+      } else {
+        fetchStats();
       }
     });
 
