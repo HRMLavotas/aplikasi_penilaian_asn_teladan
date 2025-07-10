@@ -199,17 +199,15 @@ const FormEvaluasi = () => {
         const loadedPenilaian = {
           skp_2_tahun_terakhir_baik: data.skp_2_tahun_terakhir_baik || false,
           skp_peningkatan_prestasi: data.skp_peningkatan_prestasi || false,
-          // Kriteria Integritas - get from pegawai table
-          bebas_temuan: pegawaiData.data?.bebas_temuan || false,
-          tidak_hukuman_disiplin:
-            pegawaiData.data?.tidak_hukuman_disiplin || false,
-          tidak_pemeriksaan_disiplin:
-            pegawaiData.data?.tidak_pemeriksaan_disiplin || false,
-          // Prestasi & Inovasi - get from pegawai table
-          memiliki_inovasi: pegawaiData.data?.memiliki_inovasi || false,
-          bukti_inovasi: pegawaiData.data?.bukti_inovasi || "",
-          memiliki_penghargaan: pegawaiData.data?.memiliki_penghargaan || false,
-          bukti_penghargaan: pegawaiData.data?.bukti_penghargaan || "",
+          // Kriteria Integritas - get from penilaian table
+          bebas_temuan: data.bebas_temuan || false,
+          tidak_hukuman_disiplin: data.tidak_hukuman_disiplin || false,
+          tidak_pemeriksaan_disiplin: data.tidak_pemeriksaan_disiplin || false,
+          // Prestasi & Inovasi - get from penilaian table
+          memiliki_inovasi: data.memiliki_inovasi || false,
+          bukti_inovasi: data.bukti_inovasi || "",
+          memiliki_penghargaan: data.memiliki_penghargaan || false,
+          bukti_penghargaan: data.bukti_penghargaan || "",
           // Core Values ASN BerAKHLAK - map from database score fields
           berorientasi_pelayanan_score: data.inovasi_dampak_score || 1,
           akuntabel_score: data.inspiratif_score || 1,
@@ -594,48 +592,104 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
       // Calculate final percentage score
       const finalScore = calculatePreviewScore();
 
-      // Map the form data to match the database schema
-      const dataToSave = {
+      // First, create a base object with only the fields that definitely exist in the database
+      const dataToSave: Record<string, any> = {
         pegawai_id: id,
         penilai_user_id: session.user.id,
         tahun_penilaian: currentYear,
         persentase_akhir: finalScore,
         // SKP criteria
-        skp_2_tahun_terakhir_baik: penilaian.skp_2_tahun_terakhir_baik,
-        skp_peningkatan_prestasi: penilaian.skp_peningkatan_prestasi,
-        // Map old score fields to new BerAKHLAK core values
-        inovasi_dampak_score: penilaian.berorientasi_pelayanan_score,
-        inspiratif_score: penilaian.akuntabel_score,
-        integritas_moralitas_score: penilaian.kompeten_score,
-        kerjasama_kolaborasi_score: penilaian.harmonis_score,
-        kinerja_perilaku_score: penilaian.loyal_score,
-        komunikasi_score: penilaian.adaptif_score,
-        leadership_score: penilaian.kolaboratif_score,
+        skp_2_tahun_terakhir_baik: penilaian.skp_2_tahun_terakhir_baik || false,
+        skp_peningkatan_prestasi: penilaian.skp_peningkatan_prestasi || false,
+        // Core scores
+        kinerja_perilaku_score: penilaian.berorientasi_pelayanan_score || 70,
+        inovasi_dampak_score: penilaian.akuntabel_score || 70,
         prestasi_score: penilaian.memiliki_penghargaan ? 100 : 0,
-        rekam_jejak_score:
-          penilaian.bebas_temuan &&
-          penilaian.tidak_hukuman_disiplin &&
-          penilaian.tidak_pemeriksaan_disiplin
-            ? 100
-            : 0,
-        // Core value descriptions
-        berorientasi_pelayanan_desc: penilaian.berorientasi_pelayanan_desc,
-        akuntabel_desc: penilaian.akuntabel_desc,
-        kompeten_desc: penilaian.kompeten_desc,
-        harmonis_desc: penilaian.harmonis_desc,
-        loyal_desc: penilaian.loyal_desc,
-        adaptif_desc: penilaian.adaptif_desc,
-        kolaboratif_desc: penilaian.kolaboratif_desc,
+        inspiratif_score: penilaian.kompeten_score || 70,
+        komunikasi_score: penilaian.harmonis_score || 70,
+        kerjasama_kolaborasi_score: penilaian.loyal_score || 70,
+        leadership_score: penilaian.adaptif_score || 70,
+        rekam_jejak_score: penilaian.kolaboratif_score || 70,
+        integritas_moralitas_score: 70,
         // AI Analysis
-        analisis_ai_pro: penilaian.analisis_ai_pro,
-        analisis_ai_kontra: penilaian.analisis_ai_kontra,
-        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan,
-        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan,
+        analisis_ai_pro: penilaian.analisis_ai_pro || '',
+        analisis_ai_kontra: penilaian.analisis_ai_kontra || '',
+        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan || '',
+        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan || '',
       };
+
+      // Try to add the new fields if they exist in the database
+      try {
+        // These are the new fields we want to add
+        const newFields = {
+          // Kriteria Integritas
+          bebas_temuan: penilaian.bebas_temuan || false,
+          tidak_hukuman_disiplin: penilaian.tidak_hukuman_disiplin || false,
+          tidak_pemeriksaan_disiplin: penilaian.tidak_pemeriksaan_disiplin || false,
+          // Prestasi & Inovasi
+          memiliki_inovasi: penilaian.memiliki_inovasi || false,
+          bukti_inovasi: penilaian.bukti_inovasi || '',
+          memiliki_penghargaan: penilaian.memiliki_penghargaan || false,
+          bukti_penghargaan: penilaian.bukti_penghargaan || '',
+          // Core value descriptions
+          berorientasi_pelayanan_desc: penilaian.berorientasi_pelayanan_desc || '',
+          akuntabel_desc: penilaian.akuntabel_desc || '',
+          kompeten_desc: penilaian.kompeten_desc || '',
+          harmonis_desc: penilaian.harmonis_desc || '',
+          loyal_desc: penilaian.loyal_desc || '',
+          adaptif_desc: penilaian.adaptif_desc || '',
+          kolaboratif_desc: penilaian.kolaboratif_desc || '',
+        };
+
+        // Add the new fields to dataToSave
+        Object.assign(dataToSave, newFields);
+      } catch (error) {
+        console.warn('Some new fields could not be added:', error);
+      }
 
       console.log("Data being saved:", dataToSave);
 
-      const { error } = await supabase.from("penilaian").upsert([dataToSave], {
+      // Create a type-safe object that matches the database schema
+      const dbData = {
+        pegawai_id: dataToSave.pegawai_id,
+        penilai_user_id: dataToSave.penilai_user_id,
+        tahun_penilaian: dataToSave.tahun_penilaian,
+        persentase_akhir: dataToSave.persentase_akhir,
+        skp_2_tahun_terakhir_baik: dataToSave.skp_2_tahun_terakhir_baik,
+        skp_peningkatan_prestasi: dataToSave.skp_peningkatan_prestasi,
+        kinerja_perilaku_score: dataToSave.kinerja_perilaku_score,
+        inovasi_dampak_score: dataToSave.inovasi_dampak_score,
+        prestasi_score: dataToSave.prestasi_score,
+        inspiratif_score: dataToSave.inspiratif_score,
+        komunikasi_score: dataToSave.komunikasi_score,
+        kerjasama_kolaborasi_score: dataToSave.kerjasama_kolaborasi_score,
+        leadership_score: dataToSave.leadership_score,
+        rekam_jejak_score: dataToSave.rekam_jejak_score,
+        integritas_moralitas_score: dataToSave.integritas_moralitas_score,
+        analisis_ai_pro: dataToSave.analisis_ai_pro,
+        analisis_ai_kontra: dataToSave.analisis_ai_kontra,
+        analisis_ai_kelebihan: dataToSave.analisis_ai_kelebihan,
+        analisis_ai_kekurangan: dataToSave.analisis_ai_kekurangan,
+        // Add optional fields if they exist
+        ...(dataToSave.bebas_temuan !== undefined && { bebas_temuan: dataToSave.bebas_temuan }),
+        ...(dataToSave.tidak_hukuman_disiplin !== undefined && { tidak_hukuman_disiplin: dataToSave.tidak_hukuman_disiplin }),
+        ...(dataToSave.tidak_pemeriksaan_disiplin !== undefined && { tidak_pemeriksaan_disiplin: dataToSave.tidak_pemeriksaan_disiplin }),
+        ...(dataToSave.memiliki_inovasi !== undefined && { memiliki_inovasi: dataToSave.memiliki_inovasi }),
+        ...(dataToSave.bukti_inovasi !== undefined && { bukti_inovasi: dataToSave.bukti_inovasi }),
+        ...(dataToSave.memiliki_penghargaan !== undefined && { memiliki_penghargaan: dataToSave.memiliki_penghargaan }),
+        ...(dataToSave.bukti_penghargaan !== undefined && { bukti_penghargaan: dataToSave.bukti_penghargaan }),
+        ...(dataToSave.berorientasi_pelayanan_desc !== undefined && { berorientasi_pelayanan_desc: dataToSave.berorientasi_pelayanan_desc }),
+        ...(dataToSave.akuntabel_desc !== undefined && { akuntabel_desc: dataToSave.akuntabel_desc }),
+        ...(dataToSave.kompeten_desc !== undefined && { kompeten_desc: dataToSave.kompeten_desc }),
+        ...(dataToSave.harmonis_desc !== undefined && { harmonis_desc: dataToSave.harmonis_desc }),
+        ...(dataToSave.loyal_desc !== undefined && { loyal_desc: dataToSave.loyal_desc }),
+        ...(dataToSave.adaptif_desc !== undefined && { adaptif_desc: dataToSave.adaptif_desc }),
+        ...(dataToSave.kolaboratif_desc !== undefined && { kolaboratif_desc: dataToSave.kolaboratif_desc })
+      };
+
+      console.log("Sending to database:", dbData);
+
+      const { error } = await supabase.from("penilaian").upsert([dbData], {
         onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
       });
 
