@@ -106,11 +106,15 @@ const TambahPegawai = () => {
 
       // Find or create unit kerja
       let unitKerjaId;
-      const { data: existingUnitKerja } = await supabase
+      const { data: existingUnitKerja, error: searchError } = await supabase
         .from("unit_kerja")
         .select("id")
         .eq("nama_unit_kerja", formData.unit_kerja_nama)
-        .single();
+        .maybeSingle();
+
+      if (searchError) {
+        throw new Error(`Error searching unit kerja: ${searchError.message}`);
+      }
 
       if (existingUnitKerja) {
         unitKerjaId = existingUnitKerja.id;
@@ -122,7 +126,9 @@ const TambahPegawai = () => {
           .select("id")
           .single();
 
-        if (unitError) throw unitError;
+        if (unitError) {
+          throw new Error(`Error creating unit kerja: ${unitError.message}`);
+        }
         unitKerjaId = newUnitKerja.id;
       }
 
