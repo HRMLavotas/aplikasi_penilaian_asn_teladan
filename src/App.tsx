@@ -10,6 +10,9 @@ import Pegawai from "./pages/Pegawai";
 import TambahPegawai from "./pages/TambahPegawai";
 import Evaluasi from "./pages/Evaluasi";
 import FormEvaluasi from "./pages/FormEvaluasi";
+import Ranking from "./pages/Ranking";
+import Laporan from "./pages/Laporan";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
           <Route path="/pegawai/tambah" element={<TambahPegawai />} />
           <Route path="/evaluasi" element={<Evaluasi />} />
           <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
+          <Route path="/ranking" element={<Ranking />} />
+          <Route path="/laporan" element={<Laporan />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

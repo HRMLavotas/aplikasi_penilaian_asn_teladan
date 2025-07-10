@@ -4,11 +4,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserPlus } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  UserPlus,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  DataValidator,
+  asnValidationRules,
+  validateNIP,
+  calculateDataQuality,
+} from "@/lib/validation";
 import {
   Select,
   SelectContent,
@@ -17,14 +33,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface UnitKerja {
-  id: string;
-  nama_unit_kerja: string;
-}
-
 const TambahPegawai = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [unitKerja, setUnitKerja] = useState<UnitKerja[]>([]);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>
+  >({});
+  const [dataQuality, setDataQuality] = useState<any>(null);
+  const [nipInfo, setNipInfo] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -32,57 +47,55 @@ const TambahPegawai = () => {
     nama: "",
     nip: "",
     jabatan: "",
-    unit_kerja_id: "",
+    unit_kerja_nama: "",
     status_jabatan: "",
     masa_kerja_tahun: 0,
-    bebas_temuan: false,
-    tidak_hukuman_disiplin: false,
-    tidak_pemeriksaan_disiplin: false,
-    memiliki_inovasi: false,
-    bukti_inovasi: "",
-    memiliki_penghargaan: false,
-    bukti_penghargaan: "",
   });
 
   useEffect(() => {
     checkAuth();
-    fetchUnitKerja();
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
     }
   };
 
-  const fetchUnitKerja = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("unit_kerja")
-        .select("*")
-        .order("nama_unit_kerja");
-
-      if (error) throw error;
-      setUnitKerja(data || []);
-    } catch (error) {
-      console.error("Error fetching unit kerja:", error);
-      toast({
-        title: "Error",
-        description: "Gagal memuat data unit kerja",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
-    if (!formData.nama || !formData.nip || !formData.jabatan || !formData.unit_kerja_id || !formData.status_jabatan) {
+    if (
+      !formData.nama ||
+      !formData.nip ||
+      !formData.jabatan ||
+      !formData.unit_kerja_nama ||
+      !formData.status_jabatan
+    ) {
       toast({
         title: "Form Tidak Lengkap",
         description: "Silakan isi semua field yang wajib diisi",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate status_jabatan
+    const validStatuses = [
+      "administrator",
+      "pengawas",
+      "pelaksana",
+      "fungsional",
+    ];
+    if (!validStatuses.includes(formData.status_jabatan)) {
+      toast({
+        title: "Status Jabatan Tidak Valid",
+        description:
+          "Status jabatan harus: administrator, pengawas, pelaksana, atau fungsional",
         variant: "destructive",
       });
       return;
@@ -109,19 +122,92 @@ const TambahPegawai = () => {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("Tidak ada session aktif");
       }
 
-      const { error } = await supabase
-        .from("pegawai")
-        .insert([{
-          ...formData,
-          user_id: session.user.id,
-          bukti_inovasi: formData.memiliki_inovasi ? formData.bukti_inovasi : null,
-          bukti_penghargaan: formData.memiliki_penghargaan ? formData.bukti_penghargaan : null,
-        }]);
+      // Find or create unit kerja
+      let unitKerjaId;
+      const { data: existingUnitKerja, error: searchError } = await supabase
+        .from("unit_kerja")
+        .select("id")
+        .eq("nama_unit_kerja", formData.unit_kerja_nama)
+        .maybeSingle();
+
+      if (searchError) {
+        throw new Error(`Error searching unit kerja: ${searchError.message}`);
+      }
+
+      if (existingUnitKerja) {
+        unitKerjaId = existingUnitKerja.id;
+      } else {
+        // Create new unit kerja
+        const { data: newUnitKerja, error: unitError } = await supabase
+          .from("unit_kerja")
+          .insert([{ nama_unit_kerja: formData.unit_kerja_nama }])
+          .select("id")
+          .single();
+
+        if (unitError) {
+          throw new Error(`Error creating unit kerja: ${unitError.message}`);
+        }
+        unitKerjaId = newUnitKerja.id;
+      }
+
+      const { unit_kerja_nama, ...pegawaiData } = formData;
+
+      // Map new status_jabatan values to database values
+      let dbStatusJabatan = pegawaiData.status_jabatan;
+      if (
+        ["administrator", "pengawas", "pelaksana"].includes(
+          pegawaiData.status_jabatan,
+        )
+      ) {
+        dbStatusJabatan = "administrasi";
+      }
+
+      // Prepare data for insertion
+      const insertData = {
+        ...pegawaiData,
+        status_jabatan: dbStatusJabatan,
+        unit_kerja_id: unitKerjaId,
+        user_id: session.user.id,
+        // Add fields that are required by the database schema
+        bebas_temuan: false,
+        tidak_hukuman_disiplin: false,
+        tidak_pemeriksaan_disiplin: false,
+        memiliki_inovasi: false,
+        bukti_inovasi: null,
+        memiliki_penghargaan: false,
+        bukti_penghargaan: null,
+      };
+
+      // Debug: log the data being inserted
+      console.log("Inserting pegawai data:", insertData);
+      console.log("Unit kerja ID:", unitKerjaId);
+
+      // Validate required fields
+      if (
+        !insertData.nama ||
+        !insertData.nip ||
+        !insertData.jabatan ||
+        !insertData.status_jabatan ||
+        !insertData.unit_kerja_id
+      ) {
+        throw new Error("Missing required fields for pegawai insertion");
+      }
+
+      // Validate status_jabatan against database constraint
+      if (!["administrasi", "fungsional"].includes(insertData.status_jabatan)) {
+        throw new Error(
+          `Invalid status_jabatan: ${insertData.status_jabatan}. Must be 'administrasi' or 'fungsional'`,
+        );
+      }
+
+      const { error } = await supabase.from("pegawai").insert([insertData]);
 
       if (error) {
         if (error.message.includes("duplicate key")) {
@@ -144,9 +230,62 @@ const TambahPegawai = () => {
       navigate("/pegawai");
     } catch (error) {
       console.error("Error adding pegawai:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error keys:", error ? Object.keys(error) : "null");
+
+      // Log each property of the error object for debugging
+      if (error && typeof error === "object") {
+        const errorObj = error as any;
+        console.error("Error.message:", errorObj.message);
+        console.error("Error.details:", errorObj.details);
+        console.error("Error.hint:", errorObj.hint);
+        console.error("Error.code:", errorObj.code);
+        console.error("Full error object:", JSON.stringify(error, null, 2));
+      }
+
+      let errorMessage = "Unknown error occurred";
+
+      try {
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (error && typeof error === "object") {
+          // Handle Supabase errors which can have different structures
+          const supabaseError = error as any;
+
+          if (supabaseError.message) {
+            errorMessage = String(supabaseError.message);
+
+            // Add additional details if available
+            if (supabaseError.details) {
+              errorMessage += ` Details: ${supabaseError.details}`;
+            }
+            if (supabaseError.hint) {
+              errorMessage += ` Hint: ${supabaseError.hint}`;
+            }
+            if (supabaseError.code) {
+              errorMessage += ` (Code: ${supabaseError.code})`;
+            }
+          } else if (supabaseError.details) {
+            errorMessage = String(supabaseError.details);
+          } else if (supabaseError.hint) {
+            errorMessage = String(supabaseError.hint);
+          } else if (supabaseError.code) {
+            errorMessage = `Database error (${supabaseError.code})`;
+          } else {
+            // Last resort - try to stringify the error
+            errorMessage = JSON.stringify(error);
+          }
+        } else if (typeof error === "string") {
+          errorMessage = error;
+        }
+      } catch (stringifyError) {
+        console.error("Error while processing error:", stringifyError);
+        errorMessage = "Error occurred but details could not be extracted";
+      }
+
       toast({
         title: "Error",
-        description: "Gagal menambahkan data pegawai",
+        description: `Gagal menambahkan data pegawai: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -154,11 +293,36 @@ const TambahPegawai = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const validateForm = (data: typeof formData) => {
+    const validator = new DataValidator(asnValidationRules);
+    const validation = validator.validate(data);
+    setValidationErrors(validation.errors);
+
+    // Calculate data quality
+    const quality = calculateDataQuality(data);
+    setDataQuality(quality);
+
+    // Validate NIP if provided
+    if (data.nip) {
+      const nipValidation = validateNIP(data.nip);
+      setNipInfo(nipValidation);
+    }
+
+    return validation.isValid;
+  };
+
+  const handleInputChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
+    const newFormData = {
+      ...formData,
+      [field]: value,
+    };
+    setFormData(newFormData);
+
+    // Real-time validation with debounce
+    setTimeout(() => validateForm(newFormData), 300);
   };
 
   return (
@@ -168,13 +332,19 @@ const TambahPegawai = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/pegawai")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/pegawai")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Tambah Pegawai</h1>
-                <p className="text-sm text-muted-foreground">Daftarkan pegawai ASN baru</p>
+                <p className="text-sm text-muted-foreground">
+                  Daftarkan pegawai ASN baru
+                </p>
               </div>
             </div>
             <UserPlus className="h-8 w-8 text-primary" />
@@ -224,7 +394,9 @@ const TambahPegawai = () => {
                     type="text"
                     placeholder="Jabatan saat ini"
                     value={formData.jabatan}
-                    onChange={(e) => handleInputChange("jabatan", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("jabatan", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -237,7 +409,12 @@ const TambahPegawai = () => {
                     min="0"
                     max="50"
                     value={formData.masa_kerja_tahun}
-                    onChange={(e) => handleInputChange("masa_kerja_tahun", parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "masa_kerja_tahun",
+                        parseInt(e.target.value) || 0,
+                      )
+                    }
                     required
                   />
                 </div>
@@ -246,27 +423,34 @@ const TambahPegawai = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="unit_kerja">Unit Kerja *</Label>
-                  <Select value={formData.unit_kerja_id} onValueChange={(value) => handleInputChange("unit_kerja_id", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih unit kerja" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {unitKerja.map((unit) => (
-                        <SelectItem key={unit.id} value={unit.id}>
-                          {unit.nama_unit_kerja}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="unit_kerja"
+                    type="text"
+                    placeholder="Masukkan nama unit kerja"
+                    value={formData.unit_kerja_nama}
+                    onChange={(e) =>
+                      handleInputChange("unit_kerja_nama", e.target.value)
+                    }
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status_jabatan">Status Jabatan *</Label>
-                  <Select value={formData.status_jabatan} onValueChange={(value) => handleInputChange("status_jabatan", value)}>
+                  <Select
+                    value={formData.status_jabatan}
+                    onValueChange={(value) =>
+                      handleInputChange("status_jabatan", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih status jabatan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="administrasi">Administrasi</SelectItem>
+                      <SelectItem value="administrator">
+                        Administrator
+                      </SelectItem>
+                      <SelectItem value="pengawas">Pengawas</SelectItem>
+                      <SelectItem value="pelaksana">Pelaksana</SelectItem>
                       <SelectItem value="fungsional">Fungsional</SelectItem>
                     </SelectContent>
                   </Select>
@@ -275,123 +459,128 @@ const TambahPegawai = () => {
             </CardContent>
           </Card>
 
-          {/* Kriteria Integritas */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Kriteria Integritas</CardTitle>
-              <CardDescription>Penilaian integritas dan kedisiplinan</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-center justify-between space-x-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="bebas_temuan">Bebas Temuan</Label>
-                    <p className="text-sm text-muted-foreground">Tidak ada temuan audit</p>
-                  </div>
-                  <Switch
-                    id="bebas_temuan"
-                    checked={formData.bebas_temuan}
-                    onCheckedChange={(checked) => handleInputChange("bebas_temuan", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between space-x-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="tidak_hukuman">Tidak Ada Hukuman Disiplin</Label>
-                    <p className="text-sm text-muted-foreground">Bersih dari hukuman disiplin</p>
-                  </div>
-                  <Switch
-                    id="tidak_hukuman"
-                    checked={formData.tidak_hukuman_disiplin}
-                    onCheckedChange={(checked) => handleInputChange("tidak_hukuman_disiplin", checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between space-x-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="tidak_pemeriksaan">Tidak Dalam Pemeriksaan</Label>
-                    <p className="text-sm text-muted-foreground">Tidak sedang diperiksa</p>
-                  </div>
-                  <Switch
-                    id="tidak_pemeriksaan"
-                    checked={formData.tidak_pemeriksaan_disiplin}
-                    onCheckedChange={(checked) => handleInputChange("tidak_pemeriksaan_disiplin", checked)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Prestasi & Inovasi */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Prestasi & Inovasi</CardTitle>
-              <CardDescription>Pencapaian dan kontribusi pegawai</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="memiliki_inovasi">Memiliki Inovasi</Label>
-                      <p className="text-sm text-muted-foreground">Telah membuat inovasi</p>
-                    </div>
-                    <Switch
-                      id="memiliki_inovasi"
-                      checked={formData.memiliki_inovasi}
-                      onCheckedChange={(checked) => handleInputChange("memiliki_inovasi", checked)}
-                    />
-                  </div>
-                  
-                  {formData.memiliki_inovasi && (
-                    <div className="space-y-2">
-                      <Label htmlFor="bukti_inovasi">Bukti Inovasi</Label>
-                      <Textarea
-                        id="bukti_inovasi"
-                        placeholder="Deskripsikan inovasi yang telah dibuat..."
-                        value={formData.bukti_inovasi}
-                        onChange={(e) => handleInputChange("bukti_inovasi", e.target.value)}
-                        rows={3}
-                      />
-                    </div>
+          {/* Data Quality Indicator */}
+          {dataQuality && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  {dataQuality.score >= 80 ? (
+                    <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 mr-2 text-yellow-600" />
                   )}
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="memiliki_penghargaan">Memiliki Penghargaan</Label>
-                      <p className="text-sm text-muted-foreground">Pernah menerima penghargaan</p>
+                  Kualitas Data: {dataQuality.score}%
+                </CardTitle>
+                <CardDescription>
+                  Indikator kualitas dan kelengkapan data pegawai
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {dataQuality.details.completeness}%
                     </div>
-                    <Switch
-                      id="memiliki_penghargaan"
-                      checked={formData.memiliki_penghargaan}
-                      onCheckedChange={(checked) => handleInputChange("memiliki_penghargaan", checked)}
-                    />
+                    <div className="text-sm text-muted-foreground">
+                      Kelengkapan
+                    </div>
                   </div>
-                  
-                  {formData.memiliki_penghargaan && (
-                    <div className="space-y-2">
-                      <Label htmlFor="bukti_penghargaan">Bukti Penghargaan</Label>
-                      <Textarea
-                        id="bukti_penghargaan"
-                        placeholder="Deskripsikan penghargaan yang pernah diterima..."
-                        value={formData.bukti_penghargaan}
-                        onChange={(e) => handleInputChange("bukti_penghargaan", e.target.value)}
-                        rows={3}
-                      />
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {dataQuality.details.accuracy}%
                     </div>
-                  )}
+                    <div className="text-sm text-muted-foreground">Akurasi</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {dataQuality.details.consistency}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Konsistensi
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                {dataQuality.score < 80 && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <p className="text-sm text-yellow-800">
+                      <AlertTriangle className="h-4 w-4 inline mr-1" />
+                      Kualitas data kurang dari 80%. Pastikan semua field terisi
+                      dengan benar dan bukti inovasi/penghargaan sesuai.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* NIP Information */}
+          {nipInfo && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  {nipInfo.isValid ? (
+                    <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
+                  )}
+                  Informasi NIP
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {nipInfo.isValid && nipInfo.info ? (
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Tanggal Lahir:</span>{" "}
+                      {nipInfo.info.birthDate}
+                    </div>
+                    <div>
+                      <span className="font-medium">Usia:</span>{" "}
+                      {nipInfo.info.age} tahun
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {nipInfo.errors.map((error: string, i: number) => (
+                      <p key={i} className="text-sm text-red-600">
+                        • {error}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Validation Errors */}
+          {Object.keys(validationErrors).length > 0 && (
+            <Card className="border-red-200 bg-red-50">
+              <CardHeader>
+                <CardTitle className="text-red-800">Error Validasi</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {Object.entries(validationErrors).map(([field, errors]) => (
+                    <div key={field}>
+                      <p className="font-medium text-red-800 capitalize">
+                        {field}:
+                      </p>
+                      {errors.map((error, i) => (
+                        <p key={i} className="text-sm text-red-600 ml-2">
+                          • {error}
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => navigate("/pegawai")}
               disabled={isLoading}
             >
