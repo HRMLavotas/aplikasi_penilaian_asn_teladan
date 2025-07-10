@@ -65,7 +65,7 @@ const TambahPegawai = () => {
       !formData.nama ||
       !formData.nip ||
       !formData.jabatan ||
-      !formData.unit_kerja_id ||
+      !formData.unit_kerja_nama ||
       !formData.status_jabatan
     ) {
       toast({
