@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Card,
   CardContent,
@@ -54,6 +55,7 @@ import {
 
 interface Pegawai {
   id: string;
+  user_id: string;
   nama: string;
   nip: string;
   jabatan: string;
@@ -64,6 +66,9 @@ interface Pegawai {
   created_at: string;
   unit_kerja: {
     nama_unit_kerja: string;
+  };
+  user?: {
+    email: string;
   };
 }
 
@@ -77,12 +82,11 @@ const Pegawai = () => {
   const [unitKerja, setUnitKerja] = useState<UnitKerja[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterUnit, setFilterUnit] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isSuperAdmin, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     checkAuth();
@@ -90,39 +94,61 @@ const Pegawai = () => {
   }, []);
 
   const checkAuth = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+    if (!user) {
       navigate("/auth");
     }
   };
 
   const fetchData = async () => {
     try {
-      // Fetch pegawai with unit kerja
-      const { data: pegawaiData, error: pegawaiError } = await supabase
-        .from("pegawai")
-        .select(
-          `
-          *,
-          unit_kerja:unit_kerja_id(nama_unit_kerja)
-        `,
-        )
-        .order("created_at", { ascending: false });
-
-      if (pegawaiError) throw pegawaiError;
-
-      // Fetch unit kerja for filter
+      // First, fetch unit kerja since it's needed for both admin and regular users
       const { data: unitData, error: unitError } = await supabase
         .from("unit_kerja")
         .select("*")
         .order("nama_unit_kerja");
 
       if (unitError) throw unitError;
-
-      setPegawai(pegawaiData || []);
       setUnitKerja(unitData || []);
+
+      // Then fetch pegawai data with proper typing
+      let query = supabase
+        .from("pegawai")
+        .select(
+          `
+          *,
+          unit_kerja:unit_kerja_id(nama_unit_kerja),
+          user:user_id(
+            email
+          )
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      if (!isSuperAdmin && user?.id) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Transform the data to match our Pegawai interface
+      const formattedData: Pegawai[] = (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        nama: item.nama,
+        nip: item.nip,
+        jabatan: item.jabatan,
+        status_jabatan: item.status_jabatan,
+        masa_kerja_tahun: item.masa_kerja_tahun,
+        memiliki_inovasi: item.memiliki_inovasi,
+        memiliki_penghargaan: item.memiliki_penghargaan,
+        created_at: item.created_at,
+        unit_kerja: item.unit_kerja || { nama_unit_kerja: '' },
+        user: item.user && !('error' in item.user) ? { email: item.user.email } : undefined,
+      }));
+
+      setPegawai(formattedData);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
@@ -135,9 +161,22 @@ const Pegawai = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, ownerId: string) => {
     try {
-      const { error } = await supabase.from("pegawai").delete().eq("id", id);
+      if (!isSuperAdmin && user?.id !== ownerId) {
+        toast({
+          title: "Error",
+          description: "Anda tidak memiliki izin untuk menghapus data ini",
+          variant: "destructive",
+        });
+        setDeleteId(null);
+        return;
+      }
+
+      const { error } = await supabase
+        .from("pegawai")
+        .delete()
+        .eq("id", id);
 
       if (error) throw error;
 
@@ -165,20 +204,81 @@ const Pegawai = () => {
       p.nip.includes(searchTerm) ||
       p.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesUnit =
-      filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
-    const matchesStatus =
-      filterStatus === "all" || p.status_jabatan === filterStatus;
-
-    return matchesSearch && matchesUnit && matchesStatus;
+    return matchesSearch;
   });
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  const columns = [
+    {
+      header: "Nama",
+      accessor: (row: Pegawai) => row.nama,
+    },
+    {
+      header: "NIP",
+      accessor: (row: Pegawai) => row.nip || "-",
+    },
+    {
+      header: "Jabatan",
+      accessor: (row: Pegawai) => row.jabatan || "-",
+    },
+    {
+      header: "Unit Kerja",
+      accessor: (row: Pegawai) => row.unit_kerja?.nama_unit_kerja || "-",
+    },
+    {
+      header: "Status",
+      accessor: (row: Pegawai) => (
+        <Badge variant={row.status_jabatan === "fungsional" ? "default" : "secondary"}>
+          {row.status_jabatan}
+        </Badge>
+      ),
+    },
+    {
+      header: "Aksi",
+      accessor: (row: any) => (
+        <div className="flex space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(`/evaluasi/baru?pegawai_id=${row.id}`)}
+            title="Buat Evaluasi"
+          >
+            <Award className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(`/pegawai/${row.id}/edit`)}
+            title="Edit"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDeleteId(row.id)}
+            title="Hapus"
+            className="text-red-600 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  if (isSuperAdmin) {
+    columns.splice(columns.length - 1, 0, {
+      header: "Pemilik",
+      accessor: (row: any) => row.user?.email || "N/A",
+    });
   }
 
   return (
@@ -254,10 +354,7 @@ const Pegawai = () => {
             <CardHeader className="pb-2">
               <CardDescription>Administrasi</CardDescription>
               <CardTitle className="text-2xl">
-                {
-                  pegawai.filter((p) => p.status_jabatan === "administrasi")
-                    .length
-                }
+                {pegawai.filter((p) => p.status_jabatan === "administrasi").length}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -272,10 +369,7 @@ const Pegawai = () => {
             <CardHeader className="pb-2">
               <CardDescription>Fungsional</CardDescription>
               <CardTitle className="text-2xl">
-                {
-                  pegawai.filter((p) => p.status_jabatan === "fungsional")
-                    .length
-                }
+                {pegawai.filter((p) => p.status_jabatan === "fungsional").length}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -326,7 +420,7 @@ const Pegawai = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Unit Kerja</label>
-                <Select value={filterUnit} onValueChange={setFilterUnit}>
+                <Select value="all" onValueChange={() => {}}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua Unit" />
                   </SelectTrigger>
@@ -342,7 +436,7 @@ const Pegawai = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status Jabatan</label>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <Select value="all" onValueChange={() => {}}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua Status" />
                   </SelectTrigger>
@@ -360,8 +454,6 @@ const Pegawai = () => {
                   className="w-full"
                   onClick={() => {
                     setSearchTerm("");
-                    setFilterUnit("all");
-                    setFilterStatus("all");
                   }}
                 >
                   Reset Filter
@@ -401,78 +493,19 @@ const Pegawai = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nama</TableHead>
-                      <TableHead>NIP</TableHead>
-                      <TableHead>Jabatan</TableHead>
-                      <TableHead>Unit Kerja</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Masa Kerja</TableHead>
-                      <TableHead>Badge</TableHead>
-                      <TableHead className="text-right">Aksi</TableHead>
+                      {columns.map((column) => (
+                        <TableHead key={column.header}>{column.header}</TableHead>
+                      ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredPegawai.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell className="font-medium">{p.nama}</TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {p.nip}
-                        </TableCell>
-                        <TableCell>{p.jabatan}</TableCell>
-                        <TableCell className="max-w-48 truncate">
-                          {p.unit_kerja?.nama_unit_kerja || "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              p.status_jabatan === "fungsional"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {p.status_jabatan}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{p.masa_kerja_tahun} tahun</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            {p.memiliki_inovasi && (
-                              <Badge variant="outline" className="text-xs">
-                                Inovasi
-                              </Badge>
-                            )}
-                            {p.memiliki_penghargaan && (
-                              <Badge variant="outline" className="text-xs">
-                                Penghargaan
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigate(`/pegawai/${p.id}`)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigate(`/pegawai/${p.id}/edit`)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setDeleteId(p.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        {columns.map((column) => (
+                          <TableCell key={column.header}>
+                            {column.accessor(p)}
+                          </TableCell>
+                        ))}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -497,7 +530,14 @@ const Pegawai = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteId && handleDelete(deleteId)}
+              onClick={() => {
+                const pegawaiToDelete = pegawai.find(p => p.id === deleteId);
+                if (pegawaiToDelete) {
+                  handleDelete(deleteId, pegawaiToDelete.user_id);
+                } else {
+                  setDeleteId(null);
+                }
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Hapus
