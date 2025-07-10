@@ -62,13 +62,14 @@ const Dashboard = () => {
       const rataSkor =
         evaluations && evaluations.length > 0
           ? evaluations.reduce(
-              (sum, eval) => sum + (eval.persentase_akhir || 0),
+              (sum, evaluation) => sum + (evaluation.persentase_akhir || 0),
               0,
             ) / evaluations.length
           : null;
       const asnTeladan =
-        evaluations?.filter((eval) => (eval.persentase_akhir || 0) >= 85)
-          .length || 0;
+        evaluations?.filter(
+          (evaluation) => (evaluation.persentase_akhir || 0) >= 85,
+        ).length || 0;
 
       setStats({
         totalPegawai: totalPegawai || 0,
