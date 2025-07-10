@@ -219,6 +219,128 @@ const FormEvaluasi = () => {
     return Math.min(average, 100);
   };
 
+  const generateAIAnalysis = async () => {
+    setIsGeneratingAI(true);
+
+    try {
+      if (!pegawai) return;
+
+      const prompt = `Analyze the following performance data for an ASN candidate for the 'Teladan' award. Provide a concise analysis of their pros, cons, strengths, and weaknesses based on the provided scores and information. Focus on aspects relevant to their suitability for the award.
+
+**Candidate Information:**
+- Name: ${pegawai.nama}
+- NIP: ${pegawai.nip}
+- Jabatan: ${pegawai.jabatan}
+- Unit Kerja: ${pegawai.unit_kerja?.nama_unit_kerja}
+
+**Eligibility Criteria:**
+- Jabatan: ${pegawai.status_jabatan}
+- Masa Kerja: ${pegawai.masa_kerja_tahun} tahun
+- Memiliki Inovasi: ${pegawai.memiliki_inovasi ? "Ya" : "Tidak"}
+- Memiliki Penghargaan: ${pegawai.memiliki_penghargaan ? "Ya" : "Tidak"}
+
+**Performance Scores (1-100, higher is better):**
+- Kinerja dan Perilaku: ${penilaian.kinerja_perilaku_score}
+- Inovasi dan Dampak: ${penilaian.inovasi_dampak_score}
+- Prestasi: ${penilaian.prestasi_score}
+- Inspiratif: ${penilaian.inspiratif_score}
+- Kemampuan Komunikasi: ${penilaian.komunikasi_score}
+- Kerja Sama dan Kolaborasi: ${penilaian.kerjasama_kolaborasi_score}
+- Leadership: ${penilaian.leadership_score}
+- Rekam Jejak: ${penilaian.rekam_jejak_score}
+- Integritas dan Moralitas: ${penilaian.integritas_moralitas_score}
+
+**SKP (2 Tahun Terakhir):**
+- Kategori Baik: ${penilaian.skp_2_tahun_terakhir_baik ? "Ya" : "Tidak"}
+- Peningkatan Prestasi: ${penilaian.skp_peningkatan_prestasi ? "Ya" : "Tidak"}
+
+Provide analysis in Indonesian language. Format:
+**Pros:**
+- [Point 1]
+- [Point 2]
+...
+
+**Cons:**
+- [Point 1]
+- [Point 2]
+...
+
+**Strengths:**
+- [Point 1]
+- [Point 2]
+...
+
+**Weaknesses:**
+- [Point 1]
+- [Point 2]
+...`;
+
+      const response = await fetch(
+        "https://api.deepseek.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || "sk-your-api-key-here"}`,
+          },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 1000,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`AI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const analysis = data.choices[0]?.message?.content || "";
+
+      // Parse the analysis into sections
+      const prosMatch = analysis.match(/\*\*Pros:\*\*([\s\S]*?)\*\*Cons:\*\*/);
+      const consMatch = analysis.match(
+        /\*\*Cons:\*\*([\s\S]*?)\*\*Strengths:\*\*/,
+      );
+      const strengthsMatch = analysis.match(
+        /\*\*Strengths:\*\*([\s\S]*?)\*\*Weaknesses:\*\*/,
+      );
+      const weaknessesMatch = analysis.match(/\*\*Weaknesses:\*\*([\s\S]*)$/);
+
+      setPenilaian((prev) => ({
+        ...prev,
+        analisis_ai_pro: prosMatch ? prosMatch[1].trim() : "",
+        analisis_ai_kontra: consMatch ? consMatch[1].trim() : "",
+        analisis_ai_kelebihan: strengthsMatch ? strengthsMatch[1].trim() : "",
+        analisis_ai_kekurangan: weaknessesMatch
+          ? weaknessesMatch[1].trim()
+          : "",
+      }));
+
+      toast({
+        title: "Berhasil",
+        description: "Analisis AI telah dihasilkan",
+      });
+    } catch (error) {
+      console.error("Error generating AI analysis:", error);
+      toast({
+        title: "Error",
+        description:
+          "Gagal menghasilkan analisis AI. Pastikan API key Deepseek sudah dikonfigurasi.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
