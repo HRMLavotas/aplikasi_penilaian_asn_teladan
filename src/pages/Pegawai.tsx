@@ -86,18 +86,18 @@ const Pegawai = () => {
   const [showBulkImport, setShowBulkImport] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isSuperAdmin, isLoading: authLoading } = useAuth();
+  const { user, isSuperAdmin, isLoading: authLoading, isInitialized } = useAuth();
 
   useEffect(() => {
-    checkAuth();
-    fetchData();
-  }, []);
-
-  const checkAuth = async () => {
-    if (!user) {
+    if (!authLoading && isInitialized && !user) {
       navigate("/auth");
+      return;
     }
-  };
+    
+    if (user) {
+      fetchData();
+    }
+  }, [user, authLoading, isInitialized]);
 
   const fetchData = async () => {
     try {
