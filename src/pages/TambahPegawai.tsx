@@ -142,11 +142,30 @@ const TambahPegawai = () => {
 
       const { unit_kerja_nama, ...pegawaiData } = formData;
 
+      // Map new status_jabatan values to database values
+      let dbStatusJabatan = pegawaiData.status_jabatan;
+      if (
+        ["administrator", "pengawas", "pelaksana"].includes(
+          pegawaiData.status_jabatan,
+        )
+      ) {
+        dbStatusJabatan = "administrasi";
+      }
+
       // Prepare data for insertion
       const insertData = {
         ...pegawaiData,
+        status_jabatan: dbStatusJabatan,
         unit_kerja_id: unitKerjaId,
         user_id: session.user.id,
+        // Add fields that are required by the database schema
+        bebas_temuan: false,
+        tidak_hukuman_disiplin: false,
+        tidak_pemeriksaan_disiplin: false,
+        memiliki_inovasi: false,
+        bukti_inovasi: null,
+        memiliki_penghargaan: false,
+        bukti_penghargaan: null,
       };
 
       // Debug: log the data being inserted
