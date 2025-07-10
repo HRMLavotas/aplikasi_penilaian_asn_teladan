@@ -5,21 +5,44 @@ export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (!mounted) return;
+        
+        if (error) {
+          console.error('Error getting user:', error);
+          setUser(null);
+          setIsSuperAdmin(false);
+          return;
+        }
+
         setUser(user);
         
         if (user) {
-          const { data: { user: userData } } = await supabase.auth.getUser();
-          setIsSuperAdmin(userData?.email === 'hrmlavotas@gmail.com');
+          // Cek apakah user adalah super admin
+          const isAdmin = user.email === 'hrmlavotas@gmail.com';
+          setIsSuperAdmin(isAdmin);
+        } else {
+          setIsSuperAdmin(false);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
+        if (mounted) {
+          setUser(null);
+          setIsSuperAdmin(false);
+        }
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
+        }
       }
     };
 
@@ -27,9 +50,14 @@ export const useAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user || null);
-        if (session?.user) {
-          setIsSuperAdmin(session.user.email === 'hrmlavotas@gmail.com');
+        if (!mounted) return;
+        
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          const isAdmin = currentUser.email === 'hrmlavotas@gmail.com';
+          setIsSuperAdmin(isAdmin);
         } else {
           setIsSuperAdmin(false);
         }
@@ -37,9 +65,27 @@ export const useAuth = () => {
     );
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);
 
-  return { user, isSuperAdmin, isLoading };
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Error signing out:', error);
+      return { error };
+    }
+  };
+
+  return { 
+    user, 
+    isSuperAdmin, 
+    isLoading: !isInitialized || isLoading,
+    isInitialized,
+    signOut
+  };
 };
