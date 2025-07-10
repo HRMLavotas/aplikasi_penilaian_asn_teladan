@@ -21,6 +21,7 @@ import {
   Award,
   Calendar,
 } from "lucide-react";
+import AdvancedAnalytics from "@/components/AdvancedAnalytics";
 import {
   Table,
   TableBody,
