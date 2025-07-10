@@ -556,6 +556,123 @@ const TambahPegawai = () => {
             </CardContent>
           </Card>
 
+          {/* Data Quality Indicator */}
+          {dataQuality && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  {dataQuality.score >= 80 ? (
+                    <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 mr-2 text-yellow-600" />
+                  )}
+                  Kualitas Data: {dataQuality.score}%
+                </CardTitle>
+                <CardDescription>
+                  Indikator kualitas dan kelengkapan data pegawai
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {dataQuality.details.completeness}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Kelengkapan
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {dataQuality.details.accuracy}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Akurasi</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {dataQuality.details.consistency}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Konsistensi
+                    </div>
+                  </div>
+                </div>
+                {dataQuality.score < 80 && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <p className="text-sm text-yellow-800">
+                      <AlertTriangle className="h-4 w-4 inline mr-1" />
+                      Kualitas data kurang dari 80%. Pastikan semua field terisi
+                      dengan benar dan bukti inovasi/penghargaan sesuai.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* NIP Information */}
+          {nipInfo && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  {nipInfo.isValid ? (
+                    <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
+                  )}
+                  Informasi NIP
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {nipInfo.isValid && nipInfo.info ? (
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Tanggal Lahir:</span>{" "}
+                      {nipInfo.info.birthDate}
+                    </div>
+                    <div>
+                      <span className="font-medium">Usia:</span>{" "}
+                      {nipInfo.info.age} tahun
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {nipInfo.errors.map((error: string, i: number) => (
+                      <p key={i} className="text-sm text-red-600">
+                        • {error}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Validation Errors */}
+          {Object.keys(validationErrors).length > 0 && (
+            <Card className="border-red-200 bg-red-50">
+              <CardHeader>
+                <CardTitle className="text-red-800">Error Validasi</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {Object.entries(validationErrors).map(([field, errors]) => (
+                    <div key={field}>
+                      <p className="font-medium text-red-800 capitalize">
+                        {field}:
+                      </p>
+                      {errors.map((error, i) => (
+                        <p key={i} className="text-sm text-red-600 ml-2">
+                          • {error}
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
             <Button
