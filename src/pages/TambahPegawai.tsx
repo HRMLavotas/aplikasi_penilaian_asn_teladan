@@ -46,7 +46,6 @@ const TambahPegawai = () => {
 
   useEffect(() => {
     checkAuth();
-    fetchUnitKerja();
   }, []);
 
   const checkAuth = async () => {
