@@ -23,6 +23,7 @@ import {
   BarChart3,
   Shield,
 } from "lucide-react";
+import WorkflowTracker from "@/components/WorkflowTracker";
 
 interface DashboardStats {
   totalPegawai: number;
