@@ -242,14 +242,36 @@ const TambahPegawai = () => {
     }
   };
 
+  const validateForm = (data: typeof formData) => {
+    const validator = new DataValidator(asnValidationRules);
+    const validation = validator.validate(data);
+    setValidationErrors(validation.errors);
+
+    // Calculate data quality
+    const quality = calculateDataQuality(data);
+    setDataQuality(quality);
+
+    // Validate NIP if provided
+    if (data.nip) {
+      const nipValidation = validateNIP(data.nip);
+      setNipInfo(nipValidation);
+    }
+
+    return validation.isValid;
+  };
+
   const handleInputChange = (
     field: string,
     value: string | number | boolean,
   ) => {
-    setFormData((prev) => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       [field]: value,
-    }));
+    };
+    setFormData(newFormData);
+
+    // Real-time validation with debounce
+    setTimeout(() => validateForm(newFormData), 300);
   };
 
   return (
