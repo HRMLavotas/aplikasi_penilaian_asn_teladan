@@ -200,6 +200,13 @@ const TambahPegawai = () => {
         throw new Error("Missing required fields for pegawai insertion");
       }
 
+      // Validate status_jabatan against database constraint
+      if (!["administrasi", "fungsional"].includes(insertData.status_jabatan)) {
+        throw new Error(
+          `Invalid status_jabatan: ${insertData.status_jabatan}. Must be 'administrasi' or 'fungsional'`,
+        );
+      }
+
       const { error } = await supabase.from("pegawai").insert([insertData]);
 
       if (error) {
