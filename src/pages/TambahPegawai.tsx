@@ -57,25 +57,6 @@ const TambahPegawai = () => {
     }
   };
 
-  const fetchUnitKerja = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("unit_kerja")
-        .select("*")
-        .order("nama_unit_kerja");
-
-      if (error) throw error;
-      setUnitKerja(data || []);
-    } catch (error) {
-      console.error("Error fetching unit kerja:", error);
-      toast({
-        title: "Error",
-        description: "Gagal memuat data unit kerja",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
