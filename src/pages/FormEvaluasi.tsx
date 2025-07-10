@@ -179,6 +179,16 @@ const FormEvaluasi = () => {
         setPenilaian({
           skp_2_tahun_terakhir_baik: data.skp_2_tahun_terakhir_baik,
           skp_peningkatan_prestasi: data.skp_peningkatan_prestasi,
+          // Kriteria Integritas
+          bebas_temuan: data.bebas_temuan || false,
+          tidak_hukuman_disiplin: data.tidak_hukuman_disiplin || false,
+          tidak_pemeriksaan_disiplin: data.tidak_pemeriksaan_disiplin || false,
+          // Prestasi & Inovasi
+          memiliki_inovasi: data.memiliki_inovasi || false,
+          bukti_inovasi: data.bukti_inovasi || "",
+          memiliki_penghargaan: data.memiliki_penghargaan || false,
+          bukti_penghargaan: data.bukti_penghargaan || "",
+          // Skor Penilaian
           kinerja_perilaku_score: data.kinerja_perilaku_score,
           inovasi_dampak_score: data.inovasi_dampak_score,
           prestasi_score: data.prestasi_score,
@@ -188,6 +198,7 @@ const FormEvaluasi = () => {
           leadership_score: data.leadership_score,
           rekam_jejak_score: data.rekam_jejak_score,
           integritas_moralitas_score: data.integritas_moralitas_score,
+          // Analisis AI
           analisis_ai_pro: data.analisis_ai_pro || "",
           analisis_ai_kontra: data.analisis_ai_kontra || "",
           analisis_ai_kelebihan: data.analisis_ai_kelebihan || "",
