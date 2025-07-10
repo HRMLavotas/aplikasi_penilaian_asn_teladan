@@ -178,7 +178,7 @@ const Ranking = () => {
   };
 
   const applyFilters = () => {
-    let filtered = pegawai.filter((p) => {
+    const filtered = pegawai.filter((p) => {
       const latestScore = p.penilaian[0]?.persentase_akhir || 0;
       const matchesUnit =
         filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
