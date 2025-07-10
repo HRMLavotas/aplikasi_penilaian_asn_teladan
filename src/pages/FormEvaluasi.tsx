@@ -2,17 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  ArrowLeft, 
-  Save, 
-  User, 
+import {
+  ArrowLeft,
+  Save,
+  User,
   Award,
   TrendingUp,
   Brain,
@@ -21,7 +27,7 @@ import {
   Crown,
   Shield,
   Heart,
-  Star
+  Star,
 } from "lucide-react";
 
 interface Pegawai {
@@ -61,6 +67,7 @@ const FormEvaluasi = () => {
   const [pegawai, setPegawai] = useState<Pegawai | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -91,7 +98,9 @@ const FormEvaluasi = () => {
   }, [id]);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
     }
@@ -101,10 +110,12 @@ const FormEvaluasi = () => {
     try {
       const { data, error } = await supabase
         .from("pegawai")
-        .select(`
+        .select(
+          `
           *,
           unit_kerja:unit_kerja_id(nama_unit_kerja)
-        `)
+        `,
+        )
         .eq("id", id)
         .single();
 
@@ -125,11 +136,13 @@ const FormEvaluasi = () => {
 
   const fetchExistingEvaluation = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) return;
 
       const currentYear = new Date().getFullYear();
-      
+
       const { data, error } = await supabase
         .from("penilaian")
         .select("*")
@@ -138,8 +151,8 @@ const FormEvaluasi = () => {
         .eq("tahun_penilaian", currentYear)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
+      if (error && error.code !== "PGRST116") throw error;
+
       if (data) {
         setPenilaian({
           skp_2_tahun_terakhir_baik: data.skp_2_tahun_terakhir_baik,
@@ -165,23 +178,23 @@ const FormEvaluasi = () => {
   };
 
   const handleScoreChange = (field: keyof PenilaianData, value: number[]) => {
-    setPenilaian(prev => ({
+    setPenilaian((prev) => ({
       ...prev,
-      [field]: value[0]
+      [field]: value[0],
     }));
   };
 
   const handleBooleanChange = (field: keyof PenilaianData, value: boolean) => {
-    setPenilaian(prev => ({
+    setPenilaian((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleTextChange = (field: keyof PenilaianData, value: string) => {
-    setPenilaian(prev => ({
+    setPenilaian((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -197,12 +210,12 @@ const FormEvaluasi = () => {
       penilaian.rekam_jejak_score,
       penilaian.integritas_moralitas_score,
     ];
-    
+
     let average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    
+
     if (penilaian.skp_2_tahun_terakhir_baik) average += 5;
     if (penilaian.skp_peningkatan_prestasi) average += 5;
-    
+
     return Math.min(average, 100);
   };
 
@@ -211,21 +224,26 @@ const FormEvaluasi = () => {
     setIsSaving(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) throw new Error("Tidak ada session aktif");
 
       const currentYear = new Date().getFullYear();
-      
-      const { error } = await supabase
-        .from("penilaian")
-        .upsert([{
-          pegawai_id: id,
-          penilai_user_id: session.user.id,
-          tahun_penilaian: currentYear,
-          ...penilaian,
-        }], {
-          onConflict: 'pegawai_id,penilai_user_id,tahun_penilaian'
-        });
+
+      const { error } = await supabase.from("penilaian").upsert(
+        [
+          {
+            pegawai_id: id,
+            penilai_user_id: session.user.id,
+            tahun_penilaian: currentYear,
+            ...penilaian,
+          },
+        ],
+        {
+          onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
+        },
+      );
 
       if (error) throw error;
 
@@ -253,63 +271,64 @@ const FormEvaluasi = () => {
       label: "Kinerja & Perilaku",
       description: "Penilaian terhadap hasil kerja dan perilaku sehari-hari",
       icon: TrendingUp,
-      color: "text-blue-600"
+      color: "text-blue-600",
     },
     {
       key: "inovasi_dampak_score" as keyof PenilaianData,
       label: "Inovasi & Dampak",
-      description: "Kemampuan berinovasi dan dampak positif terhadap organisasi",
+      description:
+        "Kemampuan berinovasi dan dampak positif terhadap organisasi",
       icon: Brain,
-      color: "text-purple-600"
+      color: "text-purple-600",
     },
     {
       key: "prestasi_score" as keyof PenilaianData,
       label: "Prestasi",
       description: "Pencapaian dan prestasi yang telah diraih",
       icon: Award,
-      color: "text-yellow-600"
+      color: "text-yellow-600",
     },
     {
       key: "inspiratif_score" as keyof PenilaianData,
       label: "Inspiratif",
       description: "Kemampuan menginspirasi dan memotivasi rekan kerja",
       icon: Star,
-      color: "text-orange-600"
+      color: "text-orange-600",
     },
     {
       key: "komunikasi_score" as keyof PenilaianData,
       label: "Komunikasi",
       description: "Keterampilan komunikasi dan penyampaian ide",
       icon: MessageSquare,
-      color: "text-green-600"
+      color: "text-green-600",
     },
     {
       key: "kerjasama_kolaborasi_score" as keyof PenilaianData,
       label: "Kerjasama & Kolaborasi",
       description: "Kemampuan bekerja sama dan berkolaborasi",
       icon: Users,
-      color: "text-indigo-600"
+      color: "text-indigo-600",
     },
     {
       key: "leadership_score" as keyof PenilaianData,
       label: "Kepemimpinan",
       description: "Kemampuan memimpin dan mengambil inisiatif",
       icon: Crown,
-      color: "text-red-600"
+      color: "text-red-600",
     },
     {
       key: "rekam_jejak_score" as keyof PenilaianData,
       label: "Rekam Jejak",
       description: "Konsistensi dan track record kinerja",
       icon: Shield,
-      color: "text-cyan-600"
+      color: "text-cyan-600",
     },
     {
       key: "integritas_moralitas_score" as keyof PenilaianData,
       label: "Integritas & Moralitas",
       description: "Kejujuran, etika, dan moral dalam bekerja",
       icon: Heart,
-      color: "text-pink-600"
+      color: "text-pink-600",
     },
   ];
 
@@ -339,13 +358,19 @@ const FormEvaluasi = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/evaluasi")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/evaluasi")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Form Evaluasi</h1>
-                <p className="text-sm text-muted-foreground">Penilaian kinerja pegawai ASN</p>
+                <p className="text-sm text-muted-foreground">
+                  Penilaian kinerja pegawai ASN
+                </p>
               </div>
             </div>
             <div className="text-right">
@@ -371,30 +396,52 @@ const FormEvaluasi = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Nama Lengkap</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Nama Lengkap
+                  </Label>
                   <p className="font-medium">{pegawai.nama}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">NIP</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    NIP
+                  </Label>
                   <p className="font-mono">{pegawai.nip}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Jabatan</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Jabatan
+                  </Label>
                   <p className="font-medium">{pegawai.jabatan}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Unit Kerja</Label>
-                  <p className="font-medium">{pegawai.unit_kerja?.nama_unit_kerja}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Unit Kerja
+                  </Label>
+                  <p className="font-medium">
+                    {pegawai.unit_kerja?.nama_unit_kerja}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Status Jabatan</Label>
-                  <Badge variant={pegawai.status_jabatan === "fungsional" ? "default" : "secondary"}>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Status Jabatan
+                  </Label>
+                  <Badge
+                    variant={
+                      pegawai.status_jabatan === "fungsional"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
                     {pegawai.status_jabatan}
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Masa Kerja</Label>
-                  <p className="font-medium">{pegawai.masa_kerja_tahun} tahun</p>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    Masa Kerja
+                  </Label>
+                  <p className="font-medium">
+                    {pegawai.masa_kerja_tahun} tahun
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -419,13 +466,17 @@ const FormEvaluasi = () => {
                 <Switch
                   id="skp_2_tahun"
                   checked={penilaian.skp_2_tahun_terakhir_baik}
-                  onCheckedChange={(checked) => handleBooleanChange("skp_2_tahun_terakhir_baik", checked)}
+                  onCheckedChange={(checked) =>
+                    handleBooleanChange("skp_2_tahun_terakhir_baik", checked)
+                  }
                 />
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label htmlFor="skp_peningkatan">SKP Menunjukkan Peningkatan Prestasi</Label>
+                  <Label htmlFor="skp_peningkatan">
+                    SKP Menunjukkan Peningkatan Prestasi
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     Terdapat peningkatan prestasi dari periode sebelumnya
                   </p>
@@ -433,7 +484,9 @@ const FormEvaluasi = () => {
                 <Switch
                   id="skp_peningkatan"
                   checked={penilaian.skp_peningkatan_prestasi}
-                  onCheckedChange={(checked) => handleBooleanChange("skp_peningkatan_prestasi", checked)}
+                  onCheckedChange={(checked) =>
+                    handleBooleanChange("skp_peningkatan_prestasi", checked)
+                  }
                 />
               </div>
             </CardContent>
@@ -451,7 +504,9 @@ const FormEvaluasi = () => {
               {scoreItems.map((item) => (
                 <div key={item.key} className="space-y-3 p-4 border rounded-lg">
                   <div className="flex items-start space-x-3">
-                    <div className={`p-2 rounded-lg bg-background ${item.color}`}>
+                    <div
+                      className={`p-2 rounded-lg bg-background ${item.color}`}
+                    >
                       <item.icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
@@ -466,7 +521,9 @@ const FormEvaluasi = () => {
                       </p>
                       <Slider
                         value={[penilaian[item.key] as number]}
-                        onValueChange={(value) => handleScoreChange(item.key, value)}
+                        onValueChange={(value) =>
+                          handleScoreChange(item.key, value)
+                        }
                         min={1}
                         max={100}
                         step={1}
@@ -489,7 +546,8 @@ const FormEvaluasi = () => {
             <CardHeader>
               <CardTitle>Analisis Mendalam</CardTitle>
               <CardDescription>
-                Berikan analisis terperinci mengenai kelebihan dan kekurangan pegawai
+                Berikan analisis terperinci mengenai kelebihan dan kekurangan
+                pegawai
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -500,22 +558,28 @@ const FormEvaluasi = () => {
                     id="analisis_pro"
                     placeholder="Jelaskan aspek-aspek positif dan keunggulan pegawai..."
                     value={penilaian.analisis_ai_pro}
-                    onChange={(e) => handleTextChange("analisis_ai_pro", e.target.value)}
+                    onChange={(e) =>
+                      handleTextChange("analisis_ai_pro", e.target.value)
+                    }
                     rows={4}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="analisis_kontra">Analisis Kontra/Area Perbaikan</Label>
+                  <Label htmlFor="analisis_kontra">
+                    Analisis Kontra/Area Perbaikan
+                  </Label>
                   <Textarea
                     id="analisis_kontra"
                     placeholder="Jelaskan area yang perlu diperbaiki atau ditingkatkan..."
                     value={penilaian.analisis_ai_kontra}
-                    onChange={(e) => handleTextChange("analisis_ai_kontra", e.target.value)}
+                    onChange={(e) =>
+                      handleTextChange("analisis_ai_kontra", e.target.value)
+                    }
                     rows={4}
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="analisis_kelebihan">Kelebihan Utama</Label>
@@ -523,17 +587,23 @@ const FormEvaluasi = () => {
                     id="analisis_kelebihan"
                     placeholder="Sebutkan kelebihan utama yang menonjol..."
                     value={penilaian.analisis_ai_kelebihan}
-                    onChange={(e) => handleTextChange("analisis_ai_kelebihan", e.target.value)}
+                    onChange={(e) =>
+                      handleTextChange("analisis_ai_kelebihan", e.target.value)
+                    }
                     rows={3}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="analisis_kekurangan">Kekurangan yang Perlu Diperbaiki</Label>
+                  <Label htmlFor="analisis_kekurangan">
+                    Kekurangan yang Perlu Diperbaiki
+                  </Label>
                   <Textarea
                     id="analisis_kekurangan"
                     placeholder="Sebutkan kekurangan yang perlu mendapat perhatian..."
                     value={penilaian.analisis_ai_kekurangan}
-                    onChange={(e) => handleTextChange("analisis_ai_kekurangan", e.target.value)}
+                    onChange={(e) =>
+                      handleTextChange("analisis_ai_kekurangan", e.target.value)
+                    }
                     rows={3}
                   />
                 </div>
@@ -543,9 +613,9 @@ const FormEvaluasi = () => {
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => navigate("/evaluasi")}
               disabled={isSaving}
             >
