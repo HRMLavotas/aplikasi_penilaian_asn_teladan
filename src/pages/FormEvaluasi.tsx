@@ -85,6 +85,16 @@ const FormEvaluasi = () => {
   const [penilaian, setPenilaian] = useState<PenilaianData>({
     skp_2_tahun_terakhir_baik: false,
     skp_peningkatan_prestasi: false,
+    // Kriteria Integritas
+    bebas_temuan: false,
+    tidak_hukuman_disiplin: false,
+    tidak_pemeriksaan_disiplin: false,
+    // Prestasi & Inovasi
+    memiliki_inovasi: false,
+    bukti_inovasi: "",
+    memiliki_penghargaan: false,
+    bukti_penghargaan: "",
+    // Skor Penilaian
     kinerja_perilaku_score: 70,
     inovasi_dampak_score: 70,
     prestasi_score: 70,
@@ -94,6 +104,7 @@ const FormEvaluasi = () => {
     leadership_score: 70,
     rekam_jejak_score: 70,
     integritas_moralitas_score: 70,
+    // Analisis AI
     analisis_ai_pro: "",
     analisis_ai_kontra: "",
     analisis_ai_kelebihan: "",
