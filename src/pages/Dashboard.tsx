@@ -311,6 +311,11 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* Workflow Tracker */}
+        <div className="mt-8">
+          <WorkflowTracker />
+        </div>
+
         {/* Recent Activity */}
         <Card className="mt-8">
           <CardHeader>
