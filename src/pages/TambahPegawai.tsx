@@ -168,12 +168,35 @@ const TambahPegawai = () => {
       navigate("/pegawai");
     } catch (error) {
       console.error("Error adding pegawai:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : typeof error === "object" && error !== null && "message" in error
-            ? (error as any).message
-            : "Unknown error occurred";
+      console.error("Error type:", typeof error);
+      console.error("Error keys:", error ? Object.keys(error) : "null");
+
+      let errorMessage = "Unknown error occurred";
+
+      try {
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (error && typeof error === "object") {
+          // Handle Supabase errors which can have different structures
+          if ("message" in error) {
+            errorMessage = String((error as any).message);
+          } else if ("details" in error) {
+            errorMessage = String((error as any).details);
+          } else if ("hint" in error) {
+            errorMessage = String((error as any).hint);
+          } else if ("code" in error) {
+            errorMessage = `Database error (${(error as any).code})`;
+          } else {
+            // Last resort - try to stringify the error
+            errorMessage = JSON.stringify(error);
+          }
+        } else if (typeof error === "string") {
+          errorMessage = error;
+        }
+      } catch (stringifyError) {
+        console.error("Error while processing error:", stringifyError);
+        errorMessage = "Error occurred but details could not be extracted";
+      }
 
       toast({
         title: "Error",
