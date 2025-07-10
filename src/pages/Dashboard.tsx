@@ -43,6 +43,44 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const fetchStats = async () => {
+    try {
+      // Get total pegawai
+      const { count: totalPegawai } = await supabase
+        .from("pegawai")
+        .select("*", { count: "exact", head: true });
+
+      // Get evaluations for current year
+      const currentYear = new Date().getFullYear();
+      const { data: evaluations } = await supabase
+        .from("penilaian")
+        .select("pegawai_id, persentase_akhir")
+        .eq("tahun_penilaian", currentYear);
+
+      // Calculate stats
+      const evaluasiSelesai = evaluations?.length || 0;
+      const rataSkor =
+        evaluations && evaluations.length > 0
+          ? evaluations.reduce(
+              (sum, eval) => sum + (eval.persentase_akhir || 0),
+              0,
+            ) / evaluations.length
+          : null;
+      const asnTeladan =
+        evaluations?.filter((eval) => (eval.persentase_akhir || 0) >= 85)
+          .length || 0;
+
+      setStats({
+        totalPegawai: totalPegawai || 0,
+        evaluasiSelesai,
+        rataSkor,
+        asnTeladan,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
   useEffect(() => {
     const getSession = async () => {
       const {
