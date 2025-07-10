@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, UserPlus } from "lucide-react";
@@ -50,7 +56,9 @@ const TambahPegawai = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
     }
@@ -77,9 +85,15 @@ const TambahPegawai = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
-    if (!formData.nama || !formData.nip || !formData.jabatan || !formData.unit_kerja_id || !formData.status_jabatan) {
+    if (
+      !formData.nama ||
+      !formData.nip ||
+      !formData.jabatan ||
+      !formData.unit_kerja_id ||
+      !formData.status_jabatan
+    ) {
       toast({
         title: "Form Tidak Lengkap",
         description: "Silakan isi semua field yang wajib diisi",
@@ -109,19 +123,25 @@ const TambahPegawai = () => {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("Tidak ada session aktif");
       }
 
-      const { error } = await supabase
-        .from("pegawai")
-        .insert([{
+      const { error } = await supabase.from("pegawai").insert([
+        {
           ...formData,
           user_id: session.user.id,
-          bukti_inovasi: formData.memiliki_inovasi ? formData.bukti_inovasi : null,
-          bukti_penghargaan: formData.memiliki_penghargaan ? formData.bukti_penghargaan : null,
-        }]);
+          bukti_inovasi: formData.memiliki_inovasi
+            ? formData.bukti_inovasi
+            : null,
+          bukti_penghargaan: formData.memiliki_penghargaan
+            ? formData.bukti_penghargaan
+            : null,
+        },
+      ]);
 
       if (error) {
         if (error.message.includes("duplicate key")) {
@@ -154,10 +174,13 @@ const TambahPegawai = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -168,13 +191,19 @@ const TambahPegawai = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/pegawai")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/pegawai")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Tambah Pegawai</h1>
-                <p className="text-sm text-muted-foreground">Daftarkan pegawai ASN baru</p>
+                <p className="text-sm text-muted-foreground">
+                  Daftarkan pegawai ASN baru
+                </p>
               </div>
             </div>
             <UserPlus className="h-8 w-8 text-primary" />
@@ -224,7 +253,9 @@ const TambahPegawai = () => {
                     type="text"
                     placeholder="Jabatan saat ini"
                     value={formData.jabatan}
-                    onChange={(e) => handleInputChange("jabatan", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("jabatan", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -237,7 +268,12 @@ const TambahPegawai = () => {
                     min="0"
                     max="50"
                     value={formData.masa_kerja_tahun}
-                    onChange={(e) => handleInputChange("masa_kerja_tahun", parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "masa_kerja_tahun",
+                        parseInt(e.target.value) || 0,
+                      )
+                    }
                     required
                   />
                 </div>
@@ -246,7 +282,12 @@ const TambahPegawai = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="unit_kerja">Unit Kerja *</Label>
-                  <Select value={formData.unit_kerja_id} onValueChange={(value) => handleInputChange("unit_kerja_id", value)}>
+                  <Select
+                    value={formData.unit_kerja_id}
+                    onValueChange={(value) =>
+                      handleInputChange("unit_kerja_id", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih unit kerja" />
                     </SelectTrigger>
@@ -261,7 +302,12 @@ const TambahPegawai = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status_jabatan">Status Jabatan *</Label>
-                  <Select value={formData.status_jabatan} onValueChange={(value) => handleInputChange("status_jabatan", value)}>
+                  <Select
+                    value={formData.status_jabatan}
+                    onValueChange={(value) =>
+                      handleInputChange("status_jabatan", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih status jabatan" />
                     </SelectTrigger>
@@ -279,43 +325,61 @@ const TambahPegawai = () => {
           <Card>
             <CardHeader>
               <CardTitle>Kriteria Integritas</CardTitle>
-              <CardDescription>Penilaian integritas dan kedisiplinan</CardDescription>
+              <CardDescription>
+                Penilaian integritas dan kedisiplinan
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex items-center justify-between space-x-4">
                   <div className="space-y-1">
                     <Label htmlFor="bebas_temuan">Bebas Temuan</Label>
-                    <p className="text-sm text-muted-foreground">Tidak ada temuan audit</p>
+                    <p className="text-sm text-muted-foreground">
+                      Tidak ada temuan audit
+                    </p>
                   </div>
                   <Switch
                     id="bebas_temuan"
                     checked={formData.bebas_temuan}
-                    onCheckedChange={(checked) => handleInputChange("bebas_temuan", checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("bebas_temuan", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between space-x-4">
                   <div className="space-y-1">
-                    <Label htmlFor="tidak_hukuman">Tidak Ada Hukuman Disiplin</Label>
-                    <p className="text-sm text-muted-foreground">Bersih dari hukuman disiplin</p>
+                    <Label htmlFor="tidak_hukuman">
+                      Tidak Ada Hukuman Disiplin
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Bersih dari hukuman disiplin
+                    </p>
                   </div>
                   <Switch
                     id="tidak_hukuman"
                     checked={formData.tidak_hukuman_disiplin}
-                    onCheckedChange={(checked) => handleInputChange("tidak_hukuman_disiplin", checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("tidak_hukuman_disiplin", checked)
+                    }
                   />
                 </div>
 
                 <div className="flex items-center justify-between space-x-4">
                   <div className="space-y-1">
-                    <Label htmlFor="tidak_pemeriksaan">Tidak Dalam Pemeriksaan</Label>
-                    <p className="text-sm text-muted-foreground">Tidak sedang diperiksa</p>
+                    <Label htmlFor="tidak_pemeriksaan">
+                      Tidak Dalam Pemeriksaan
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tidak sedang diperiksa
+                    </p>
                   </div>
                   <Switch
                     id="tidak_pemeriksaan"
                     checked={formData.tidak_pemeriksaan_disiplin}
-                    onCheckedChange={(checked) => handleInputChange("tidak_pemeriksaan_disiplin", checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("tidak_pemeriksaan_disiplin", checked)
+                    }
                   />
                 </div>
               </div>
@@ -326,7 +390,9 @@ const TambahPegawai = () => {
           <Card>
             <CardHeader>
               <CardTitle>Prestasi & Inovasi</CardTitle>
-              <CardDescription>Pencapaian dan kontribusi pegawai</CardDescription>
+              <CardDescription>
+                Pencapaian dan kontribusi pegawai
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -334,15 +400,19 @@ const TambahPegawai = () => {
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <Label htmlFor="memiliki_inovasi">Memiliki Inovasi</Label>
-                      <p className="text-sm text-muted-foreground">Telah membuat inovasi</p>
+                      <p className="text-sm text-muted-foreground">
+                        Telah membuat inovasi
+                      </p>
                     </div>
                     <Switch
                       id="memiliki_inovasi"
                       checked={formData.memiliki_inovasi}
-                      onCheckedChange={(checked) => handleInputChange("memiliki_inovasi", checked)}
+                      onCheckedChange={(checked) =>
+                        handleInputChange("memiliki_inovasi", checked)
+                      }
                     />
                   </div>
-                  
+
                   {formData.memiliki_inovasi && (
                     <div className="space-y-2">
                       <Label htmlFor="bukti_inovasi">Bukti Inovasi</Label>
@@ -350,7 +420,9 @@ const TambahPegawai = () => {
                         id="bukti_inovasi"
                         placeholder="Deskripsikan inovasi yang telah dibuat..."
                         value={formData.bukti_inovasi}
-                        onChange={(e) => handleInputChange("bukti_inovasi", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("bukti_inovasi", e.target.value)
+                        }
                         rows={3}
                       />
                     </div>
@@ -360,24 +432,34 @@ const TambahPegawai = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="memiliki_penghargaan">Memiliki Penghargaan</Label>
-                      <p className="text-sm text-muted-foreground">Pernah menerima penghargaan</p>
+                      <Label htmlFor="memiliki_penghargaan">
+                        Memiliki Penghargaan
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Pernah menerima penghargaan
+                      </p>
                     </div>
                     <Switch
                       id="memiliki_penghargaan"
                       checked={formData.memiliki_penghargaan}
-                      onCheckedChange={(checked) => handleInputChange("memiliki_penghargaan", checked)}
+                      onCheckedChange={(checked) =>
+                        handleInputChange("memiliki_penghargaan", checked)
+                      }
                     />
                   </div>
-                  
+
                   {formData.memiliki_penghargaan && (
                     <div className="space-y-2">
-                      <Label htmlFor="bukti_penghargaan">Bukti Penghargaan</Label>
+                      <Label htmlFor="bukti_penghargaan">
+                        Bukti Penghargaan
+                      </Label>
                       <Textarea
                         id="bukti_penghargaan"
                         placeholder="Deskripsikan penghargaan yang pernah diterima..."
                         value={formData.bukti_penghargaan}
-                        onChange={(e) => handleInputChange("bukti_penghargaan", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("bukti_penghargaan", e.target.value)
+                        }
                         rows={3}
                       />
                     </div>
@@ -389,9 +471,9 @@ const TambahPegawai = () => {
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => navigate("/pegawai")}
               disabled={isLoading}
             >
