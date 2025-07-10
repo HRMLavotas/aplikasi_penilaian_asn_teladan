@@ -30,7 +30,6 @@ interface UnitKerja {
 
 const TambahPegawai = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [unitKerja, setUnitKerja] = useState<UnitKerja[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
