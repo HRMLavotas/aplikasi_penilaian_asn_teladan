@@ -47,6 +47,16 @@ interface Pegawai {
 interface PenilaianData {
   skp_2_tahun_terakhir_baik: boolean;
   skp_peningkatan_prestasi: boolean;
+  // Kriteria Integritas
+  bebas_temuan: boolean;
+  tidak_hukuman_disiplin: boolean;
+  tidak_pemeriksaan_disiplin: boolean;
+  // Prestasi & Inovasi
+  memiliki_inovasi: boolean;
+  bukti_inovasi: string;
+  memiliki_penghargaan: boolean;
+  bukti_penghargaan: string;
+  // Skor Penilaian
   kinerja_perilaku_score: number;
   inovasi_dampak_score: number;
   prestasi_score: number;
@@ -56,6 +66,7 @@ interface PenilaianData {
   leadership_score: number;
   rekam_jejak_score: number;
   integritas_moralitas_score: number;
+  // Analisis AI
   analisis_ai_pro: string;
   analisis_ai_kontra: string;
   analisis_ai_kelebihan: string;
