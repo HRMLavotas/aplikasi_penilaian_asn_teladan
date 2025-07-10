@@ -103,7 +103,7 @@ const Settings = () => {
       setFormData({
         username: data.username || "",
         nama_lengkap: data.nama_lengkap || "",
-        unit_kerja_id: data.unit_kerja_id || "",
+        unit_kerja_id: data.unit_kerja_id || "none",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
