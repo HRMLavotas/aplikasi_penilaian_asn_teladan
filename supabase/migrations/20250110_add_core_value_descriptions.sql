@@ -11,6 +11,16 @@ ADD COLUMN IF NOT EXISTS adaptif_desc TEXT,
 ADD COLUMN IF NOT EXISTS kolaboratif_desc TEXT;
 
 -- Add check constraints to ensure minimum character length (600 characters)
+-- Drop existing constraints if they exist to avoid conflicts
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS berorientasi_pelayanan_desc_length;
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS akuntabel_desc_length;
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS kompeten_desc_length;
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS harmonis_desc_length;
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS loyal_desc_length;
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS adaptif_desc_length;
+ALTER TABLE penilaian DROP CONSTRAINT IF EXISTS kolaboratif_desc_length;
+
+-- Add the constraints
 ALTER TABLE penilaian 
 ADD CONSTRAINT berorientasi_pelayanan_desc_length CHECK (
     berorientasi_pelayanan_desc IS NULL OR char_length(berorientasi_pelayanan_desc) >= 600

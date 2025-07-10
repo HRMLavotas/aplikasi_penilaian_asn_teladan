@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useRoutes } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -15,7 +15,45 @@ import Laporan from "./pages/Laporan";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
+// Import tempo routes conditionally
+let routes: any = null;
+if (import.meta.env.VITE_TEMPO) {
+  try {
+    const tempoRoutes = await import("tempo-routes");
+    routes = tempoRoutes.default;
+  } catch (error) {
+    console.warn("Tempo routes not available:", error);
+  }
+}
+
 const queryClient = new QueryClient();
+
+const AppRoutes = () => {
+  const tempoRoutes =
+    import.meta.env.VITE_TEMPO && routes ? useRoutes(routes) : null;
+
+  return (
+    <>
+      {tempoRoutes}
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/pegawai" element={<Pegawai />} />
+        <Route path="/pegawai/tambah" element={<TambahPegawai />} />
+        <Route path="/evaluasi" element={<Evaluasi />} />
+        <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
+        <Route path="/ranking" element={<Ranking />} />
+        <Route path="/laporan" element={<Laporan />} />
+        <Route path="/settings" element={<Settings />} />
+        {/* Tempo catch-all route */}
+        {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -23,20 +61,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/pegawai" element={<Pegawai />} />
-          <Route path="/pegawai/tambah" element={<TambahPegawai />} />
-          <Route path="/evaluasi" element={<Evaluasi />} />
-          <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
-          <Route path="/ranking" element={<Ranking />} />
-          <Route path="/laporan" element={<Laporan />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -64,6 +64,14 @@ interface PenilaianData {
   loyal_score: number;
   adaptif_score: number;
   kolaboratif_score: number;
+  // Core Values Descriptions
+  berorientasi_pelayanan_desc: string;
+  akuntabel_desc: string;
+  kompeten_desc: string;
+  harmonis_desc: string;
+  loyal_desc: string;
+  adaptif_desc: string;
+  kolaboratif_desc: string;
   // Analisis AI
   analisis_ai_pro: string;
   analisis_ai_kontra: string;
@@ -100,6 +108,14 @@ const FormEvaluasi = () => {
     loyal_score: 1,
     adaptif_score: 1,
     kolaboratif_score: 1,
+    // Core Values Descriptions
+    berorientasi_pelayanan_desc: "",
+    akuntabel_desc: "",
+    kompeten_desc: "",
+    harmonis_desc: "",
+    loyal_desc: "",
+    adaptif_desc: "",
+    kolaboratif_desc: "",
     // Analisis AI
     analisis_ai_pro: "",
     analisis_ai_kontra: "",
@@ -172,32 +188,58 @@ const FormEvaluasi = () => {
       if (error && error.code !== "PGRST116") throw error;
 
       if (data) {
-        setPenilaian({
-          skp_2_tahun_terakhir_baik: data.skp_2_tahun_terakhir_baik,
-          skp_peningkatan_prestasi: data.skp_peningkatan_prestasi,
-          // Kriteria Integritas
-          bebas_temuan: data.bebas_temuan || false,
-          tidak_hukuman_disiplin: data.tidak_hukuman_disiplin || false,
-          tidak_pemeriksaan_disiplin: data.tidak_pemeriksaan_disiplin || false,
-          // Prestasi & Inovasi
-          memiliki_inovasi: data.memiliki_inovasi || false,
-          bukti_inovasi: data.bukti_inovasi || "",
-          memiliki_penghargaan: data.memiliki_penghargaan || false,
-          bukti_penghargaan: data.bukti_penghargaan || "",
-          // Core Values ASN BerAKHLAK
-          berorientasi_pelayanan_score: data.berorientasi_pelayanan_score || 1,
-          akuntabel_score: data.akuntabel_score || 1,
-          kompeten_score: data.kompeten_score || 1,
-          harmonis_score: data.harmonis_score || 1,
-          loyal_score: data.loyal_score || 1,
-          adaptif_score: data.adaptif_score || 1,
-          kolaboratif_score: data.kolaboratif_score || 1,
-          // Analisis AI
+        // Map database fields back to form fields
+        const pegawaiData = await supabase
+          .from("pegawai")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        // Ensure all data is properly loaded and preserved
+        const loadedPenilaian = {
+          skp_2_tahun_terakhir_baik: data.skp_2_tahun_terakhir_baik || false,
+          skp_peningkatan_prestasi: data.skp_peningkatan_prestasi || false,
+          // Kriteria Integritas - get from pegawai table
+          bebas_temuan: pegawaiData.data?.bebas_temuan || false,
+          tidak_hukuman_disiplin:
+            pegawaiData.data?.tidak_hukuman_disiplin || false,
+          tidak_pemeriksaan_disiplin:
+            pegawaiData.data?.tidak_pemeriksaan_disiplin || false,
+          // Prestasi & Inovasi - get from pegawai table
+          memiliki_inovasi: pegawaiData.data?.memiliki_inovasi || false,
+          bukti_inovasi: pegawaiData.data?.bukti_inovasi || "",
+          memiliki_penghargaan: pegawaiData.data?.memiliki_penghargaan || false,
+          bukti_penghargaan: pegawaiData.data?.bukti_penghargaan || "",
+          // Core Values ASN BerAKHLAK - map from database score fields
+          berorientasi_pelayanan_score: data.inovasi_dampak_score || 1,
+          akuntabel_score: data.inspiratif_score || 1,
+          kompeten_score: data.integritas_moralitas_score || 1,
+          harmonis_score: data.kerjasama_kolaborasi_score || 1,
+          loyal_score: data.kinerja_perilaku_score || 1,
+          adaptif_score: data.komunikasi_score || 1,
+          kolaboratif_score: data.leadership_score || 1,
+          // Core Values Descriptions - ensure they are preserved
+          berorientasi_pelayanan_desc: data.berorientasi_pelayanan_desc || "",
+          akuntabel_desc: data.akuntabel_desc || "",
+          kompeten_desc: data.kompeten_desc || "",
+          harmonis_desc: data.harmonis_desc || "",
+          loyal_desc: data.loyal_desc || "",
+          adaptif_desc: data.adaptif_desc || "",
+          kolaboratif_desc: data.kolaboratif_desc || "",
+          // Analisis AI - ensure all fields are preserved
           analisis_ai_pro: data.analisis_ai_pro || "",
           analisis_ai_kontra: data.analisis_ai_kontra || "",
           analisis_ai_kelebihan: data.analisis_ai_kelebihan || "",
           analisis_ai_kekurangan: data.analisis_ai_kekurangan || "",
+        };
+
+        console.log("Loading existing evaluation data:", {
+          databaseData: data,
+          pegawaiData: pegawaiData.data,
+          loadedPenilaian,
         });
+
+        setPenilaian(loadedPenilaian);
       }
     } catch (error) {
       console.error("Error fetching existing evaluation:", error);
@@ -255,7 +297,7 @@ const FormEvaluasi = () => {
     const coreValuesAverage =
       coreValuesScores.reduce((sum, score) => sum + score, 0) /
       coreValuesScores.length;
-    const coreValuesScore = (coreValuesAverage * 20) / 100; // 20% dari rata-rata core values
+    const coreValuesScore = (coreValuesAverage / 100) * 20; // 20% dari rata-rata core values
 
     const totalScore =
       integritasScore + prestasiScore + skpScore + coreValuesScore;
@@ -268,64 +310,100 @@ const FormEvaluasi = () => {
     try {
       if (!pegawai) return;
 
-      const prompt = `Analyze the following performance data for an ASN candidate for the 'Anugerah ASN Teladan Tahun 2025' award. Provide a comprehensive analysis of their pros, cons, strengths, and weaknesses based on the new evaluation criteria with proper weightings. Focus on aspects relevant to their suitability for the award.
+      // Collect all core value descriptions for comprehensive analysis
+      const coreValueDescriptions = [
+        {
+          name: "Berorientasi Pelayanan",
+          score: penilaian.berorientasi_pelayanan_score,
+          desc: penilaian.berorientasi_pelayanan_desc,
+        },
+        {
+          name: "Akuntabel",
+          score: penilaian.akuntabel_score,
+          desc: penilaian.akuntabel_desc,
+        },
+        {
+          name: "Kompeten",
+          score: penilaian.kompeten_score,
+          desc: penilaian.kompeten_desc,
+        },
+        {
+          name: "Harmonis",
+          score: penilaian.harmonis_score,
+          desc: penilaian.harmonis_desc,
+        },
+        {
+          name: "Loyal",
+          score: penilaian.loyal_score,
+          desc: penilaian.loyal_desc,
+        },
+        {
+          name: "Adaptif",
+          score: penilaian.adaptif_score,
+          desc: penilaian.adaptif_desc,
+        },
+        {
+          name: "Kolaboratif",
+          score: penilaian.kolaboratif_score,
+          desc: penilaian.kolaboratif_desc,
+        },
+      ];
 
-**Candidate Information:**
-- Name: ${pegawai.nama}
+      const coreValuesDetail = coreValueDescriptions
+        .map(
+          (cv) =>
+            `- ${cv.name}: ${cv.score}/100${cv.desc ? `\n  Deskripsi: ${cv.desc}` : ""}`,
+        )
+        .join("\n");
+
+      const prompt = `Sebagai AI Evaluator untuk program 'Anugerah ASN Teladan Tahun 2025', lakukan analisis mendalam dan komprehensif terhadap data kinerja pegawai berikut. Berikan analisis yang objektif, detail, dan konstruktif dalam bahasa Indonesia.
+
+**INFORMASI PEGAWAI:**
+- Nama: ${pegawai.nama}
 - NIP: ${pegawai.nip}
 - Jabatan: ${pegawai.jabatan}
 - Unit Kerja: ${pegawai.unit_kerja?.nama_unit_kerja}
 - Status Jabatan: ${pegawai.status_jabatan}
 - Masa Kerja: ${pegawai.masa_kerja_tahun} tahun
 
-**Evaluation Criteria with Weightings:**
+**DATA EVALUASI LENGKAP:**
 
-**1. Kriteria Integritas (30% total):**
-- Bebas Temuan (10%): ${penilaian.bebas_temuan ? "✓ Ya" : "✗ Tidak"}
-- Tidak Ada Hukuman Disiplin (10%): ${penilaian.tidak_hukuman_disiplin ? "✓ Ya" : "✗ Tidak"}
-- Tidak Dalam Pemeriksaan (10%): ${penilaian.tidak_pemeriksaan_disiplin ? "✓ Ya" : "✗ Tidak"}
+**1. KRITERIA INTEGRITAS (Bobot 30%):**
+- Bebas Temuan Audit: ${penilaian.bebas_temuan ? "✓ YA" : "✗ TIDAK"}
+- Tidak Ada Hukuman Disiplin: ${penilaian.tidak_hukuman_disiplin ? "✓ YA" : "✗ TIDAK"}
+- Tidak Dalam Pemeriksaan: ${penilaian.tidak_pemeriksaan_disiplin ? "✓ YA" : "✗ TIDAK"}
 
-**2. Prestasi & Inovasi (30% total):**
-- Memiliki Inovasi (20%): ${penilaian.memiliki_inovasi ? "✓ Ya" : "✗ Tidak"}
-${penilaian.memiliki_inovasi && penilaian.bukti_inovasi ? `  Bukti: ${penilaian.bukti_inovasi}` : ""}
-- Memiliki Penghargaan (10%): ${penilaian.memiliki_penghargaan ? "✓ Ya" : "✗ Tidak"}
-${penilaian.memiliki_penghargaan && penilaian.bukti_penghargaan ? `  Bukti: ${penilaian.bukti_penghargaan}` : ""}
+**2. PRESTASI & INOVASI (Bobot 30%):**
+- Memiliki Inovasi: ${penilaian.memiliki_inovasi ? "✓ YA" : "✗ TIDAK"}
+${penilaian.memiliki_inovasi && penilaian.bukti_inovasi ? `  Detail Inovasi: ${penilaian.bukti_inovasi}` : ""}
+- Memiliki Penghargaan: ${penilaian.memiliki_penghargaan ? "✓ YA" : "✗ TIDAK"}
+${penilaian.memiliki_penghargaan && penilaian.bukti_penghargaan ? `  Detail Penghargaan: ${penilaian.bukti_penghargaan}` : ""}
 
-**3. Kriteria SKP (20% total):**
-- SKP 2 Tahun Terakhir Baik (10%): ${penilaian.skp_2_tahun_terakhir_baik ? "✓ Ya" : "✗ Tidak"}
-- SKP Menunjukkan Peningkatan Prestasi (10%): ${penilaian.skp_peningkatan_prestasi ? "✓ Ya" : "✗ Tidak"}
+**3. KRITERIA SKP (Bobot 20%):**
+- SKP 2 Tahun Terakhir Baik: ${penilaian.skp_2_tahun_terakhir_baik ? "✓ YA" : "✗ TIDAK"}
+- SKP Menunjukkan Peningkatan: ${penilaian.skp_peningkatan_prestasi ? "✓ YA" : "✗ TIDAK"}
 
-**4. Core Values ASN BerAKHLAK (20% total, 2.857% each):**
-- Berorientasi Pelayanan: ${penilaian.berorientasi_pelayanan_score}/100
-- Akuntabel: ${penilaian.akuntabel_score}/100
-- Kompeten: ${penilaian.kompeten_score}/100
-- Harmonis: ${penilaian.harmonis_score}/100
-- Loyal: ${penilaian.loyal_score}/100
-- Adaptif: ${penilaian.adaptif_score}/100
-- Kolaboratif: ${penilaian.kolaboratif_score}/100
+**4. CORE VALUES ASN BerAKHLAK (Bobot 20%):**
+${coreValuesDetail}
 
-**Total Calculated Score: ${calculatePreviewScore().toFixed(2)}%**
+**SKOR TOTAL TERHITUNG: ${calculatePreviewScore().toFixed(2)}%**
 
-Provide analysis in Indonesian language considering the weighted evaluation system. Format:
-**Pros:**
-- [Point 1]
-- [Point 2]
-...
+**INSTRUKSI ANALISIS:**
+Berikan analisis yang terstruktur dan mendalam dengan format TEPAT seperti di bawah ini. Pastikan setiap bagian diisi dengan analisis yang komprehensif berdasarkan semua data evaluasi di atas:
 
-**Cons:**
-- [Point 1]
-- [Point 2]
-...
+**ANALISIS POSITIF (PROS):**
+[Analisis mendalam tentang aspek-aspek positif pegawai berdasarkan data evaluasi, termasuk kekuatan dalam integritas, prestasi, inovasi, SKP, dan core values. Berikan contoh konkret dan justifikasi yang kuat.]
 
-**Strengths:**
-- [Point 1]
-- [Point 2]
-...
+**AREA PERBAIKAN (CONS):**
+[Analisis objektif tentang area yang perlu diperbaiki atau ditingkatkan, berdasarkan skor yang rendah atau kriteria yang tidak terpenuhi. Berikan saran konstruktif untuk perbaikan.]
 
-**Weaknesses:**
-- [Point 1]
-- [Point 2]
-...`;
+**KELEBIHAN UTAMA:**
+[Identifikasi dan jelaskan 3-5 kelebihan utama yang paling menonjol dari pegawai ini, berdasarkan data evaluasi yang tersedia. Fokus pada aspek yang membedakan pegawai ini dari yang lain.]
+
+**KEKURANGAN YANG PERLU DIPERBAIKI:**
+[Identifikasi dan jelaskan 3-5 kekurangan atau kelemahan yang perlu mendapat perhatian khusus untuk pengembangan karir pegawai. Berikan rekomendasi spesifik untuk perbaikan.]
+
+Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memberikan insight yang valuable untuk pengembangan pegawai.`;
 
       const response = await fetch(
         "https://api.deepseek.com/v1/chat/completions",
@@ -333,7 +411,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || "sk-your-api-key-here"}`,
+            Authorization: `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`,
           },
           body: JSON.stringify({
             model: "deepseek-chat",
@@ -356,24 +434,101 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
       const data = await response.json();
       const analysis = data.choices[0]?.message?.content || "";
 
-      // Parse the analysis into sections
-      const prosMatch = analysis.match(/\*\*Pros:\*\*([\s\S]*?)\*\*Cons:\*\*/);
-      const consMatch = analysis.match(
-        /\*\*Cons:\*\*([\s\S]*?)\*\*Strengths:\*\*/,
-      );
-      const strengthsMatch = analysis.match(
-        /\*\*Strengths:\*\*([\s\S]*?)\*\*Weaknesses:\*\*/,
-      );
-      const weaknessesMatch = analysis.match(/\*\*Weaknesses:\*\*([\s\S]*)$/);
+      console.log("Full AI Analysis Response:", analysis);
+
+      // Parse the analysis into sections with more comprehensive regex patterns
+      const prosMatch =
+        analysis.match(
+          /\*\*ANALISIS POSITIF \(PROS\):\*\*([\s\S]*?)(?=\*\*AREA PERBAIKAN|\*\*KELEBIHAN|$)/i,
+        ) ||
+        analysis.match(
+          /\*\*Pros?:\*\*([\s\S]*?)(?=\*\*(?:Cons?|Area|Kelebihan|Strengths?):|$)/i,
+        );
+
+      const consMatch =
+        analysis.match(
+          /\*\*AREA PERBAIKAN \(CONS\):\*\*([\s\S]*?)(?=\*\*KELEBIHAN|\*\*KEKURANGAN|$)/i,
+        ) ||
+        analysis.match(
+          /\*\*(?:Cons?|Area.*Perbaikan):\*\*([\s\S]*?)(?=\*\*(?:Kelebihan|Strengths?|Kekurangan|Weaknesses?):|$)/i,
+        );
+
+      const strengthsMatch =
+        analysis.match(
+          /\*\*KELEBIHAN UTAMA:\*\*([\s\S]*?)(?=\*\*KEKURANGAN|$)/i,
+        ) ||
+        analysis.match(
+          /\*\*(?:Strengths?|Kelebihan).*:\*\*([\s\S]*?)(?=\*\*(?:Weaknesses?|Kekurangan):|$)/i,
+        );
+
+      const weaknessesMatch =
+        analysis.match(
+          /\*\*KEKURANGAN YANG PERLU DIPERBAIKI:\*\*([\s\S]*?)$/i,
+        ) ||
+        analysis.match(/\*\*(?:Weaknesses?|Kekurangan).*:\*\*([\s\S]*?)$/i);
+
+      console.log("AI Analysis parsing results:", {
+        fullAnalysis: analysis,
+        prosMatch: prosMatch?.[1]?.trim(),
+        consMatch: consMatch?.[1]?.trim(),
+        strengthsMatch: strengthsMatch?.[1]?.trim(),
+        weaknessesMatch: weaknessesMatch?.[1]?.trim(),
+      });
+
+      // Clean and format the extracted content
+      const cleanText = (text: string) => {
+        return text
+          .replace(/^\s*[-•]\s*/gm, "• ") // Normalize bullet points
+          .replace(/\n\s*\n/g, "\n") // Remove extra line breaks
+          .trim();
+      };
+
+      const prosText = prosMatch?.[1]?.trim() || "";
+      const consText = consMatch?.[1]?.trim() || "";
+      const strengthsText = strengthsMatch?.[1]?.trim() || "";
+      const weaknessesText = weaknessesMatch?.[1]?.trim() || "";
+
+      // If parsing fails, try to split the analysis differently
+      let finalPros = prosText;
+      let finalCons = consText;
+      let finalStrengths = strengthsText;
+      let finalWeaknesses = weaknessesText;
+
+      // Fallback parsing if main parsing fails
+      if (!prosText && !consText && !strengthsText && !weaknessesText) {
+        const sections = analysis
+          .split(/\*\*[^*]+:\*\*/)
+          .filter((s) => s.trim());
+        if (sections.length >= 4) {
+          finalPros = cleanText(sections[0] || "");
+          finalCons = cleanText(sections[1] || "");
+          finalStrengths = cleanText(sections[2] || "");
+          finalWeaknesses = cleanText(sections[3] || "");
+        } else {
+          // Last resort: distribute the analysis evenly
+          const words = analysis.split(" ");
+          const chunkSize = Math.ceil(words.length / 4);
+          finalPros = words.slice(0, chunkSize).join(" ");
+          finalCons = words.slice(chunkSize, chunkSize * 2).join(" ");
+          finalStrengths = words.slice(chunkSize * 2, chunkSize * 3).join(" ");
+          finalWeaknesses = words.slice(chunkSize * 3).join(" ");
+        }
+      }
 
       setPenilaian((prev) => ({
         ...prev,
-        analisis_ai_pro: prosMatch ? prosMatch[1].trim() : "",
-        analisis_ai_kontra: consMatch ? consMatch[1].trim() : "",
-        analisis_ai_kelebihan: strengthsMatch ? strengthsMatch[1].trim() : "",
-        analisis_ai_kekurangan: weaknessesMatch
-          ? weaknessesMatch[1].trim()
-          : "",
+        analisis_ai_pro:
+          cleanText(finalPros) ||
+          "Analisis positif belum tersedia. Silakan generate ulang.",
+        analisis_ai_kontra:
+          cleanText(finalCons) ||
+          "Analisis area perbaikan belum tersedia. Silakan generate ulang.",
+        analisis_ai_kelebihan:
+          cleanText(finalStrengths) ||
+          "Analisis kelebihan belum tersedia. Silakan generate ulang.",
+        analisis_ai_kekurangan:
+          cleanText(finalWeaknesses) ||
+          "Analisis kekurangan belum tersedia. Silakan generate ulang.",
       }));
 
       toast({
@@ -384,8 +539,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
       console.error("Error generating AI analysis:", error);
       toast({
         title: "Error",
-        description:
-          "Gagal menghasilkan analisis AI. Pastikan API key Deepseek sudah dikonfigurasi.",
+        description: `Gagal menghasilkan analisis AI: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       });
     } finally {
@@ -437,11 +591,46 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
 
       const currentYear = new Date().getFullYear();
 
+      // Calculate final percentage score
+      const finalScore = calculatePreviewScore();
+
+      // Map the form data to match the database schema
       const dataToSave = {
         pegawai_id: id,
         penilai_user_id: session.user.id,
         tahun_penilaian: currentYear,
-        ...penilaian,
+        persentase_akhir: finalScore,
+        // SKP criteria
+        skp_2_tahun_terakhir_baik: penilaian.skp_2_tahun_terakhir_baik,
+        skp_peningkatan_prestasi: penilaian.skp_peningkatan_prestasi,
+        // Map old score fields to new BerAKHLAK core values
+        inovasi_dampak_score: penilaian.berorientasi_pelayanan_score,
+        inspiratif_score: penilaian.akuntabel_score,
+        integritas_moralitas_score: penilaian.kompeten_score,
+        kerjasama_kolaborasi_score: penilaian.harmonis_score,
+        kinerja_perilaku_score: penilaian.loyal_score,
+        komunikasi_score: penilaian.adaptif_score,
+        leadership_score: penilaian.kolaboratif_score,
+        prestasi_score: penilaian.memiliki_penghargaan ? 100 : 0,
+        rekam_jejak_score:
+          penilaian.bebas_temuan &&
+          penilaian.tidak_hukuman_disiplin &&
+          penilaian.tidak_pemeriksaan_disiplin
+            ? 100
+            : 0,
+        // Core value descriptions
+        berorientasi_pelayanan_desc: penilaian.berorientasi_pelayanan_desc,
+        akuntabel_desc: penilaian.akuntabel_desc,
+        kompeten_desc: penilaian.kompeten_desc,
+        harmonis_desc: penilaian.harmonis_desc,
+        loyal_desc: penilaian.loyal_desc,
+        adaptif_desc: penilaian.adaptif_desc,
+        kolaboratif_desc: penilaian.kolaboratif_desc,
+        // AI Analysis
+        analisis_ai_pro: penilaian.analisis_ai_pro,
+        analisis_ai_kontra: penilaian.analisis_ai_kontra,
+        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan,
+        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan,
       };
 
       console.log("Data being saved:", dataToSave);
