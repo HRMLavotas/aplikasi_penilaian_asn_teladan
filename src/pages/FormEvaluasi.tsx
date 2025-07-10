@@ -407,7 +407,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     const invalidDescriptions = descriptions.filter(
       (desc) =>
         ((penilaian[desc.key as keyof PenilaianData] as string) || "").length <
-        1000,
+        600,
     );
 
     return invalidDescriptions;
@@ -421,7 +421,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     if (invalidDescriptions.length > 0) {
       toast({
         title: "Validasi Gagal",
-        description: `Deskripsi untuk ${invalidDescriptions.map((d) => d.label).join(", ")} belum memenuhi minimum 1000 karakter.`,
+        description: `Deskripsi untuk ${invalidDescriptions.map((d) => d.label).join(", ")} belum memenuhi minimum 600 karakter.`,
         variant: "destructive",
       });
       return;
@@ -948,7 +948,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
                         </Label>
                         <Textarea
                           id={`desc_${item.key}`}
-                          placeholder={`Jelaskan secara detail alasan pemberian nilai ${penilaian[item.key]} untuk aspek ${item.label}. Berikan contoh konkret, evidence, dan justifikasi yang mendukung penilaian ini. Minimum 1000 karakter.`}
+                          placeholder={`Jelaskan secara detail alasan pemberian nilai ${penilaian[item.key]} untuk aspek ${item.label}. Berikan contoh konkret, evidence, dan justifikasi yang mendukung penilaian ini. Minimum 600 karakter.`}
                           value={(penilaian[item.descKey] as string) || ""}
                           onChange={(e) =>
                             handleTextChange(item.descKey, e.target.value)
@@ -956,7 +956,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
                           rows={6}
                           className={`resize-none ${
                             ((penilaian[item.descKey] as string) || "").length <
-                            1000
+                            600
                               ? "border-red-300 focus:border-red-500"
                               : "border-green-300 focus:border-green-500"
                           }`}
@@ -965,19 +965,19 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
                           <span
                             className={`${
                               ((penilaian[item.descKey] as string) || "")
-                                .length < 1000
+                                .length < 600
                                 ? "text-red-600"
                                 : "text-green-600"
                             }`}
                           >
                             {((penilaian[item.descKey] as string) || "").length}{" "}
-                            / 1000 karakter minimum
+                            / 600 karakter minimum
                           </span>
                           {((penilaian[item.descKey] as string) || "").length <
-                            1000 && (
+                            600 && (
                             <span className="text-red-600 font-medium">
                               Kurang{" "}
-                              {1000 -
+                              {600 -
                                 ((penilaian[item.descKey] as string) || "")
                                   .length}{" "}
                               karakter
