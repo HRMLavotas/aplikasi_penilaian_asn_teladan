@@ -147,14 +147,6 @@ const TambahPegawai = () => {
         ...pegawaiData,
         unit_kerja_id: unitKerjaId,
         user_id: session.user.id,
-        // Set default values for integrity and achievement criteria
-        bebas_temuan: false,
-        tidak_hukuman_disiplin: false,
-        tidak_pemeriksaan_disiplin: false,
-        memiliki_inovasi: false,
-        bukti_inovasi: null,
-        memiliki_penghargaan: false,
-        bukti_penghargaan: null,
       };
 
       // Debug: log the data being inserted
