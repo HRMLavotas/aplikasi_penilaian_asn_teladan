@@ -281,7 +281,7 @@ const Settings = () => {
                       <SelectValue placeholder="Pilih unit kerja" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tidak ada unit kerja</SelectItem>
+                      <SelectItem value="none">Tidak ada unit kerja</SelectItem>
                       {unitKerja.map((unit) => (
                         <SelectItem key={unit.id} value={unit.id}>
                           {unit.nama_unit_kerja}
