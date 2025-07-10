@@ -23,11 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface UnitKerja {
-  id: string;
-  nama_unit_kerja: string;
-}
-
 const TambahPegawai = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
