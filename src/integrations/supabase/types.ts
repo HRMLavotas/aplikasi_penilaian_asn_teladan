@@ -150,6 +150,9 @@ export type Database = {
           analisis_ai_kelebihan?: string | null;
           analisis_ai_kontra?: string | null;
           analisis_ai_pro?: string | null;
+          bebas_temuan?: boolean;
+          bukti_inovasi?: string | null;
+          bukti_penghargaan?: string | null;
           created_at?: string;
           id?: string;
           inovasi_dampak_score?: number;
@@ -159,6 +162,8 @@ export type Database = {
           kinerja_perilaku_score?: number;
           komunikasi_score?: number;
           leadership_score?: number;
+          memiliki_inovasi?: boolean;
+          memiliki_penghargaan?: boolean;
           pegawai_id?: string;
           penilai_user_id?: string;
           persentase_akhir?: number | null;
@@ -167,6 +172,8 @@ export type Database = {
           skp_2_tahun_terakhir_baik?: boolean;
           skp_peningkatan_prestasi?: boolean;
           tahun_penilaian?: number;
+          tidak_hukuman_disiplin?: boolean;
+          tidak_pemeriksaan_disiplin?: boolean;
           updated_at?: string;
         };
         Relationships: [
