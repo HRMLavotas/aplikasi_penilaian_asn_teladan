@@ -87,11 +87,13 @@ const Dashboard = () => {
         data: { session },
       } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
-      setIsLoading(false);
 
       if (!session) {
         navigate("/auth");
+      } else {
+        await fetchStats();
       }
+      setIsLoading(false);
     };
 
     getSession();
