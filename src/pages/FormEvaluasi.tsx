@@ -442,6 +442,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
   const scoreItems = [
     {
       key: "berorientasi_pelayanan_score" as keyof PenilaianData,
+      descKey: "berorientasi_pelayanan_desc" as keyof PenilaianData,
       label: "Berorientasi Pelayanan",
       description:
         "Memahami dan memenuhi kebutuhan masyarakat sebagai prioritas utama",
@@ -451,6 +452,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     },
     {
       key: "akuntabel_score" as keyof PenilaianData,
+      descKey: "akuntabel_desc" as keyof PenilaianData,
       label: "Akuntabel",
       description: "Bertanggung jawab atas kinerja dan keputusan yang diambil",
       icon: Shield,
@@ -459,6 +461,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     },
     {
       key: "kompeten_score" as keyof PenilaianData,
+      descKey: "kompeten_desc" as keyof PenilaianData,
       label: "Kompeten",
       description: "Terus belajar dan mengembangkan kapabilitas diri",
       icon: Brain,
@@ -467,6 +470,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     },
     {
       key: "harmonis_score" as keyof PenilaianData,
+      descKey: "harmonis_desc" as keyof PenilaianData,
       label: "Harmonis",
       description:
         "Menghargai setiap orang dan menunjukkan empati pada situasi yang dihadapi",
@@ -476,6 +480,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     },
     {
       key: "loyal_score" as keyof PenilaianData,
+      descKey: "loyal_desc" as keyof PenilaianData,
       label: "Loyal",
       description: "Berdedikasi dan mengutamakan kepentingan bangsa dan negara",
       icon: Star,
@@ -484,6 +489,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     },
     {
       key: "adaptif_score" as keyof PenilaianData,
+      descKey: "adaptif_desc" as keyof PenilaianData,
       label: "Adaptif",
       description:
         "Terus berinovasi dan antusias dalam menggerakkan atau menghadapi perubahan",
@@ -493,6 +499,7 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     },
     {
       key: "kolaboratif_score" as keyof PenilaianData,
+      descKey: "kolaboratif_desc" as keyof PenilaianData,
       label: "Kolaboratif",
       description:
         "Membangun kerja sama yang sinergis untuk menghasilkan karya yang lebih berkualitas",
@@ -896,6 +903,52 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
                         <span>1 (Sangat Kurang)</span>
                         <span>50 (Cukup)</span>
                         <span>100 (Sangat Baik)</span>
+                      </div>
+
+                      {/* Description field for this core value */}
+                      <div className="mt-4 space-y-2">
+                        <Label
+                          htmlFor={`desc_${item.key}`}
+                          className="text-sm font-medium"
+                        >
+                          Deskripsi/Alasan Penilaian {item.label}
+                          <span className="text-red-500 ml-1">*</span>
+                        </Label>
+                        <Textarea
+                          id={`desc_${item.key}`}
+                          placeholder={`Jelaskan secara detail alasan pemberian nilai ${penilaian[item.key]} untuk aspek ${item.label}. Berikan contoh konkret, evidence, dan justifikasi yang mendukung penilaian ini. Minimum 1000 karakter.`}
+                          value={penilaian[item.descKey] as string}
+                          onChange={(e) =>
+                            handleTextChange(item.descKey, e.target.value)
+                          }
+                          rows={6}
+                          className={`resize-none ${
+                            (penilaian[item.descKey] as string).length < 1000
+                              ? "border-red-300 focus:border-red-500"
+                              : "border-green-300 focus:border-green-500"
+                          }`}
+                        />
+                        <div className="flex justify-between text-xs">
+                          <span
+                            className={`${
+                              (penilaian[item.descKey] as string).length < 1000
+                                ? "text-red-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {(penilaian[item.descKey] as string).length} / 1000
+                            karakter minimum
+                          </span>
+                          {(penilaian[item.descKey] as string).length <
+                            1000 && (
+                            <span className="text-red-600 font-medium">
+                              Kurang{" "}
+                              {1000 -
+                                (penilaian[item.descKey] as string).length}{" "}
+                              karakter
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
