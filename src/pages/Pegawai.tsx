@@ -106,8 +106,23 @@ const Pegawai = () => {
       // First, let's check the structure of the pegawai table
       console.log('Fetching pegawai data...');
       
+      // Define the type for our pegawai data
+      interface PegawaiData {
+        id: string;
+        user_id: string;
+        nama: string;
+        nip: string;
+        jabatan: string;
+        status_jabatan: string;
+        masa_kerja_tahun: number;
+        memiliki_inovasi: boolean;
+        memiliki_penghargaan: boolean;
+        created_at: string;
+        unit_kerja_id: string;
+      }
+
       // Simple query to get all columns without joins first
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from('pegawai')
         .select('*')
         .order('created_at', { ascending: false });
@@ -119,60 +134,58 @@ const Pegawai = () => {
 
       console.log('Pegawai data:', data);
       
-      // If we have data, try to get unit_kerja and user info
+      // If we have data, process it
       if (data && data.length > 0) {
-        // Get unit_kerja data
-        const unitKerjaIds = [...new Set(data.map(p => p.unit_kerja_id))];
-        const { data: unitKerjaData, error: unitError } = await supabase
-          .from('unit_kerja')
-          .select('*')
-          .in('id', unitKerjaIds);
-          
-        if (unitError) console.error('Error fetching unit_kerja:', unitError);
-        
-        // Create a map of unit_kerja by id
-        const unitKerjaMap = new Map();
-        if (unitKerjaData) {
-          unitKerjaData.forEach(uk => {
-            unitKerjaMap.set(uk.id, uk);
-          });
+        // Get unique unit_kerja_ids
+        const unitKerjaIds = [...new Set(data.map(p => (p as PegawaiData).unit_kerja_id))]
+          .filter((id): id is string => !!id);
+
+        // Fetch unit_kerja data if we have any unit_kerja_ids
+        let unitKerjaMap = new Map();
+        if (unitKerjaIds.length > 0) {
+          const { data: unitKerjaData, error: unitError } = await supabase
+            .from('unit_kerja')
+            .select('*')
+            .in('id', unitKerjaIds);
+            
+          if (unitError) {
+            console.error('Error fetching unit_kerja:', unitError);
+          } else if (unitKerjaData) {
+            unitKerjaMap = new Map(unitKerjaData.map(uk => [uk.id, uk]));
+          }
         }
         
-        // Get user emails from auth.users using admin API
-        const userMap = new Map();
-        try {
-          // Use the auth admin API to get user emails
-          const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
-          
-          if (usersError) throw usersError;
-          
-          // Create a map of user IDs to email addresses
-          users.forEach(user => {
-            userMap.set(user.id, {
-              id: user.id,
-              email: user.email
-            });
+        // Create user information
+        const userMap = new Map<string, { id: string; email: string }>();
+        
+        // Add current user's information
+        if (user) {
+          userMap.set(user.id, {
+            id: user.id,
+            email: user.email || `user_${user.id.substring(0, 6)}`
           });
-        } catch (userError) {
-          console.error('Error fetching user emails:', userError);
-          // Continue with empty user map if we can't fetch user emails
         }
         
         // Format the data with related information
-        const formattedData: Pegawai[] = data.map(item => ({
-          id: item.id,
-          user_id: item.user_id,
-          nama: item.nama || '',
-          nip: item.nip || '',
-          jabatan: item.jabatan || '',
-          status_jabatan: item.status_jabatan || '',
-          masa_kerja_tahun: item.masa_kerja_tahun || 0,
-          memiliki_inovasi: item.memiliki_inovasi || false,
-          memiliki_penghargaan: item.memiliki_penghargaan || false,
-          created_at: item.created_at,
-          unit_kerja: unitKerjaMap.get(item.unit_kerja_id) || { nama_unit_kerja: '' },
-          user: userMap.get(item.user_id) || { email: '' },
-        }));
+        const formattedData: Pegawai[] = data.map((item: unknown) => {
+          const pegawai = item as PegawaiData;
+          return {
+            id: pegawai.id,
+            user_id: pegawai.user_id,
+            nama: pegawai.nama || '',
+            nip: pegawai.nip || '',
+            jabatan: pegawai.jabatan || '',
+            status_jabatan: pegawai.status_jabatan || '',
+            masa_kerja_tahun: pegawai.masa_kerja_tahun || 0,
+            memiliki_inovasi: pegawai.memiliki_inovasi || false,
+            memiliki_penghargaan: pegawai.memiliki_penghargaan || false,
+            created_at: pegawai.created_at,
+            unit_kerja: unitKerjaMap.get(pegawai.unit_kerja_id) || { nama_unit_kerja: '' },
+            user: userMap.get(pegawai.user_id) || { 
+              email: `user_${pegawai.user_id?.substring(0, 6) || 'unknown'}` 
+            },
+          };
+        });
         
         setPegawai(formattedData);
       } else {
