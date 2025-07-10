@@ -221,6 +221,20 @@ const Pegawai = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Bulk Import */}
+        {showBulkImport && (
+          <div className="mb-8">
+            <BulkImport
+              onImportComplete={(result) => {
+                if (result.success > 0) {
+                  fetchData(); // Refresh data after import
+                }
+                setShowBulkImport(false);
+              }}
+            />
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
