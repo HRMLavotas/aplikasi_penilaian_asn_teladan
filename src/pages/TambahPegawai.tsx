@@ -303,7 +303,11 @@ const TambahPegawai = () => {
                       <SelectValue placeholder="Pilih status jabatan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="administrasi">Administrasi</SelectItem>
+                      <SelectItem value="administrator">
+                        Administrator
+                      </SelectItem>
+                      <SelectItem value="pengawas">Pengawas</SelectItem>
+                      <SelectItem value="pelaksana">Pelaksana</SelectItem>
                       <SelectItem value="fungsional">Fungsional</SelectItem>
                     </SelectContent>
                   </Select>
