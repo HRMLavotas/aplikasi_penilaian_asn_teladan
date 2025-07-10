@@ -104,9 +104,33 @@ const TambahPegawai = () => {
         throw new Error("Tidak ada session aktif");
       }
 
+      // Find or create unit kerja
+      let unitKerjaId;
+      const { data: existingUnitKerja } = await supabase
+        .from("unit_kerja")
+        .select("id")
+        .eq("nama_unit_kerja", formData.unit_kerja_nama)
+        .single();
+
+      if (existingUnitKerja) {
+        unitKerjaId = existingUnitKerja.id;
+      } else {
+        // Create new unit kerja
+        const { data: newUnitKerja, error: unitError } = await supabase
+          .from("unit_kerja")
+          .insert([{ nama_unit_kerja: formData.unit_kerja_nama }])
+          .select("id")
+          .single();
+
+        if (unitError) throw unitError;
+        unitKerjaId = newUnitKerja.id;
+      }
+
+      const { unit_kerja_nama, ...pegawaiData } = formData;
       const { error } = await supabase.from("pegawai").insert([
         {
-          ...formData,
+          ...pegawaiData,
+          unit_kerja_id: unitKerjaId,
           user_id: session.user.id,
           bukti_inovasi: formData.memiliki_inovasi
             ? formData.bukti_inovasi
