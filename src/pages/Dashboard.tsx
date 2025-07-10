@@ -2,34 +2,55 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { 
-  Users, 
-  ClipboardCheck, 
-  TrendingUp, 
+import {
+  Users,
+  ClipboardCheck,
+  TrendingUp,
   Settings,
   LogOut,
   UserPlus,
   FileText,
   BarChart3,
-  Shield
+  Shield,
 } from "lucide-react";
+
+interface DashboardStats {
+  totalPegawai: number;
+  evaluasiSelesai: number;
+  rataSkor: number | null;
+  asnTeladan: number;
+}
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPegawai: 0,
+    evaluasiSelesai: 0,
+    rataSkor: null,
+    asnTeladan: 0,
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setIsLoading(false);
-      
+
       if (!session) {
         navigate("/auth");
       }
@@ -37,14 +58,14 @@ const Dashboard = () => {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        if (!session) {
-          navigate("/auth");
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (!session) {
+        navigate("/auth");
       }
-    );
+    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -80,43 +101,43 @@ const Dashboard = () => {
       description: "Kelola data pegawai ASN",
       icon: Users,
       href: "/pegawai",
-      color: "bg-blue-500/10 text-blue-600"
+      color: "bg-blue-500/10 text-blue-600",
     },
     {
       title: "Tambah Pegawai",
       description: "Daftarkan pegawai baru",
       icon: UserPlus,
       href: "/pegawai/tambah",
-      color: "bg-green-500/10 text-green-600"
+      color: "bg-green-500/10 text-green-600",
     },
     {
       title: "Evaluasi Pegawai",
       description: "Lakukan penilaian pegawai",
       icon: ClipboardCheck,
       href: "/evaluasi",
-      color: "bg-orange-500/10 text-orange-600"
+      color: "bg-orange-500/10 text-orange-600",
     },
     {
       title: "Laporan Analisis",
       description: "Lihat hasil analisis dan laporan",
       icon: BarChart3,
       href: "/laporan",
-      color: "bg-purple-500/10 text-purple-600"
+      color: "bg-purple-500/10 text-purple-600",
     },
     {
       title: "Ranking ASN",
       description: "Peringkat pegawai teladan",
       icon: TrendingUp,
       href: "/ranking",
-      color: "bg-yellow-500/10 text-yellow-600"
+      color: "bg-yellow-500/10 text-yellow-600",
     },
     {
       title: "Pengaturan",
       description: "Konfigurasi sistem",
       icon: Settings,
       href: "/settings",
-      color: "bg-gray-500/10 text-gray-600"
-    }
+      color: "bg-gray-500/10 text-gray-600",
+    },
   ];
 
   return (
@@ -129,12 +150,16 @@ const Dashboard = () => {
               <Shield className="h-8 w-8 text-primary" />
               <div>
                 <h1 className="text-2xl font-bold">ASN Insight Hub</h1>
-                <p className="text-sm text-muted-foreground">Sistem Evaluasi ASN</p>
+                <p className="text-sm text-muted-foreground">
+                  Sistem Evaluasi ASN
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium">{user?.user_metadata?.nama_lengkap || user?.email}</p>
+                <p className="text-sm font-medium">
+                  {user?.user_metadata?.nama_lengkap || user?.email}
+                </p>
                 <Badge variant="secondary" className="text-xs">
                   {user?.user_metadata?.username || "User"}
                 </Badge>
@@ -153,7 +178,8 @@ const Dashboard = () => {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
           <p className="text-muted-foreground">
-            Selamat datang di sistem evaluasi dan eliminasi ASN. Pilih menu di bawah untuk memulai.
+            Selamat datang di sistem evaluasi dan eliminasi ASN. Pilih menu di
+            bawah untuk memulai.
           </p>
         </div>
 
@@ -171,7 +197,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Evaluasi Selesai</CardDescription>
@@ -215,14 +241,16 @@ const Dashboard = () => {
         {/* Menu Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {menuItems.map((item) => (
-            <Card 
-              key={item.href} 
+            <Card
+              key={item.href}
               className="cursor-pointer hover:shadow-md transition-shadow group"
               onClick={() => navigate(item.href)}
             >
               <CardHeader>
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${item.color} group-hover:scale-110 transition-transform`}>
+                  <div
+                    className={`p-2 rounded-lg ${item.color} group-hover:scale-110 transition-transform`}
+                  >
                     <item.icon className="h-6 w-6" />
                   </div>
                   <div>
@@ -247,7 +275,9 @@ const Dashboard = () => {
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>Belum ada aktivitas terbaru</p>
-              <p className="text-sm">Mulai dengan menambahkan data pegawai atau melakukan evaluasi</p>
+              <p className="text-sm">
+                Mulai dengan menambahkan data pegawai atau melakukan evaluasi
+              </p>
             </div>
           </CardContent>
         </Card>
