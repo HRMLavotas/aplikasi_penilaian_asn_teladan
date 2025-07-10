@@ -197,14 +197,27 @@ const TambahPegawai = () => {
           errorMessage = error.message;
         } else if (error && typeof error === "object") {
           // Handle Supabase errors which can have different structures
-          if ("message" in error) {
-            errorMessage = String((error as any).message);
-          } else if ("details" in error) {
-            errorMessage = String((error as any).details);
-          } else if ("hint" in error) {
-            errorMessage = String((error as any).hint);
-          } else if ("code" in error) {
-            errorMessage = `Database error (${(error as any).code})`;
+          const supabaseError = error as any;
+
+          if (supabaseError.message) {
+            errorMessage = String(supabaseError.message);
+
+            // Add additional details if available
+            if (supabaseError.details) {
+              errorMessage += ` Details: ${supabaseError.details}`;
+            }
+            if (supabaseError.hint) {
+              errorMessage += ` Hint: ${supabaseError.hint}`;
+            }
+            if (supabaseError.code) {
+              errorMessage += ` (Code: ${supabaseError.code})`;
+            }
+          } else if (supabaseError.details) {
+            errorMessage = String(supabaseError.details);
+          } else if (supabaseError.hint) {
+            errorMessage = String(supabaseError.hint);
+          } else if (supabaseError.code) {
+            errorMessage = `Database error (${supabaseError.code})`;
           } else {
             // Last resort - try to stringify the error
             errorMessage = JSON.stringify(error);
