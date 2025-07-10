@@ -80,6 +80,7 @@ const Pegawai = () => {
   const [filterUnit, setFilterUnit] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
