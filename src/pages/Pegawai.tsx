@@ -138,21 +138,24 @@ const Pegawai = () => {
           });
         }
         
-        // Get user emails if needed
-        const userIds = [...new Set(data.map(p => p.user_id))];
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('id, email')
-          .in('id', userIds);
-          
-        if (userError) console.error('Error fetching users:', userError);
-        
-        // Create a map of users by id
+        // Get user emails from auth.users using admin API
         const userMap = new Map();
-        if (userData) {
-          userData.forEach(u => {
-            userMap.set(u.id, u);
+        try {
+          // Use the auth admin API to get user emails
+          const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+          
+          if (usersError) throw usersError;
+          
+          // Create a map of user IDs to email addresses
+          users.forEach(user => {
+            userMap.set(user.id, {
+              id: user.id,
+              email: user.email
+            });
           });
+        } catch (userError) {
+          console.error('Error fetching user emails:', userError);
+          // Continue with empty user map if we can't fetch user emails
         }
         
         // Format the data with related information
