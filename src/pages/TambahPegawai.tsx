@@ -38,7 +38,7 @@ const TambahPegawai = () => {
     nama: "",
     nip: "",
     jabatan: "",
-    unit_kerja_id: "",
+    unit_kerja_nama: "",
     status_jabatan: "",
     masa_kerja_tahun: 0,
     bebas_temuan: false,
