@@ -37,6 +37,11 @@ import {
 
 const TambahPegawai = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>
+  >({});
+  const [dataQuality, setDataQuality] = useState<any>(null);
+  const [nipInfo, setNipInfo] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
