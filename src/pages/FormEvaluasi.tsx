@@ -406,7 +406,8 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
 
     const invalidDescriptions = descriptions.filter(
       (desc) =>
-        (penilaian[desc.key as keyof PenilaianData] as string).length < 1000,
+        ((penilaian[desc.key as keyof PenilaianData] as string) || "").length <
+        1000,
     );
 
     return invalidDescriptions;
@@ -948,13 +949,14 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
                         <Textarea
                           id={`desc_${item.key}`}
                           placeholder={`Jelaskan secara detail alasan pemberian nilai ${penilaian[item.key]} untuk aspek ${item.label}. Berikan contoh konkret, evidence, dan justifikasi yang mendukung penilaian ini. Minimum 1000 karakter.`}
-                          value={penilaian[item.descKey] as string}
+                          value={(penilaian[item.descKey] as string) || ""}
                           onChange={(e) =>
                             handleTextChange(item.descKey, e.target.value)
                           }
                           rows={6}
                           className={`resize-none ${
-                            (penilaian[item.descKey] as string).length < 1000
+                            ((penilaian[item.descKey] as string) || "").length <
+                            1000
                               ? "border-red-300 focus:border-red-500"
                               : "border-green-300 focus:border-green-500"
                           }`}
@@ -962,20 +964,22 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
                         <div className="flex justify-between text-xs">
                           <span
                             className={`${
-                              (penilaian[item.descKey] as string).length < 1000
+                              ((penilaian[item.descKey] as string) || "")
+                                .length < 1000
                                 ? "text-red-600"
                                 : "text-green-600"
                             }`}
                           >
-                            {(penilaian[item.descKey] as string).length} / 1000
-                            karakter minimum
+                            {((penilaian[item.descKey] as string) || "").length}{" "}
+                            / 1000 karakter minimum
                           </span>
-                          {(penilaian[item.descKey] as string).length <
+                          {((penilaian[item.descKey] as string) || "").length <
                             1000 && (
                             <span className="text-red-600 font-medium">
                               Kurang{" "}
                               {1000 -
-                                (penilaian[item.descKey] as string).length}{" "}
+                                ((penilaian[item.descKey] as string) || "")
+                                  .length}{" "}
                               karakter
                             </span>
                           )}
