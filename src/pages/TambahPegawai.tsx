@@ -84,6 +84,23 @@ const TambahPegawai = () => {
       return;
     }
 
+    // Validate status_jabatan
+    const validStatuses = [
+      "administrator",
+      "pengawas",
+      "pelaksana",
+      "fungsional",
+    ];
+    if (!validStatuses.includes(formData.status_jabatan)) {
+      toast({
+        title: "Status Jabatan Tidak Valid",
+        description:
+          "Status jabatan harus: administrator, pengawas, pelaksana, atau fungsional",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (formData.nip.length < 8) {
       toast({
         title: "NIP Tidak Valid",
