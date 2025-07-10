@@ -12,6 +12,7 @@ import Evaluasi from "./pages/Evaluasi";
 import FormEvaluasi from "./pages/FormEvaluasi";
 import Ranking from "./pages/Ranking";
 import Laporan from "./pages/Laporan";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
