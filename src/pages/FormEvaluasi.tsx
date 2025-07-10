@@ -393,8 +393,39 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
     }
   };
 
+  const validateDescriptions = () => {
+    const descriptions = [
+      { key: "berorientasi_pelayanan_desc", label: "Berorientasi Pelayanan" },
+      { key: "akuntabel_desc", label: "Akuntabel" },
+      { key: "kompeten_desc", label: "Kompeten" },
+      { key: "harmonis_desc", label: "Harmonis" },
+      { key: "loyal_desc", label: "Loyal" },
+      { key: "adaptif_desc", label: "Adaptif" },
+      { key: "kolaboratif_desc", label: "Kolaboratif" },
+    ];
+
+    const invalidDescriptions = descriptions.filter(
+      (desc) =>
+        (penilaian[desc.key as keyof PenilaianData] as string).length < 1000,
+    );
+
+    return invalidDescriptions;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate descriptions
+    const invalidDescriptions = validateDescriptions();
+    if (invalidDescriptions.length > 0) {
+      toast({
+        title: "Validasi Gagal",
+        description: `Deskripsi untuk ${invalidDescriptions.map((d) => d.label).join(", ")} belum memenuhi minimum 1000 karakter.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     try {
