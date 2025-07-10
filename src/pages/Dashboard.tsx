@@ -230,7 +230,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Pegawai</CardDescription>
-              <CardTitle className="text-2xl">0</CardTitle>
+              <CardTitle className="text-2xl">{stats.totalPegawai}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center text-sm text-muted-foreground">
@@ -243,12 +243,14 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Evaluasi Selesai</CardDescription>
-              <CardTitle className="text-2xl">0</CardTitle>
+              <CardTitle className="text-2xl">
+                {stats.evaluasiSelesai}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center text-sm text-muted-foreground">
                 <ClipboardCheck className="h-4 w-4 mr-1" />
-                Penilaian
+                Tahun {new Date().getFullYear()}
               </div>
             </CardContent>
           </Card>
@@ -256,12 +258,14 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Rata-rata Skor</CardDescription>
-              <CardTitle className="text-2xl">-</CardTitle>
+              <CardTitle className="text-2xl">
+                {stats.rataSkor ? `${stats.rataSkor.toFixed(1)}%` : "-"}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center text-sm text-muted-foreground">
                 <BarChart3 className="h-4 w-4 mr-1" />
-                Persen
+                {stats.evaluasiSelesai > 0 ? "Rata-rata" : "Belum Ada Data"}
               </div>
             </CardContent>
           </Card>
@@ -269,12 +273,12 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>ASN Teladan</CardDescription>
-              <CardTitle className="text-2xl">0</CardTitle>
+              <CardTitle className="text-2xl">{stats.asnTeladan}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center text-sm text-muted-foreground">
                 <TrendingUp className="h-4 w-4 mr-1" />
-                Kandidat
+                Skor ≥85%
               </div>
             </CardContent>
           </Card>
