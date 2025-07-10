@@ -8,6 +8,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Pegawai from "./pages/Pegawai";
 import TambahPegawai from "./pages/TambahPegawai";
+import Evaluasi from "./pages/Evaluasi";
+import FormEvaluasi from "./pages/FormEvaluasi";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/pegawai" element={<Pegawai />} />
           <Route path="/pegawai/tambah" element={<TambahPegawai />} />
+          <Route path="/evaluasi" element={<Evaluasi />} />
+          <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
