@@ -14,7 +14,19 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserPlus } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  UserPlus,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  DataValidator,
+  asnValidationRules,
+  validateNIP,
+  calculateDataQuality,
+} from "@/lib/validation";
 import {
   Select,
   SelectContent,
