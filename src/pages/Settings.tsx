@@ -153,7 +153,8 @@ const Settings = () => {
         .update({
           username: formData.username,
           nama_lengkap: formData.nama_lengkap,
-          unit_kerja_id: formData.unit_kerja_id || null,
+          unit_kerja_id:
+            formData.unit_kerja_id === "none" ? null : formData.unit_kerja_id,
         })
         .eq("id", session.user.id);
 
