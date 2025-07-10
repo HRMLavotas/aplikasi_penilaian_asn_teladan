@@ -437,19 +437,18 @@ Provide analysis in Indonesian language considering the weighted evaluation syst
 
       const currentYear = new Date().getFullYear();
 
-      const { error } = await supabase.from("penilaian").upsert(
-        [
-          {
-            pegawai_id: id,
-            penilai_user_id: session.user.id,
-            tahun_penilaian: currentYear,
-            ...penilaian,
-          },
-        ],
-        {
-          onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
-        },
-      );
+      const dataToSave = {
+        pegawai_id: id,
+        penilai_user_id: session.user.id,
+        tahun_penilaian: currentYear,
+        ...penilaian,
+      };
+
+      console.log("Data being saved:", dataToSave);
+
+      const { error } = await supabase.from("penilaian").upsert([dataToSave], {
+        onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
+      });
 
       if (error) throw error;
 
