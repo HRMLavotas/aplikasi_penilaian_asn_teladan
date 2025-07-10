@@ -602,6 +602,154 @@ Provide analysis in Indonesian language. Format:
             </CardContent>
           </Card>
 
+          {/* Kriteria Integritas */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Kriteria Integritas</CardTitle>
+              <CardDescription>
+                Penilaian integritas dan kedisiplinan pegawai
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center justify-between space-x-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="bebas_temuan">Bebas Temuan</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tidak ada temuan audit
+                    </p>
+                  </div>
+                  <Switch
+                    id="bebas_temuan"
+                    checked={penilaian.bebas_temuan}
+                    onCheckedChange={(checked) =>
+                      handleBooleanChange("bebas_temuan", checked)
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between space-x-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="tidak_hukuman">
+                      Tidak Ada Hukuman Disiplin
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Bersih dari hukuman disiplin
+                    </p>
+                  </div>
+                  <Switch
+                    id="tidak_hukuman"
+                    checked={penilaian.tidak_hukuman_disiplin}
+                    onCheckedChange={(checked) =>
+                      handleBooleanChange("tidak_hukuman_disiplin", checked)
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between space-x-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="tidak_pemeriksaan">
+                      Tidak Dalam Pemeriksaan
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Tidak sedang diperiksa
+                    </p>
+                  </div>
+                  <Switch
+                    id="tidak_pemeriksaan"
+                    checked={penilaian.tidak_pemeriksaan_disiplin}
+                    onCheckedChange={(checked) =>
+                      handleBooleanChange("tidak_pemeriksaan_disiplin", checked)
+                    }
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Prestasi & Inovasi */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Prestasi & Inovasi</CardTitle>
+              <CardDescription>
+                Pencapaian dan kontribusi inovatif pegawai
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="memiliki_inovasi">Memiliki Inovasi</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Telah membuat inovasi
+                      </p>
+                    </div>
+                    <Switch
+                      id="memiliki_inovasi"
+                      checked={penilaian.memiliki_inovasi}
+                      onCheckedChange={(checked) =>
+                        handleBooleanChange("memiliki_inovasi", checked)
+                      }
+                    />
+                  </div>
+
+                  {penilaian.memiliki_inovasi && (
+                    <div className="space-y-2">
+                      <Label htmlFor="bukti_inovasi">Bukti Inovasi</Label>
+                      <Textarea
+                        id="bukti_inovasi"
+                        placeholder="Deskripsikan inovasi yang telah dibuat..."
+                        value={penilaian.bukti_inovasi}
+                        onChange={(e) =>
+                          handleTextChange("bukti_inovasi", e.target.value)
+                        }
+                        rows={3}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="memiliki_penghargaan">
+                        Memiliki Penghargaan
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Pernah menerima penghargaan
+                      </p>
+                    </div>
+                    <Switch
+                      id="memiliki_penghargaan"
+                      checked={penilaian.memiliki_penghargaan}
+                      onCheckedChange={(checked) =>
+                        handleBooleanChange("memiliki_penghargaan", checked)
+                      }
+                    />
+                  </div>
+
+                  {penilaian.memiliki_penghargaan && (
+                    <div className="space-y-2">
+                      <Label htmlFor="bukti_penghargaan">
+                        Bukti Penghargaan
+                      </Label>
+                      <Textarea
+                        id="bukti_penghargaan"
+                        placeholder="Deskripsikan penghargaan yang pernah diterima..."
+                        value={penilaian.bukti_penghargaan}
+                        onChange={(e) =>
+                          handleTextChange("bukti_penghargaan", e.target.value)
+                        }
+                        rows={3}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* SKP Criteria */}
           <Card>
             <CardHeader>
