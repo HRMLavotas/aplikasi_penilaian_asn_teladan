@@ -133,19 +133,36 @@ const TambahPegawai = () => {
       }
 
       const { unit_kerja_nama, ...pegawaiData } = formData;
-      const { error } = await supabase.from("pegawai").insert([
-        {
-          ...pegawaiData,
-          unit_kerja_id: unitKerjaId,
-          user_id: session.user.id,
-          bukti_inovasi: formData.memiliki_inovasi
-            ? formData.bukti_inovasi
-            : null,
-          bukti_penghargaan: formData.memiliki_penghargaan
-            ? formData.bukti_penghargaan
-            : null,
-        },
-      ]);
+
+      // Prepare data for insertion
+      const insertData = {
+        ...pegawaiData,
+        unit_kerja_id: unitKerjaId,
+        user_id: session.user.id,
+        bukti_inovasi: formData.memiliki_inovasi
+          ? formData.bukti_inovasi
+          : null,
+        bukti_penghargaan: formData.memiliki_penghargaan
+          ? formData.bukti_penghargaan
+          : null,
+      };
+
+      // Debug: log the data being inserted
+      console.log("Inserting pegawai data:", insertData);
+      console.log("Unit kerja ID:", unitKerjaId);
+
+      // Validate required fields
+      if (
+        !insertData.nama ||
+        !insertData.nip ||
+        !insertData.jabatan ||
+        !insertData.status_jabatan ||
+        !insertData.unit_kerja_id
+      ) {
+        throw new Error("Missing required fields for pegawai insertion");
+      }
+
+      const { error } = await supabase.from("pegawai").insert([insertData]);
 
       if (error) {
         if (error.message.includes("duplicate key")) {
