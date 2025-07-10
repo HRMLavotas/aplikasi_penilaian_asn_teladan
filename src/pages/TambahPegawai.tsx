@@ -280,23 +280,16 @@ const TambahPegawai = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="unit_kerja">Unit Kerja *</Label>
-                  <Select
-                    value={formData.unit_kerja_id}
-                    onValueChange={(value) =>
-                      handleInputChange("unit_kerja_id", value)
+                  <Input
+                    id="unit_kerja"
+                    type="text"
+                    placeholder="Masukkan nama unit kerja"
+                    value={formData.unit_kerja_nama}
+                    onChange={(e) =>
+                      handleInputChange("unit_kerja_nama", e.target.value)
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih unit kerja" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {unitKerja.map((unit) => (
-                        <SelectItem key={unit.id} value={unit.id}>
-                          {unit.nama_unit_kerja}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status_jabatan">Status Jabatan *</Label>
