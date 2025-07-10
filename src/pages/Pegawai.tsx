@@ -203,10 +203,19 @@ const Pegawai = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={() => navigate("/pegawai/tambah")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Pegawai
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowBulkImport(!showBulkImport)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Import Massal
+              </Button>
+              <Button onClick={() => navigate("/pegawai/tambah")}>
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah Pegawai
+              </Button>
+            </div>
           </div>
         </div>
       </header>
