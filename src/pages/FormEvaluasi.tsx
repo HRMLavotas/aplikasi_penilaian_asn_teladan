@@ -56,16 +56,14 @@ interface PenilaianData {
   bukti_inovasi: string;
   memiliki_penghargaan: boolean;
   bukti_penghargaan: string;
-  // Skor Penilaian
-  kinerja_perilaku_score: number;
-  inovasi_dampak_score: number;
-  prestasi_score: number;
-  inspiratif_score: number;
-  komunikasi_score: number;
-  kerjasama_kolaborasi_score: number;
-  leadership_score: number;
-  rekam_jejak_score: number;
-  integritas_moralitas_score: number;
+  // Core Values ASN BerAKHLAK
+  berorientasi_pelayanan_score: number;
+  akuntabel_score: number;
+  kompeten_score: number;
+  harmonis_score: number;
+  loyal_score: number;
+  adaptif_score: number;
+  kolaboratif_score: number;
   // Analisis AI
   analisis_ai_pro: string;
   analisis_ai_kontra: string;
@@ -94,16 +92,14 @@ const FormEvaluasi = () => {
     bukti_inovasi: "",
     memiliki_penghargaan: false,
     bukti_penghargaan: "",
-    // Skor Penilaian
-    kinerja_perilaku_score: 70,
-    inovasi_dampak_score: 70,
-    prestasi_score: 70,
-    inspiratif_score: 70,
-    komunikasi_score: 70,
-    kerjasama_kolaborasi_score: 70,
-    leadership_score: 70,
-    rekam_jejak_score: 70,
-    integritas_moralitas_score: 70,
+    // Core Values ASN BerAKHLAK
+    berorientasi_pelayanan_score: 70,
+    akuntabel_score: 70,
+    kompeten_score: 70,
+    harmonis_score: 70,
+    loyal_score: 70,
+    adaptif_score: 70,
+    kolaboratif_score: 70,
     // Analisis AI
     analisis_ai_pro: "",
     analisis_ai_kontra: "",
@@ -188,16 +184,14 @@ const FormEvaluasi = () => {
           bukti_inovasi: data.bukti_inovasi || "",
           memiliki_penghargaan: data.memiliki_penghargaan || false,
           bukti_penghargaan: data.bukti_penghargaan || "",
-          // Skor Penilaian
-          kinerja_perilaku_score: data.kinerja_perilaku_score,
-          inovasi_dampak_score: data.inovasi_dampak_score,
-          prestasi_score: data.prestasi_score,
-          inspiratif_score: data.inspiratif_score,
-          komunikasi_score: data.komunikasi_score,
-          kerjasama_kolaborasi_score: data.kerjasama_kolaborasi_score,
-          leadership_score: data.leadership_score,
-          rekam_jejak_score: data.rekam_jejak_score,
-          integritas_moralitas_score: data.integritas_moralitas_score,
+          // Core Values ASN BerAKHLAK
+          berorientasi_pelayanan_score: data.berorientasi_pelayanan_score || 70,
+          akuntabel_score: data.akuntabel_score || 70,
+          kompeten_score: data.kompeten_score || 70,
+          harmonis_score: data.harmonis_score || 70,
+          loyal_score: data.loyal_score || 70,
+          adaptif_score: data.adaptif_score || 70,
+          kolaboratif_score: data.kolaboratif_score || 70,
           // Analisis AI
           analisis_ai_pro: data.analisis_ai_pro || "",
           analisis_ai_kontra: data.analisis_ai_kontra || "",
@@ -232,24 +226,40 @@ const FormEvaluasi = () => {
   };
 
   const calculatePreviewScore = () => {
-    const scores = [
-      penilaian.kinerja_perilaku_score,
-      penilaian.inovasi_dampak_score,
-      penilaian.prestasi_score,
-      penilaian.inspiratif_score,
-      penilaian.komunikasi_score,
-      penilaian.kerjasama_kolaborasi_score,
-      penilaian.leadership_score,
-      penilaian.rekam_jejak_score,
-      penilaian.integritas_moralitas_score,
+    // Kriteria Integritas (30%)
+    let integritasScore = 0;
+    if (penilaian.bebas_temuan) integritasScore += 10;
+    if (penilaian.tidak_hukuman_disiplin) integritasScore += 10;
+    if (penilaian.tidak_pemeriksaan_disiplin) integritasScore += 10;
+
+    // Prestasi & Inovasi (30%)
+    let prestasiScore = 0;
+    if (penilaian.memiliki_inovasi) prestasiScore += 20;
+    if (penilaian.memiliki_penghargaan) prestasiScore += 10;
+
+    // Kriteria SKP (20%)
+    let skpScore = 0;
+    if (penilaian.skp_2_tahun_terakhir_baik) skpScore += 10;
+    if (penilaian.skp_peningkatan_prestasi) skpScore += 10;
+
+    // Core Values ASN BerAKHLAK (20%)
+    const coreValuesScores = [
+      penilaian.berorientasi_pelayanan_score,
+      penilaian.akuntabel_score,
+      penilaian.kompeten_score,
+      penilaian.harmonis_score,
+      penilaian.loyal_score,
+      penilaian.adaptif_score,
+      penilaian.kolaboratif_score,
     ];
+    const coreValuesAverage =
+      coreValuesScores.reduce((sum, score) => sum + score, 0) /
+      coreValuesScores.length;
+    const coreValuesScore = (coreValuesAverage * 20) / 100; // 20% dari rata-rata core values
 
-    let average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-
-    if (penilaian.skp_2_tahun_terakhir_baik) average += 5;
-    if (penilaian.skp_peningkatan_prestasi) average += 5;
-
-    return Math.min(average, 100);
+    const totalScore =
+      integritasScore + prestasiScore + skpScore + coreValuesScore;
+    return Math.min(totalScore, 100);
   };
 
   const generateAIAnalysis = async () => {
@@ -272,16 +282,14 @@ const FormEvaluasi = () => {
 - Memiliki Inovasi: ${pegawai.memiliki_inovasi ? "Ya" : "Tidak"}
 - Memiliki Penghargaan: ${pegawai.memiliki_penghargaan ? "Ya" : "Tidak"}
 
-**Performance Scores (1-100, higher is better):**
-- Kinerja dan Perilaku: ${penilaian.kinerja_perilaku_score}
-- Inovasi dan Dampak: ${penilaian.inovasi_dampak_score}
-- Prestasi: ${penilaian.prestasi_score}
-- Inspiratif: ${penilaian.inspiratif_score}
-- Kemampuan Komunikasi: ${penilaian.komunikasi_score}
-- Kerja Sama dan Kolaborasi: ${penilaian.kerjasama_kolaborasi_score}
-- Leadership: ${penilaian.leadership_score}
-- Rekam Jejak: ${penilaian.rekam_jejak_score}
-- Integritas dan Moralitas: ${penilaian.integritas_moralitas_score}
+**Core Values ASN BerAKHLAK Scores (1-100, higher is better):**
+- Berorientasi Pelayanan: ${penilaian.berorientasi_pelayanan_score}
+- Akuntabel: ${penilaian.akuntabel_score}
+- Kompeten: ${penilaian.kompeten_score}
+- Harmonis: ${penilaian.harmonis_score}
+- Loyal: ${penilaian.loyal_score}
+- Adaptif: ${penilaian.adaptif_score}
+- Kolaboratif: ${penilaian.kolaboratif_score}
 
 **SKP (2 Tahun Terakhir):**
 - Kategori Baik: ${penilaian.skp_2_tahun_terakhir_baik ? "Ya" : "Tidak"}
@@ -422,68 +430,64 @@ Provide analysis in Indonesian language. Format:
 
   const scoreItems = [
     {
-      key: "kinerja_perilaku_score" as keyof PenilaianData,
-      label: "Kinerja & Perilaku",
-      description: "Penilaian terhadap hasil kerja dan perilaku sehari-hari",
-      icon: TrendingUp,
+      key: "berorientasi_pelayanan_score" as keyof PenilaianData,
+      label: "Berorientasi Pelayanan",
+      description:
+        "Memahami dan memenuhi kebutuhan masyarakat sebagai prioritas utama",
+      icon: Heart,
       color: "text-blue-600",
+      percentage: "2,857%",
     },
     {
-      key: "inovasi_dampak_score" as keyof PenilaianData,
-      label: "Inovasi & Dampak",
-      description:
-        "Kemampuan berinovasi dan dampak positif terhadap organisasi",
+      key: "akuntabel_score" as keyof PenilaianData,
+      label: "Akuntabel",
+      description: "Bertanggung jawab atas kinerja dan keputusan yang diambil",
+      icon: Shield,
+      color: "text-green-600",
+      percentage: "2,857%",
+    },
+    {
+      key: "kompeten_score" as keyof PenilaianData,
+      label: "Kompeten",
+      description: "Terus belajar dan mengembangkan kapabilitas diri",
       icon: Brain,
       color: "text-purple-600",
+      percentage: "2,857%",
     },
     {
-      key: "prestasi_score" as keyof PenilaianData,
-      label: "Prestasi",
-      description: "Pencapaian dan prestasi yang telah diraih",
-      icon: Award,
-      color: "text-yellow-600",
-    },
-    {
-      key: "inspiratif_score" as keyof PenilaianData,
-      label: "Inspiratif",
-      description: "Kemampuan menginspirasi dan memotivasi rekan kerja",
-      icon: Star,
-      color: "text-orange-600",
-    },
-    {
-      key: "komunikasi_score" as keyof PenilaianData,
-      label: "Komunikasi",
-      description: "Keterampilan komunikasi dan penyampaian ide",
-      icon: MessageSquare,
-      color: "text-green-600",
-    },
-    {
-      key: "kerjasama_kolaborasi_score" as keyof PenilaianData,
-      label: "Kerjasama & Kolaborasi",
-      description: "Kemampuan bekerja sama dan berkolaborasi",
+      key: "harmonis_score" as keyof PenilaianData,
+      label: "Harmonis",
+      description:
+        "Menghargai setiap orang dan menunjukkan empati pada situasi yang dihadapi",
       icon: Users,
-      color: "text-indigo-600",
+      color: "text-orange-600",
+      percentage: "2,857%",
     },
     {
-      key: "leadership_score" as keyof PenilaianData,
-      label: "Kepemimpinan",
-      description: "Kemampuan memimpin dan mengambil inisiatif",
-      icon: Crown,
+      key: "loyal_score" as keyof PenilaianData,
+      label: "Loyal",
+      description: "Berdedikasi dan mengutamakan kepentingan bangsa dan negara",
+      icon: Star,
       color: "text-red-600",
+      percentage: "2,857%",
     },
     {
-      key: "rekam_jejak_score" as keyof PenilaianData,
-      label: "Rekam Jejak",
-      description: "Konsistensi dan track record kinerja",
-      icon: Shield,
+      key: "adaptif_score" as keyof PenilaianData,
+      label: "Adaptif",
+      description:
+        "Terus berinovasi dan antusias dalam menggerakkan atau menghadapi perubahan",
+      icon: TrendingUp,
+      color: "text-indigo-600",
+      percentage: "2,857%",
+    },
+    {
+      key: "kolaboratif_score" as keyof PenilaianData,
+      label: "Kolaboratif",
+      description:
+        "Membangun kerja sama yang sinergis untuk menghasilkan karya yang lebih berkualitas",
+      icon: MessageSquare,
       color: "text-cyan-600",
-    },
-    {
-      key: "integritas_moralitas_score" as keyof PenilaianData,
-      label: "Integritas & Moralitas",
-      description: "Kejujuran, etika, dan moral dalam bekerja",
-      icon: Heart,
-      color: "text-pink-600",
+      percentage: "2,857%",
     },
   ];
 
@@ -607,14 +611,19 @@ Provide analysis in Indonesian language. Format:
             <CardHeader>
               <CardTitle>Kriteria Integritas</CardTitle>
               <CardDescription>
-                Penilaian integritas dan kedisiplinan pegawai
+                Penilaian integritas dan kedisiplinan pegawai (Total bobot: 30%)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex items-center justify-between space-x-4">
                   <div className="space-y-1">
-                    <Label htmlFor="bebas_temuan">Bebas Temuan</Label>
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="bebas_temuan">Bebas Temuan</Label>
+                      <Badge variant="secondary" className="text-xs">
+                        10%
+                      </Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       Tidak ada temuan audit
                     </p>
@@ -630,9 +639,14 @@ Provide analysis in Indonesian language. Format:
 
                 <div className="flex items-center justify-between space-x-4">
                   <div className="space-y-1">
-                    <Label htmlFor="tidak_hukuman">
-                      Tidak Ada Hukuman Disiplin
-                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="tidak_hukuman">
+                        Tidak Ada Hukuman Disiplin
+                      </Label>
+                      <Badge variant="secondary" className="text-xs">
+                        10%
+                      </Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       Bersih dari hukuman disiplin
                     </p>
@@ -648,9 +662,14 @@ Provide analysis in Indonesian language. Format:
 
                 <div className="flex items-center justify-between space-x-4">
                   <div className="space-y-1">
-                    <Label htmlFor="tidak_pemeriksaan">
-                      Tidak Dalam Pemeriksaan
-                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="tidak_pemeriksaan">
+                        Tidak Dalam Pemeriksaan
+                      </Label>
+                      <Badge variant="secondary" className="text-xs">
+                        10%
+                      </Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       Tidak sedang diperiksa
                     </p>
@@ -672,7 +691,7 @@ Provide analysis in Indonesian language. Format:
             <CardHeader>
               <CardTitle>Prestasi & Inovasi</CardTitle>
               <CardDescription>
-                Pencapaian dan kontribusi inovatif pegawai
+                Pencapaian dan kontribusi inovatif pegawai (Total bobot: 30%)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -680,7 +699,14 @@ Provide analysis in Indonesian language. Format:
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="memiliki_inovasi">Memiliki Inovasi</Label>
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor="memiliki_inovasi">
+                          Memiliki Inovasi
+                        </Label>
+                        <Badge variant="secondary" className="text-xs">
+                          20%
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         Telah membuat inovasi
                       </p>
@@ -713,9 +739,14 @@ Provide analysis in Indonesian language. Format:
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="memiliki_penghargaan">
-                        Memiliki Penghargaan
-                      </Label>
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor="memiliki_penghargaan">
+                          Memiliki Penghargaan
+                        </Label>
+                        <Badge variant="secondary" className="text-xs">
+                          10%
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         Pernah menerima penghargaan
                       </p>
@@ -755,13 +786,21 @@ Provide analysis in Indonesian language. Format:
             <CardHeader>
               <CardTitle>Kriteria SKP</CardTitle>
               <CardDescription>
-                Penilaian berdasarkan Sasaran Kinerja Pegawai (SKP)
+                Penilaian berdasarkan Sasaran Kinerja Pegawai (SKP) (Total
+                bobot: 20%)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label htmlFor="skp_2_tahun">SKP 2 Tahun Terakhir Baik</Label>
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="skp_2_tahun">
+                      SKP 2 Tahun Terakhir Baik
+                    </Label>
+                    <Badge variant="secondary" className="text-xs">
+                      10%
+                    </Badge>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Hasil SKP 2 tahun terakhir menunjukkan performa yang baik
                   </p>
@@ -777,9 +816,14 @@ Provide analysis in Indonesian language. Format:
 
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label htmlFor="skp_peningkatan">
-                    SKP Menunjukkan Peningkatan Prestasi
-                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="skp_peningkatan">
+                      SKP Menunjukkan Peningkatan Prestasi
+                    </Label>
+                    <Badge variant="secondary" className="text-xs">
+                      10%
+                    </Badge>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Terdapat peningkatan prestasi dari periode sebelumnya
                   </p>
@@ -798,9 +842,9 @@ Provide analysis in Indonesian language. Format:
           {/* Score Assessment */}
           <Card>
             <CardHeader>
-              <CardTitle>Penilaian Aspek Kinerja</CardTitle>
+              <CardTitle>Penilaian Core Values ASN BerAKHLAK</CardTitle>
               <CardDescription>
-                Berikan skor 1-100 untuk setiap aspek penilaian
+                Berikan skor 1-100 untuk setiap core value (Total bobot: 20%)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -814,7 +858,12 @@ Provide analysis in Indonesian language. Format:
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <Label className="font-medium">{item.label}</Label>
+                        <div className="flex items-center space-x-2">
+                          <Label className="font-medium">{item.label}</Label>
+                          <Badge variant="secondary" className="text-xs">
+                            {item.percentage}
+                          </Badge>
+                        </div>
                         <Badge variant="outline" className="font-mono">
                           {penilaian[item.key]}
                         </Badge>
