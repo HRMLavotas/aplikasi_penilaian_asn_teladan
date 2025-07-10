@@ -666,11 +666,34 @@ Provide analysis in Indonesian language. Format:
           {/* AI Analysis */}
           <Card>
             <CardHeader>
-              <CardTitle>Analisis Mendalam</CardTitle>
-              <CardDescription>
-                Berikan analisis terperinci mengenai kelebihan dan kekurangan
-                pegawai
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Analisis Mendalam</CardTitle>
+                  <CardDescription>
+                    Berikan analisis terperinci mengenai kelebihan dan
+                    kekurangan pegawai
+                  </CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={generateAIAnalysis}
+                  disabled={isGeneratingAI}
+                  className="shrink-0"
+                >
+                  {isGeneratingAI ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                      Menghasilkan...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="h-4 w-4 mr-2" />
+                      Generate AI Analysis
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
