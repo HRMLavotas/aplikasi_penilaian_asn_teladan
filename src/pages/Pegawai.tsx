@@ -2,22 +2,30 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  ArrowLeft, 
-  Search, 
-  Plus, 
-  Eye, 
-  Edit, 
+import {
+  ArrowLeft,
+  Search,
+  Plus,
+  Eye,
+  Edit,
   Trash2,
   Filter,
   Users,
   Award,
-  Clock
+  Clock,
+  Upload,
 } from "lucide-react";
+import BulkImport from "@/components/BulkImport";
 import {
   Table,
   TableBody,
@@ -81,7 +89,9 @@ const Pegawai = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
     }
@@ -92,10 +102,12 @@ const Pegawai = () => {
       // Fetch pegawai with unit kerja
       const { data: pegawaiData, error: pegawaiError } = await supabase
         .from("pegawai")
-        .select(`
+        .select(
+          `
           *,
           unit_kerja:unit_kerja_id(nama_unit_kerja)
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (pegawaiError) throw pegawaiError;
@@ -124,10 +136,7 @@ const Pegawai = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("pegawai")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("pegawai").delete().eq("id", id);
 
       if (error) throw error;
 
@@ -150,13 +159,15 @@ const Pegawai = () => {
   };
 
   const filteredPegawai = pegawai.filter((p) => {
-    const matchesSearch = 
+    const matchesSearch =
       p.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.nip.includes(searchTerm) ||
       p.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesUnit = filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
-    const matchesStatus = filterStatus === "all" || p.status_jabatan === filterStatus;
+
+    const matchesUnit =
+      filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
+    const matchesStatus =
+      filterStatus === "all" || p.status_jabatan === filterStatus;
 
     return matchesSearch && matchesUnit && matchesStatus;
   });
@@ -176,13 +187,19 @@ const Pegawai = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/dashboard")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Data Pegawai</h1>
-                <p className="text-sm text-muted-foreground">Kelola data pegawai ASN</p>
+                <p className="text-sm text-muted-foreground">
+                  Kelola data pegawai ASN
+                </p>
               </div>
             </div>
             <Button onClick={() => navigate("/pegawai/tambah")}>
@@ -208,12 +225,15 @@ const Pegawai = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Administrasi</CardDescription>
               <CardTitle className="text-2xl">
-                {pegawai.filter(p => p.status_jabatan === "administrasi").length}
+                {
+                  pegawai.filter((p) => p.status_jabatan === "administrasi")
+                    .length
+                }
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -228,7 +248,10 @@ const Pegawai = () => {
             <CardHeader className="pb-2">
               <CardDescription>Fungsional</CardDescription>
               <CardTitle className="text-2xl">
-                {pegawai.filter(p => p.status_jabatan === "fungsional").length}
+                {
+                  pegawai.filter((p) => p.status_jabatan === "fungsional")
+                    .length
+                }
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -243,7 +266,7 @@ const Pegawai = () => {
             <CardHeader className="pb-2">
               <CardDescription>Dengan Inovasi</CardDescription>
               <CardTitle className="text-2xl">
-                {pegawai.filter(p => p.memiliki_inovasi).length}
+                {pegawai.filter((p) => p.memiliki_inovasi).length}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -308,8 +331,8 @@ const Pegawai = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium invisible">Actions</label>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full"
                   onClick={() => {
                     setSearchTerm("");
@@ -338,10 +361,9 @@ const Pegawai = () => {
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="font-semibold mb-2">Tidak ada data pegawai</h3>
                 <p className="text-muted-foreground mb-4">
-                  {pegawai.length === 0 
+                  {pegawai.length === 0
                     ? "Belum ada pegawai yang terdaftar. Tambahkan pegawai pertama."
-                    : "Tidak ada pegawai yang cocok dengan filter yang dipilih."
-                  }
+                    : "Tidak ada pegawai yang cocok dengan filter yang dipilih."}
                 </p>
                 {pegawai.length === 0 && (
                   <Button onClick={() => navigate("/pegawai/tambah")}>
@@ -369,13 +391,21 @@ const Pegawai = () => {
                     {filteredPegawai.map((p) => (
                       <TableRow key={p.id}>
                         <TableCell className="font-medium">{p.nama}</TableCell>
-                        <TableCell className="font-mono text-sm">{p.nip}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {p.nip}
+                        </TableCell>
                         <TableCell>{p.jabatan}</TableCell>
                         <TableCell className="max-w-48 truncate">
                           {p.unit_kerja?.nama_unit_kerja || "-"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={p.status_jabatan === "fungsional" ? "default" : "secondary"}>
+                          <Badge
+                            variant={
+                              p.status_jabatan === "fungsional"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
                             {p.status_jabatan}
                           </Badge>
                         </TableCell>
@@ -396,22 +426,22 @@ const Pegawai = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => navigate(`/pegawai/${p.id}`)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => navigate(`/pegawai/${p.id}/edit`)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => setDeleteId(p.id)}
                             >
@@ -435,8 +465,9 @@ const Pegawai = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus Data Pegawai</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus data pegawai ini? 
-              Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data penilaian terkait.
+              Apakah Anda yakin ingin menghapus data pegawai ini? Tindakan ini
+              tidak dapat dibatalkan dan akan menghapus semua data penilaian
+              terkait.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
