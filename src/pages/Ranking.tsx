@@ -719,12 +719,12 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              p.tidak_pemeriksaan_disiplin
+                                              !p.tidak_pemeriksaan_disiplin
                                                 ? "default"
                                                 : "destructive"
                                             }
                                           >
-                                            {p.tidak_pemeriksaan_disiplin
+                                            {!p.tidak_pemeriksaan_disiplin
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
