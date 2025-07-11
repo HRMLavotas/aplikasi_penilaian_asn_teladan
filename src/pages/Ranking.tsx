@@ -762,19 +762,24 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              p.memiliki_inovasi
+                                              latestEval?.memiliki_inovasi
                                                 ? "default"
                                                 : "secondary"
                                             }
                                           >
-                                            {p.memiliki_inovasi
+                                            {latestEval?.memiliki_inovasi
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
-                                          {p.bukti_inovasi && (
+                                          {/* Show description from penilaian table if available, fallback to pegawai table */}
+                                          {(latestEval?.bukti_inovasi ||
+                                            p.bukti_inovasi) && (
                                             <div className="text-xs text-muted-foreground mt-1 p-2 bg-muted rounded">
-                                              <strong>Bukti:</strong>{" "}
-                                              {p.bukti_inovasi}
+                                              <strong>
+                                                Deskripsi Inovasi:
+                                              </strong>{" "}
+                                              {latestEval?.bukti_inovasi ||
+                                                p.bukti_inovasi}
                                             </div>
                                           )}
                                         </div>
@@ -784,19 +789,24 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              p.memiliki_penghargaan
+                                              latestEval?.memiliki_penghargaan
                                                 ? "default"
                                                 : "secondary"
                                             }
                                           >
-                                            {p.memiliki_penghargaan
+                                            {latestEval?.memiliki_penghargaan
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
-                                          {p.bukti_penghargaan && (
+                                          {/* Show description from penilaian table if available, fallback to pegawai table */}
+                                          {(latestEval?.bukti_penghargaan ||
+                                            p.bukti_penghargaan) && (
                                             <div className="text-xs text-muted-foreground mt-1 p-2 bg-muted rounded">
-                                              <strong>Bukti:</strong>{" "}
-                                              {p.bukti_penghargaan}
+                                              <strong>
+                                                Deskripsi Penghargaan:
+                                              </strong>{" "}
+                                              {latestEval?.bukti_penghargaan ||
+                                                p.bukti_penghargaan}
                                             </div>
                                           )}
                                         </div>
