@@ -69,14 +69,18 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
   let totalScore = integritasScore + prestasiScore + skpScore + coreValuesScore;
 
   // Aturan tambahan: Tanpa inovasi ATAU penghargaan, maksimal 85%
-  if (!penilaian.memiliki_inovasi && !penilaian.memiliki_penghargaan) {
+  if (
+    !penilaian.pegawai.memiliki_inovasi &&
+    !penilaian.pegawai.memiliki_penghargaan
+  ) {
     totalScore = Math.min(totalScore, 85);
   }
 
   // Aturan tambahan: Untuk score 90%+, wajib memiliki inovasi DAN penghargaan
   if (
     totalScore >= 90 &&
-    (!penilaian.memiliki_inovasi || !penilaian.memiliki_penghargaan)
+    (!penilaian.pegawai.memiliki_inovasi ||
+      !penilaian.pegawai.memiliki_penghargaan)
   ) {
     totalScore = Math.min(totalScore, 89);
   }
