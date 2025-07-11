@@ -58,16 +58,16 @@ export const useActivityTracker = () => {
         });
 
         if (error) {
-          // Check for common error types
+                    // Check for common error types
           if (error.code === "42P01") {
-              "Activities table does not exist. Activity logging disabled.",
-            );
+            // Activities table does not exist
             return;
           }
 
           if (error.code === "23503") {
-              "Foreign key constraint error. User profile might not exist.",
-            );
+            // Foreign key constraint error
+            return;
+          }
             return;
           }
 
