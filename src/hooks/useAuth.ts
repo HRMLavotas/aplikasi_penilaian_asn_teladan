@@ -20,7 +20,6 @@ export const useAuth = () => {
       try {
         // Check for corrupted session data first
         if (isSessionCorrupted()) {
-          console.log("Detected corrupted session, clearing...");
           await clearCorruptedSession();
           setUser(null);
           setIsSuperAdmin(false);
@@ -38,7 +37,6 @@ export const useAuth = () => {
         if (!mounted) return;
 
         if (sessionError) {
-          console.error("Error getting session:", sessionError);
           // Clear any corrupted session data
           await supabase.auth.signOut();
           setUser(null);
@@ -66,7 +64,6 @@ export const useAuth = () => {
         if (!mounted) return;
 
         if (error) {
-          console.error("Error getting user:", error);
           // If getUser fails but we have a session, clear everything
           await supabase.auth.signOut();
           setUser(null);
@@ -88,14 +85,11 @@ export const useAuth = () => {
           setIsSuperAdmin(false);
         }
       } catch (error) {
-        console.error("Error checking auth status:", error);
         if (mounted) {
           // On any error, clear the session and reset state
           try {
             await supabase.auth.signOut();
-          } catch (signOutError) {
-            console.error("Error signing out after auth error:", signOutError);
-          }
+          } catch (signOutError) {}
           setUser(null);
           setIsSuperAdmin(false);
         }
@@ -149,7 +143,6 @@ export const useAuth = () => {
       if (error) throw error;
       return { error: null };
     } catch (error) {
-      console.error("Error signing out:", error);
       return { error };
     }
   };
