@@ -35,8 +35,8 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
       integritasScore +
       (penilaian.skp_2_tahun_terakhir_baik ? 10 : 0) +
       (penilaian.skp_peningkatan_prestasi ? 10 : 0) +
-      (penilaian.memiliki_inovasi ? 20 : 0) +
-      (penilaian.memiliki_penghargaan ? 10 : 0);
+      (penilaian.pegawai.memiliki_inovasi ? 20 : 0) +
+      (penilaian.pegawai.memiliki_penghargaan ? 10 : 0);
     return Math.min(partialScore, 70);
   }
 
