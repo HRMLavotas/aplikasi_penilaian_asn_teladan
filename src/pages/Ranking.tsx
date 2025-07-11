@@ -700,12 +700,12 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              p.tidak_hukuman_disiplin
+                                              latestEval?.tidak_hukuman_disiplin
                                                 ? "default"
                                                 : "destructive"
                                             }
                                           >
-                                            {p.tidak_hukuman_disiplin
+                                            {latestEval?.tidak_hukuman_disiplin
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
