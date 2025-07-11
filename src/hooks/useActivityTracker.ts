@@ -42,9 +42,32 @@ export const useActivityTracker = () => {
 
   const logActivity = useCallback(
     async (activityData: ActivityData) => {
-      if (!user) return;
+      if (!user) {
+        console.log("No user logged in, skipping activity log");
+        return;
+      }
 
       try {
+        // First check if activities table exists by doing a simple count query
+        const { error: testError } = await supabase
+          .from("activities")
+          .select("id", { count: "exact", head: true });
+
+        if (testError) {
+          if (testError.code === "42P01") {
+            console.warn(
+              "Activities table does not exist yet. Please run the migration.",
+            );
+            return;
+          }
+          console.error("Error testing activities table:", testError);
+          console.error(
+            "Test error details:",
+            JSON.stringify(testError, null, 2),
+          );
+          return;
+        }
+
         const { error } = await supabase.from("activities").insert({
           user_id: user.id,
           action_type: activityData.actionType,
@@ -57,10 +80,13 @@ export const useActivityTracker = () => {
         if (error) {
           console.error("Failed to log activity:", error);
           console.error("Error details:", JSON.stringify(error, null, 2));
+          console.error("Activity data:", activityData);
+          console.error("User:", user.id);
         }
       } catch (error) {
         console.error("Error logging activity:", error);
         console.error("Error details:", JSON.stringify(error, null, 2));
+        console.error("Activity data:", activityData);
       }
     },
     [user],
