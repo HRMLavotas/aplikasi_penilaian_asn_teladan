@@ -24,6 +24,7 @@ import {
   BarChart3,
   Shield,
   Activity,
+  Wrench,
 } from "lucide-react";
 import WorkflowTracker from "@/components/WorkflowTracker";
 
