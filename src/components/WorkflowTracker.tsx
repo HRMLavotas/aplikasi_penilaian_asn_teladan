@@ -78,7 +78,6 @@ const WorkflowTracker = () => {
         progressPercentage,
       });
     } catch (error) {
-      console.error("Error fetching workflow stats:", error);
     } finally {
       setIsLoading(false);
     }
