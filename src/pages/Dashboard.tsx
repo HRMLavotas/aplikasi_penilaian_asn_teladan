@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  useRecentActivities,
+  formatActivityDescription,
+  getActivityIcon,
+  formatRelativeTime,
+} from "@/hooks/useRecentActivities";
+import {
+  useActivityTracker,
+  createActivityHelpers,
+} from "@/hooks/useActivityTracker";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +33,8 @@ import {
   FileText,
   BarChart3,
   Shield,
+  Clock,
+  Activity,
 } from "lucide-react";
 import WorkflowTracker from "@/components/WorkflowTracker";
 
@@ -34,7 +46,12 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-  const { user, isLoading: authLoading, isInitialized, signOut: authSignOut } = useAuth();
+  const {
+    user,
+    isLoading: authLoading,
+    isInitialized,
+    signOut: authSignOut,
+  } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalPegawai: 0,
@@ -47,15 +64,15 @@ const Dashboard = () => {
 
   const fetchStats = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Get total pegawai
       const { count: totalPegawai, error: pegawaiError } = await supabase
         .from("pegawai")
         .select("*", { count: "exact", head: true });
-      
+
       if (pegawaiError) throw pegawaiError;
 
       // Get evaluations for current year
@@ -64,7 +81,7 @@ const Dashboard = () => {
         .from("penilaian")
         .select("pegawai_id, persentase_akhir")
         .eq("tahun_penilaian", currentYear);
-      
+
       if (evalError) throw evalError;
 
       // Calculate stats
@@ -109,15 +126,15 @@ const Dashboard = () => {
       fetchStats();
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!session) {
-          navigate("/auth");
-        } else if (event === 'SIGNED_IN') {
-          fetchStats();
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else if (event === "SIGNED_IN") {
+        fetchStats();
       }
-    );
+    });
 
     return () => {
       if (subscription) {
