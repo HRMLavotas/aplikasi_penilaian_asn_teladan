@@ -80,7 +80,9 @@ export const useAuth = () => {
 
         if (user) {
           // Cek apakah user adalah super admin
-          const isAdmin = user.email === "hrmlavotas@gmail.com";
+          const adminEmail =
+            import.meta.env.VITE_ADMIN_EMAIL || "hrmlavotas@gmail.com";
+          const isAdmin = user.email === adminEmail;
           setIsSuperAdmin(isAdmin);
         } else {
           setIsSuperAdmin(false);
@@ -113,7 +115,9 @@ export const useAuth = () => {
       setUser(currentUser);
 
       if (currentUser) {
-        const isAdmin = currentUser.email === "hrmlavotas@gmail.com";
+        const adminEmail =
+          import.meta.env.VITE_ADMIN_EMAIL || "hrmlavotas@gmail.com";
+        const isAdmin = currentUser.email === adminEmail;
         setIsSuperAdmin(isAdmin);
       } else {
         setIsSuperAdmin(false);
