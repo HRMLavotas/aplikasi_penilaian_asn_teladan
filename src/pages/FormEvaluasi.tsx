@@ -156,7 +156,6 @@ const FormEvaluasi = () => {
       if (error) throw error;
       setPegawai(data);
     } catch (error) {
-      console.error("Error fetching pegawai:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data pegawai",
@@ -231,7 +230,6 @@ const FormEvaluasi = () => {
           analisis_ai_kekurangan: data.analisis_ai_kekurangan || "",
         };
 
-        console.log("Loading existing evaluation data:", {
           databaseData: data,
           pegawaiData: pegawaiData.data,
           loadedPenilaian,
@@ -240,7 +238,6 @@ const FormEvaluasi = () => {
         setPenilaian(loadedPenilaian);
       }
     } catch (error) {
-      console.error("Error fetching existing evaluation:", error);
     }
   };
 
@@ -432,7 +429,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
       const data = await response.json();
       const analysis = data.choices[0]?.message?.content || "";
 
-      console.log("Full AI Analysis Response:", analysis);
 
       // Parse the analysis into sections with more comprehensive regex patterns
       const prosMatch =
@@ -465,7 +461,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         ) ||
         analysis.match(/\*\*(?:Weaknesses?|Kekurangan).*:\*\*([\s\S]*?)$/i);
 
-      console.log("AI Analysis parsing results:", {
         fullAnalysis: analysis,
         prosMatch: prosMatch?.[1]?.trim(),
         consMatch: consMatch?.[1]?.trim(),
@@ -534,7 +529,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         description: "Analisis AI telah dihasilkan",
       });
     } catch (error) {
-      console.error("Error generating AI analysis:", error);
       toast({
         title: "Error",
         description: `Gagal menghasilkan analisis AI: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -644,10 +638,8 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         // Add the new fields to dataToSave
         Object.assign(dataToSave, newFields);
       } catch (error) {
-        console.warn('Some new fields could not be added:', error);
       }
 
-      console.log("Data being saved:", dataToSave);
 
       // Create a type-safe object that matches the database schema
       const dbData = {
@@ -687,7 +679,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         ...(dataToSave.kolaboratif_desc !== undefined && { kolaboratif_desc: dataToSave.kolaboratif_desc })
       };
 
-      console.log("Sending to database:", dbData);
 
       const { error } = await supabase.from("penilaian").upsert([dbData], {
         onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
@@ -702,7 +693,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
 
       navigate("/evaluasi");
     } catch (error: any) {
-      console.error("Error saving evaluation:", error);
 
       let errorMessage = "Gagal menyimpan evaluasi";
 
