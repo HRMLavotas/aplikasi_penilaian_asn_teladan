@@ -18,7 +18,6 @@ export const initActivitiesTable = async (): Promise<boolean> => {
     }
 
     if (testError.code === "42P01") {
-      console.log("Activities table does not exist. Creating table...");
 
       // Create the table using raw SQL
       const { error: createError } = await supabase.rpc(
@@ -26,20 +25,16 @@ export const initActivitiesTable = async (): Promise<boolean> => {
       );
 
       if (createError) {
-        console.error("Failed to create activities table:", createError);
         return false;
       }
 
       tableInitialized = true;
-      console.log("Activities table created successfully");
       return true;
     }
 
     // Some other error occurred
-    console.error("Error checking activities table:", testError);
     return false;
   } catch (error) {
-    console.error("Error initializing activities table:", error);
     return false;
   }
 };
@@ -59,20 +54,16 @@ export const setupActivitiesTableIfNeeded = async (): Promise<boolean> => {
     if (error.code === "42P01") {
       // Table doesn't exist - for now, just log and return false
       // In a real production environment, this would be handled by proper migrations
-      console.warn(
         "Activities table does not exist. Activity logging will be disabled.",
       );
-      console.warn(
         "Please run the migration: supabase/migrations/20250111_create_activities_table.sql",
       );
       return false;
     }
 
     // Other errors (permissions, etc.)
-    console.error("Cannot access activities table:", error);
     return false;
   } catch (error) {
-    console.error("Error setting up activities table:", error);
     return false;
   }
 };

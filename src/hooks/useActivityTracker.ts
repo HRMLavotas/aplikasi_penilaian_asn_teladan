@@ -60,20 +60,17 @@ export const useActivityTracker = () => {
         if (error) {
           // Check for common error types
           if (error.code === "42P01") {
-            console.warn(
               "Activities table does not exist. Activity logging disabled.",
             );
             return;
           }
 
           if (error.code === "23503") {
-            console.warn(
               "Foreign key constraint error. User profile might not exist.",
             );
             return;
           }
 
-          console.error("Failed to log activity:", {
             error: error,
             message: error.message,
             code: error.code,
@@ -85,7 +82,6 @@ export const useActivityTracker = () => {
         }
       } catch (error) {
         // Network or other errors
-        console.error("Error logging activity:", {
           error: error,
           message: error instanceof Error ? error.message : "Unknown error",
           activity: activityData,

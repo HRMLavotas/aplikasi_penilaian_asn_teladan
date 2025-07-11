@@ -64,7 +64,6 @@ export const useRecentActivities = (limit: number = 10) => {
 
       if (fetchError) {
         if (fetchError.code === "42P01") {
-          console.warn(
             "Activities table does not exist yet. Showing empty activities.",
           );
           setActivities([]);
@@ -75,7 +74,6 @@ export const useRecentActivities = (limit: number = 10) => {
 
       setActivities(data || []);
     } catch (err) {
-      console.error("Error fetching activities:", {
         error: err,
         message: err instanceof Error ? err.message : "Unknown error",
       });
@@ -105,7 +103,6 @@ export const useRecentActivities = (limit: number = 10) => {
           filter: isSuperAdmin ? undefined : `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log("Activity change received:", payload);
           // Refresh activities when changes occur
           fetchActivities();
         },

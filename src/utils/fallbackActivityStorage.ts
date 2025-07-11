@@ -33,9 +33,7 @@ export const saveFallbackActivity = (
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmedActivities));
 
-    console.log("Activity saved to fallback storage:", newActivity.description);
   } catch (error) {
-    console.error("Error saving fallback activity:", error);
   }
 };
 
@@ -44,7 +42,6 @@ export const getFallbackActivities = (): ActivityData[] => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error("Error getting fallback activities:", error);
     return [];
   }
 };
@@ -52,9 +49,7 @@ export const getFallbackActivities = (): ActivityData[] => {
 export const clearFallbackActivities = () => {
   try {
     localStorage.removeItem(STORAGE_KEY);
-    console.log("Fallback activities cleared");
   } catch (error) {
-    console.error("Error clearing fallback activities:", error);
   }
 };
 

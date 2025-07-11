@@ -9,9 +9,7 @@ export const clearCorruptedSession = async () => {
     // Sign out to clear any Supabase session
     await supabase.auth.signOut();
 
-    console.log("Session cleared successfully");
   } catch (error) {
-    console.error("Error clearing session:", error);
   }
 };
 
@@ -26,7 +24,6 @@ export const isSessionCorrupted = () => {
     }
     return false;
   } catch (error) {
-    console.error("Session data is corrupted:", error);
     return true;
   }
 };
