@@ -180,12 +180,15 @@ export const getHighScorers = async () => {
         `
         id,
         persentase_akhir,
-        pegawai:pegawai_id(nama, nip),
-        memiliki_inovasi,
-        memiliki_penghargaan,
-        bebas_temuan,
-        tidak_hukuman_disiplin,
-        tidak_pemeriksaan_disiplin
+        pegawai:pegawai_id(
+          nama,
+          nip,
+          memiliki_inovasi,
+          memiliki_penghargaan,
+          bebas_temuan,
+          tidak_hukuman_disiplin,
+          tidak_pemeriksaan_disiplin
+        )
       `,
       )
       .gte("persentase_akhir", 90)
