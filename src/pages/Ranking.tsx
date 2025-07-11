@@ -862,10 +862,10 @@ const Ranking = () => {
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Kompeten
+                                            Prestasi
                                           </Label>
                                           <div className="text-2xl font-bold text-purple-600">
-                                            {latestEval?.kompeten_score}
+                                            {latestEval?.prestasi_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
