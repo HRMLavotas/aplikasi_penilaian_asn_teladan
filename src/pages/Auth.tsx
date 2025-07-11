@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  useActivityTracker,
+  createActivityHelpers,
+} from "@/hooks/useActivityTracker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
@@ -27,7 +37,8 @@ const Auth = () => {
         if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Login Gagal",
-            description: "Email atau password tidak valid. Silakan periksa kembali.",
+            description:
+              "Email atau password tidak valid. Silakan periksa kembali.",
             variant: "destructive",
           });
         } else {
@@ -56,11 +67,16 @@ const Auth = () => {
     }
   };
 
-  const handleSignUp = async (email: string, password: string, namaLengkap: string, username: string) => {
+  const handleSignUp = async (
+    email: string,
+    password: string,
+    namaLengkap: string,
+    username: string,
+  ) => {
     setIsLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -77,7 +93,8 @@ const Auth = () => {
         if (error.message.includes("User already registered")) {
           toast({
             title: "Akun Sudah Terdaftar",
-            description: "Email ini sudah terdaftar. Silakan login atau gunakan email lain.",
+            description:
+              "Email ini sudah terdaftar. Silakan login atau gunakan email lain.",
             variant: "destructive",
           });
         } else {
@@ -92,7 +109,8 @@ const Auth = () => {
 
       toast({
         title: "Registrasi Berhasil",
-        description: "Akun berhasil dibuat. Silakan periksa email untuk konfirmasi.",
+        description:
+          "Akun berhasil dibuat. Silakan periksa email untuk konfirmasi.",
       });
     } catch (error) {
       toast({
@@ -133,7 +151,9 @@ const Auth = () => {
             type="email"
             placeholder="nama@kementerian.go.id"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
           />
         </div>
@@ -144,7 +164,9 @@ const Auth = () => {
               id="signin-password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               required
             />
             <Button
@@ -154,7 +176,11 @@ const Auth = () => {
               className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -176,8 +202,13 @@ const Auth = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      
-      if (!formData.email || !formData.password || !formData.namaLengkap || !formData.username) {
+
+      if (
+        !formData.email ||
+        !formData.password ||
+        !formData.namaLengkap ||
+        !formData.username
+      ) {
         toast({
           title: "Form Tidak Lengkap",
           description: "Silakan isi semua field yang diperlukan.",
@@ -204,7 +235,12 @@ const Auth = () => {
         return;
       }
 
-      handleSignUp(formData.email, formData.password, formData.namaLengkap, formData.username);
+      handleSignUp(
+        formData.email,
+        formData.password,
+        formData.namaLengkap,
+        formData.username,
+      );
     };
 
     return (
@@ -216,7 +252,9 @@ const Auth = () => {
             type="text"
             placeholder="Nama lengkap sesuai identitas"
             value={formData.namaLengkap}
-            onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, namaLengkap: e.target.value })
+            }
             required
           />
         </div>
@@ -227,7 +265,9 @@ const Auth = () => {
             type="text"
             placeholder="Username unik"
             value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, username: e.target.value })
+            }
             required
           />
         </div>
@@ -238,7 +278,9 @@ const Auth = () => {
             type="email"
             placeholder="nama@kementerian.go.id"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
           />
         </div>
@@ -250,7 +292,9 @@ const Auth = () => {
               type={showPassword ? "text" : "password"}
               placeholder="Minimal 6 karakter"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
               required
             />
             <Button
@@ -260,7 +304,11 @@ const Auth = () => {
               className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -271,7 +319,9 @@ const Auth = () => {
             type="password"
             placeholder="Ulangi password"
             value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, confirmPassword: e.target.value })
+            }
             required
           />
         </div>
