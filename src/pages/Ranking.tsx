@@ -770,19 +770,19 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              latestEval?.memiliki_penghargaan
+                                              p.memiliki_penghargaan
                                                 ? "default"
                                                 : "secondary"
                                             }
                                           >
-                                            {latestEval?.memiliki_penghargaan
+                                            {p.memiliki_penghargaan
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
-                                          {latestEval?.bukti_penghargaan && (
+                                          {p.bukti_penghargaan && (
                                             <div className="text-xs text-muted-foreground mt-1 p-2 bg-muted rounded">
                                               <strong>Bukti:</strong>{" "}
-                                              {latestEval.bukti_penghargaan}
+                                              {p.bukti_penghargaan}
                                             </div>
                                           )}
                                         </div>
