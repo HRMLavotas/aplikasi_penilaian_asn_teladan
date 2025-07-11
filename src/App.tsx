@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useRoutes } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +14,7 @@ import FormEvaluasi from "./pages/FormEvaluasi";
 import Ranking from "./pages/Ranking";
 import Laporan from "./pages/Laporan";
 import Settings from "./pages/Settings";
+import AdminScoreFix from "./pages/AdminScoreFix";
 import NotFound from "./pages/NotFound";
 
 // Import tempo routes conditionally
@@ -21,9 +23,7 @@ if (import.meta.env.VITE_TEMPO) {
   try {
     const tempoRoutes = await import("tempo-routes");
     routes = tempoRoutes.default;
-  } catch (error) {
-    console.warn("Tempo routes not available:", error);
-  }
+  } catch (error) {}
 }
 
 const queryClient = new QueryClient();
@@ -46,6 +46,7 @@ const AppRoutes = () => {
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/laporan" element={<Laporan />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/admin/score-fix" element={<AdminScoreFix />} />
         {/* Tempo catch-all route */}
         {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -56,15 +57,17 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

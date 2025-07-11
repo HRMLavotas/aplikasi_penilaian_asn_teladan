@@ -211,7 +211,6 @@ const AdvancedAnalytics = () => {
         timeSeriesData,
       });
     } catch (error) {
-      console.error("Error fetching analytics:", error);
     } finally {
       setIsLoading(false);
     }

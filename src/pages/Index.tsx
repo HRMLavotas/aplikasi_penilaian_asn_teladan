@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Award, TrendingUp, ArrowRight } from "lucide-react";
 
@@ -12,24 +18,37 @@ const Index = () => {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session) {
-        navigate("/dashboard");
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          setUser(null);
+          return;
+        }
+
+        setUser(session?.user ?? null);
+
+        if (session) {
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        setUser(null);
       }
     };
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        if (session) {
-          navigate("/dashboard");
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (session) {
+        navigate("/dashboard");
       }
-    );
+    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -38,18 +57,21 @@ const Index = () => {
     {
       icon: Users,
       title: "Manajemen Pegawai",
-      description: "Kelola data pegawai ASN secara terpusat dengan sistem yang terintegrasi"
+      description:
+        "Kelola data pegawai ASN secara terpusat dengan sistem yang terintegrasi",
     },
     {
       icon: Award,
       title: "Evaluasi Komprehensif",
-      description: "Penilaian multi-aspek untuk mengidentifikasi ASN teladan dan yang perlu pembinaan"
+      description:
+        "Penilaian multi-aspek untuk mengidentifikasi ASN teladan dan yang perlu pembinaan",
     },
     {
       icon: TrendingUp,
       title: "Analisis AI",
-      description: "Sistem analisis cerdas untuk memberikan insight mendalam tentang performa pegawai"
-    }
+      description:
+        "Sistem analisis cerdas untuk memberikan insight mendalam tentang performa pegawai",
+    },
   ];
 
   return (
@@ -62,16 +84,16 @@ const Index = () => {
               <Shield className="h-8 w-8 text-primary" />
               <div>
                 <h1 className="text-2xl font-bold">ASN Insight Hub</h1>
-                <p className="text-sm text-muted-foreground">Kementerian Ketenagakerjaan RI</p>
+                <p className="text-sm text-muted-foreground">
+                  Kementerian Ketenagakerjaan RI
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Button variant="outline" onClick={() => navigate("/auth")}>
                 Masuk
               </Button>
-              <Button onClick={() => navigate("/auth")}>
-                Daftar
-              </Button>
+              <Button onClick={() => navigate("/auth")}>Daftar</Button>
             </div>
           </div>
         </div>
@@ -87,11 +109,16 @@ const Index = () => {
             Sistem Evaluasi dan Eliminasi Aparatur Sipil Negara
           </h1>
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-            Platform digital untuk mengidentifikasi ASN teladan dan melakukan pembinaan 
-            berkelanjutan dengan teknologi AI yang canggih dan analisis data komprehensif
+            Platform digital untuk mengidentifikasi ASN teladan dan melakukan
+            pembinaan berkelanjutan dengan teknologi AI yang canggih dan
+            analisis data komprehensif
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/auth")} className="group">
+            <Button
+              size="lg"
+              onClick={() => navigate("/auth")}
+              className="group"
+            >
               Mulai Sekarang
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -107,13 +134,17 @@ const Index = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Fitur Unggulan</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Sistem terintegrasi dengan teknologi terdepan untuk evaluasi ASN yang objektif dan transparan
+            Sistem terintegrasi dengan teknologi terdepan untuk evaluasi ASN
+            yang objektif dan transparan
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="text-center group hover:shadow-lg transition-shadow">
+            <Card
+              key={index}
+              className="text-center group hover:shadow-lg transition-shadow"
+            >
               <CardHeader>
                 <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="h-6 w-6 text-primary" />
@@ -158,13 +189,19 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16">
         <Card className="text-center max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-2xl">Siap Memulai Evaluasi ASN?</CardTitle>
+            <CardTitle className="text-2xl">
+              Siap Memulai Evaluasi ASN?
+            </CardTitle>
             <CardDescription className="text-base">
               Bergabunglah dengan sistem evaluasi ASN yang modern dan efisien
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button size="lg" onClick={() => navigate("/auth")} className="group">
+            <Button
+              size="lg"
+              onClick={() => navigate("/auth")}
+              className="group"
+            >
               Daftar Sekarang
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>

@@ -106,7 +106,6 @@ const Settings = () => {
         unit_kerja_id: data.unit_kerja_id || "none",
       });
     } catch (error) {
-      console.error("Error fetching profile:", error);
       toast({
         title: "Error",
         description: "Gagal memuat profil pengguna",
@@ -127,7 +126,6 @@ const Settings = () => {
       if (error) throw error;
       setUnitKerja(data || []);
     } catch (error) {
-      console.error("Error fetching unit kerja:", error);
     }
   };
 
@@ -167,7 +165,6 @@ const Settings = () => {
 
       fetchProfile(); // Refresh profile data
     } catch (error) {
-      console.error("Error updating profile:", error);
       toast({
         title: "Error",
         description: "Gagal memperbarui profil",

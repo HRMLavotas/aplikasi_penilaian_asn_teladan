@@ -156,7 +156,6 @@ const FormEvaluasi = () => {
       if (error) throw error;
       setPegawai(data);
     } catch (error) {
-      console.error("Error fetching pegawai:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data pegawai",
@@ -231,17 +230,9 @@ const FormEvaluasi = () => {
           analisis_ai_kekurangan: data.analisis_ai_kekurangan || "",
         };
 
-        console.log("Loading existing evaluation data:", {
-          databaseData: data,
-          pegawaiData: pegawaiData.data,
-          loadedPenilaian,
-        });
-
         setPenilaian(loadedPenilaian);
       }
-    } catch (error) {
-      console.error("Error fetching existing evaluation:", error);
-    }
+    } catch (error) {}
   };
 
   const handleScoreChange = (field: keyof PenilaianData, value: number[]) => {
@@ -266,13 +257,24 @@ const FormEvaluasi = () => {
   };
 
   const calculatePreviewScore = () => {
-    // Kriteria Integritas (30%)
+    // Kriteria Integritas (30%) - WAJIB SEMPURNA
     let integritasScore = 0;
     if (penilaian.bebas_temuan) integritasScore += 10;
     if (penilaian.tidak_hukuman_disiplin) integritasScore += 10;
     if (penilaian.tidak_pemeriksaan_disiplin) integritasScore += 10;
 
-    // Prestasi & Inovasi (30%)
+    // Jika integritas tidak sempurna, maksimal score adalah 70%
+    if (integritasScore < 30) {
+      const partialScore =
+        integritasScore +
+        (penilaian.skp_2_tahun_terakhir_baik ? 10 : 0) +
+        (penilaian.skp_peningkatan_prestasi ? 10 : 0) +
+        (penilaian.memiliki_inovasi ? 20 : 0) +
+        (penilaian.memiliki_penghargaan ? 10 : 0);
+      return Math.min(partialScore, 70);
+    }
+
+    // Prestasi & Inovasi (30%) - WAJIB MINIMAL SALAH SATU
     let prestasiScore = 0;
     if (penilaian.memiliki_inovasi) prestasiScore += 20;
     if (penilaian.memiliki_penghargaan) prestasiScore += 10;
@@ -297,8 +299,22 @@ const FormEvaluasi = () => {
       coreValuesScores.length;
     const coreValuesScore = (coreValuesAverage / 100) * 20; // 20% dari rata-rata core values
 
-    const totalScore =
+    let totalScore =
       integritasScore + prestasiScore + skpScore + coreValuesScore;
+
+    // Aturan tambahan: Tanpa inovasi ATAU penghargaan, maksimal 85%
+    if (!penilaian.memiliki_inovasi && !penilaian.memiliki_penghargaan) {
+      totalScore = Math.min(totalScore, 85);
+    }
+
+    // Aturan tambahan: Untuk score 90%+, wajib memiliki inovasi DAN penghargaan
+    if (
+      totalScore >= 90 &&
+      (!penilaian.memiliki_inovasi || !penilaian.memiliki_penghargaan)
+    ) {
+      totalScore = Math.min(totalScore, 89);
+    }
+
     return Math.min(totalScore, 100);
   };
 
@@ -432,8 +448,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
       const data = await response.json();
       const analysis = data.choices[0]?.message?.content || "";
 
-      console.log("Full AI Analysis Response:", analysis);
-
       // Parse the analysis into sections with more comprehensive regex patterns
       const prosMatch =
         analysis.match(
@@ -464,14 +478,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
           /\*\*KEKURANGAN YANG PERLU DIPERBAIKI:\*\*([\s\S]*?)$/i,
         ) ||
         analysis.match(/\*\*(?:Weaknesses?|Kekurangan).*:\*\*([\s\S]*?)$/i);
-
-      console.log("AI Analysis parsing results:", {
-        fullAnalysis: analysis,
-        prosMatch: prosMatch?.[1]?.trim(),
-        consMatch: consMatch?.[1]?.trim(),
-        strengthsMatch: strengthsMatch?.[1]?.trim(),
-        weaknessesMatch: weaknessesMatch?.[1]?.trim(),
-      });
 
       // Clean and format the extracted content
       const cleanText = (text: string) => {
@@ -534,7 +540,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         description: "Analisis AI telah dihasilkan",
       });
     } catch (error) {
-      console.error("Error generating AI analysis:", error);
       toast({
         title: "Error",
         description: `Gagal menghasilkan analisis AI: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -612,10 +617,10 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         rekam_jejak_score: penilaian.kolaboratif_score || 70,
         integritas_moralitas_score: 70,
         // AI Analysis
-        analisis_ai_pro: penilaian.analisis_ai_pro || '',
-        analisis_ai_kontra: penilaian.analisis_ai_kontra || '',
-        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan || '',
-        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan || '',
+        analisis_ai_pro: penilaian.analisis_ai_pro || "",
+        analisis_ai_kontra: penilaian.analisis_ai_kontra || "",
+        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan || "",
+        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan || "",
       };
 
       // Try to add the new fields if they exist in the database
@@ -625,29 +630,27 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
           // Kriteria Integritas
           bebas_temuan: penilaian.bebas_temuan || false,
           tidak_hukuman_disiplin: penilaian.tidak_hukuman_disiplin || false,
-          tidak_pemeriksaan_disiplin: penilaian.tidak_pemeriksaan_disiplin || false,
+          tidak_pemeriksaan_disiplin:
+            penilaian.tidak_pemeriksaan_disiplin || false,
           // Prestasi & Inovasi
           memiliki_inovasi: penilaian.memiliki_inovasi || false,
-          bukti_inovasi: penilaian.bukti_inovasi || '',
+          bukti_inovasi: penilaian.bukti_inovasi || "",
           memiliki_penghargaan: penilaian.memiliki_penghargaan || false,
-          bukti_penghargaan: penilaian.bukti_penghargaan || '',
+          bukti_penghargaan: penilaian.bukti_penghargaan || "",
           // Core value descriptions
-          berorientasi_pelayanan_desc: penilaian.berorientasi_pelayanan_desc || '',
-          akuntabel_desc: penilaian.akuntabel_desc || '',
-          kompeten_desc: penilaian.kompeten_desc || '',
-          harmonis_desc: penilaian.harmonis_desc || '',
-          loyal_desc: penilaian.loyal_desc || '',
-          adaptif_desc: penilaian.adaptif_desc || '',
-          kolaboratif_desc: penilaian.kolaboratif_desc || '',
+          berorientasi_pelayanan_desc:
+            penilaian.berorientasi_pelayanan_desc || "",
+          akuntabel_desc: penilaian.akuntabel_desc || "",
+          kompeten_desc: penilaian.kompeten_desc || "",
+          harmonis_desc: penilaian.harmonis_desc || "",
+          loyal_desc: penilaian.loyal_desc || "",
+          adaptif_desc: penilaian.adaptif_desc || "",
+          kolaboratif_desc: penilaian.kolaboratif_desc || "",
         };
 
         // Add the new fields to dataToSave
         Object.assign(dataToSave, newFields);
-      } catch (error) {
-        console.warn('Some new fields could not be added:', error);
-      }
-
-      console.log("Data being saved:", dataToSave);
+      } catch (error) {}
 
       // Create a type-safe object that matches the database schema
       const dbData = {
@@ -671,23 +674,49 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         analisis_ai_kelebihan: dataToSave.analisis_ai_kelebihan,
         analisis_ai_kekurangan: dataToSave.analisis_ai_kekurangan,
         // Add optional fields if they exist
-        ...(dataToSave.bebas_temuan !== undefined && { bebas_temuan: dataToSave.bebas_temuan }),
-        ...(dataToSave.tidak_hukuman_disiplin !== undefined && { tidak_hukuman_disiplin: dataToSave.tidak_hukuman_disiplin }),
-        ...(dataToSave.tidak_pemeriksaan_disiplin !== undefined && { tidak_pemeriksaan_disiplin: dataToSave.tidak_pemeriksaan_disiplin }),
-        ...(dataToSave.memiliki_inovasi !== undefined && { memiliki_inovasi: dataToSave.memiliki_inovasi }),
-        ...(dataToSave.bukti_inovasi !== undefined && { bukti_inovasi: dataToSave.bukti_inovasi }),
-        ...(dataToSave.memiliki_penghargaan !== undefined && { memiliki_penghargaan: dataToSave.memiliki_penghargaan }),
-        ...(dataToSave.bukti_penghargaan !== undefined && { bukti_penghargaan: dataToSave.bukti_penghargaan }),
-        ...(dataToSave.berorientasi_pelayanan_desc !== undefined && { berorientasi_pelayanan_desc: dataToSave.berorientasi_pelayanan_desc }),
-        ...(dataToSave.akuntabel_desc !== undefined && { akuntabel_desc: dataToSave.akuntabel_desc }),
-        ...(dataToSave.kompeten_desc !== undefined && { kompeten_desc: dataToSave.kompeten_desc }),
-        ...(dataToSave.harmonis_desc !== undefined && { harmonis_desc: dataToSave.harmonis_desc }),
-        ...(dataToSave.loyal_desc !== undefined && { loyal_desc: dataToSave.loyal_desc }),
-        ...(dataToSave.adaptif_desc !== undefined && { adaptif_desc: dataToSave.adaptif_desc }),
-        ...(dataToSave.kolaboratif_desc !== undefined && { kolaboratif_desc: dataToSave.kolaboratif_desc })
+        ...(dataToSave.bebas_temuan !== undefined && {
+          bebas_temuan: dataToSave.bebas_temuan,
+        }),
+        ...(dataToSave.tidak_hukuman_disiplin !== undefined && {
+          tidak_hukuman_disiplin: dataToSave.tidak_hukuman_disiplin,
+        }),
+        ...(dataToSave.tidak_pemeriksaan_disiplin !== undefined && {
+          tidak_pemeriksaan_disiplin: dataToSave.tidak_pemeriksaan_disiplin,
+        }),
+        ...(dataToSave.memiliki_inovasi !== undefined && {
+          memiliki_inovasi: dataToSave.memiliki_inovasi,
+        }),
+        ...(dataToSave.bukti_inovasi !== undefined && {
+          bukti_inovasi: dataToSave.bukti_inovasi,
+        }),
+        ...(dataToSave.memiliki_penghargaan !== undefined && {
+          memiliki_penghargaan: dataToSave.memiliki_penghargaan,
+        }),
+        ...(dataToSave.bukti_penghargaan !== undefined && {
+          bukti_penghargaan: dataToSave.bukti_penghargaan,
+        }),
+        ...(dataToSave.berorientasi_pelayanan_desc !== undefined && {
+          berorientasi_pelayanan_desc: dataToSave.berorientasi_pelayanan_desc,
+        }),
+        ...(dataToSave.akuntabel_desc !== undefined && {
+          akuntabel_desc: dataToSave.akuntabel_desc,
+        }),
+        ...(dataToSave.kompeten_desc !== undefined && {
+          kompeten_desc: dataToSave.kompeten_desc,
+        }),
+        ...(dataToSave.harmonis_desc !== undefined && {
+          harmonis_desc: dataToSave.harmonis_desc,
+        }),
+        ...(dataToSave.loyal_desc !== undefined && {
+          loyal_desc: dataToSave.loyal_desc,
+        }),
+        ...(dataToSave.adaptif_desc !== undefined && {
+          adaptif_desc: dataToSave.adaptif_desc,
+        }),
+        ...(dataToSave.kolaboratif_desc !== undefined && {
+          kolaboratif_desc: dataToSave.kolaboratif_desc,
+        }),
       };
-
-      console.log("Sending to database:", dbData);
 
       const { error } = await supabase.from("penilaian").upsert([dbData], {
         onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
@@ -702,8 +731,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
 
       navigate("/evaluasi");
     } catch (error: any) {
-      console.error("Error saving evaluation:", error);
-
       let errorMessage = "Gagal menyimpan evaluasi";
 
       if (error?.message) {

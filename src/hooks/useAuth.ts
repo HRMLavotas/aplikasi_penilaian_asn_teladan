@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  clearCorruptedSession,
+  isSessionCorrupted,
+} from "@/utils/clearSession";
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
@@ -9,16 +13,59 @@ export const useAuth = () => {
 
   useEffect(() => {
     let mounted = true;
-    let authSubscription: { subscription: { unsubscribe: () => void } } | null = null;
+    let authSubscription: { subscription: { unsubscribe: () => void } } | null =
+      null;
 
     const checkAuth = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
+        // Check for corrupted session data first
+        if (isSessionCorrupted()) {
+          await clearCorruptedSession();
+          setUser(null);
+          setIsSuperAdmin(false);
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        }
+
+        // First check if we have a session before calling getUser
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
         if (!mounted) return;
-        
+
+        if (sessionError) {
+          // Clear any corrupted session data
+          await supabase.auth.signOut();
+          setUser(null);
+          setIsSuperAdmin(false);
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        }
+
+        // If no session, user is not authenticated
+        if (!session) {
+          setUser(null);
+          setIsSuperAdmin(false);
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        }
+
+        // If we have a session, get the user
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (!mounted) return;
+
         if (error) {
-          console.error('Error getting user:', error);
+          // If getUser fails but we have a session, clear everything
+          await supabase.auth.signOut();
           setUser(null);
           setIsSuperAdmin(false);
           setIsLoading(false);
@@ -27,17 +74,22 @@ export const useAuth = () => {
         }
 
         setUser(user);
-        
+
         if (user) {
           // Cek apakah user adalah super admin
-          const isAdmin = user.email === 'hrmlavotas@gmail.com';
+          const adminEmail =
+            import.meta.env.VITE_ADMIN_EMAIL || "hrmlavotas@gmail.com";
+          const isAdmin = user.email === adminEmail;
           setIsSuperAdmin(isAdmin);
         } else {
           setIsSuperAdmin(false);
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
         if (mounted) {
+          // On any error, clear the session and reset state
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {}
           setUser(null);
           setIsSuperAdmin(false);
         }
@@ -50,30 +102,30 @@ export const useAuth = () => {
     };
 
     // Subscribe to auth changes
-    const { data } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        const currentUser = session?.user || null;
-        setUser(currentUser);
-        
-        if (currentUser) {
-          const isAdmin = currentUser.email === 'hrmlavotas@gmail.com';
-          setIsSuperAdmin(isAdmin);
-        } else {
-          setIsSuperAdmin(false);
-        }
-        
-        // Set initialized to true when we get the first auth state
-        if (!isInitialized) {
-          setIsInitialized(true);
-          setIsLoading(false);
-        }
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      const currentUser = session?.user || null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const adminEmail =
+          import.meta.env.VITE_ADMIN_EMAIL || "hrmlavotas@gmail.com";
+        const isAdmin = currentUser.email === adminEmail;
+        setIsSuperAdmin(isAdmin);
+      } else {
+        setIsSuperAdmin(false);
       }
-    );
-    
+
+      // Set initialized to true when we get the first auth state
+      if (!isInitialized) {
+        setIsInitialized(true);
+        setIsLoading(false);
+      }
+    });
+
     authSubscription = data;
-    
+
     // Initial check
     checkAuth();
 
@@ -91,16 +143,15 @@ export const useAuth = () => {
       if (error) throw error;
       return { error: null };
     } catch (error) {
-      console.error('Error signing out:', error);
       return { error };
     }
   };
 
-  return { 
-    user, 
-    isSuperAdmin, 
+  return {
+    user,
+    isSuperAdmin,
     isLoading: !isInitialized || isLoading,
     isInitialized,
-    signOut
+    signOut,
   };
 };

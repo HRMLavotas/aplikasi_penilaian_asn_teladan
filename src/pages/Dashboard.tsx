@@ -23,6 +23,8 @@ import {
   FileText,
   BarChart3,
   Shield,
+  Activity,
+  Wrench,
 } from "lucide-react";
 import WorkflowTracker from "@/components/WorkflowTracker";
 
@@ -34,7 +36,13 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-  const { user, isLoading: authLoading, isInitialized, signOut: authSignOut } = useAuth();
+  const {
+    user,
+    isSuperAdmin,
+    isLoading: authLoading,
+    isInitialized,
+    signOut: authSignOut,
+  } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalPegawai: 0,
@@ -47,15 +55,15 @@ const Dashboard = () => {
 
   const fetchStats = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Get total pegawai
       const { count: totalPegawai, error: pegawaiError } = await supabase
         .from("pegawai")
         .select("*", { count: "exact", head: true });
-      
+
       if (pegawaiError) throw pegawaiError;
 
       // Get evaluations for current year
@@ -64,7 +72,7 @@ const Dashboard = () => {
         .from("penilaian")
         .select("pegawai_id, persentase_akhir")
         .eq("tahun_penilaian", currentYear);
-      
+
       if (evalError) throw evalError;
 
       // Calculate stats
@@ -88,7 +96,6 @@ const Dashboard = () => {
         asnTeladan,
       });
     } catch (error) {
-      console.error("Error fetching stats:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data statistik. Silakan coba lagi.",
@@ -109,15 +116,15 @@ const Dashboard = () => {
       fetchStats();
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!session) {
-          navigate("/auth");
-        } else if (event === 'SIGNED_IN') {
-          fetchStats();
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else if (event === "SIGNED_IN") {
+        fetchStats();
       }
-    );
+    });
 
     return () => {
       if (subscription) {
@@ -194,6 +201,17 @@ const Dashboard = () => {
       href: "/settings",
       color: "bg-gray-500/10 text-gray-600",
     },
+    ...(isSuperAdmin
+      ? [
+          {
+            title: "Admin Tools",
+            description: "Perbaiki skor & validasi data",
+            icon: Wrench,
+            href: "/admin/score-fix",
+            color: "bg-red-500/10 text-red-600",
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -332,9 +350,13 @@ const Dashboard = () => {
         <Card className="mt-8">
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
+              <Activity className="h-5 w-5 mr-2" />
               Aktivitas Terbaru
             </CardTitle>
+            <CardDescription>
+              Aktivitas akan muncul saat Anda berhasil menambahkan atau mengubah
+              data
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">

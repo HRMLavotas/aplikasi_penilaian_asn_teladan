@@ -102,7 +102,6 @@ const Evaluasi = () => {
       setPegawai(pegawaiData || []);
       setUnitKerja(unitData || []);
     } catch (error) {
-      console.error("Error fetching data:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data pegawai",

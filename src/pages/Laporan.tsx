@@ -187,7 +187,6 @@ const Laporan = () => {
         unitKerjaStats,
       });
     } catch (error) {
-      console.error("Error fetching report data:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data laporan",

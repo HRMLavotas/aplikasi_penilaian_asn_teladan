@@ -57,8 +57,14 @@ interface PegawaiRanking {
   jabatan: string;
   status_jabatan: string;
   masa_kerja_tahun: number;
+  // Integrity and achievement fields (in pegawai table)
+  bebas_temuan: boolean;
+  bukti_inovasi: string | null;
+  bukti_penghargaan: string | null;
   memiliki_inovasi: boolean;
   memiliki_penghargaan: boolean;
+  tidak_hukuman_disiplin: boolean;
+  tidak_pemeriksaan_disiplin: boolean;
   unit_kerja: {
     nama_unit_kerja: string;
   };
@@ -66,6 +72,7 @@ interface PegawaiRanking {
     id: string;
     tahun_penilaian: number;
     persentase_akhir: number;
+    // Original scoring system (still in database)
     kinerja_perilaku_score: number;
     inovasi_dampak_score: number;
     prestasi_score: number;
@@ -75,10 +82,31 @@ interface PegawaiRanking {
     leadership_score: number;
     rekam_jejak_score: number;
     integritas_moralitas_score: number;
-    analisis_ai_pro: string;
-    analisis_ai_kontra: string;
-    analisis_ai_kelebihan: string;
-    analisis_ai_kekurangan: string;
+    // BerAKHLAK Core Values Descriptions
+    adaptif_desc: string | null;
+    akuntabel_desc: string | null;
+    berorientasi_pelayanan_desc: string | null;
+    harmonis_desc: string | null;
+    kolaboratif_desc: string | null;
+    kompeten_desc: string | null;
+    loyal_desc: string | null;
+    // SKP Criteria
+    skp_2_tahun_terakhir_baik: boolean;
+    skp_peningkatan_prestasi: boolean;
+    // Achievement & Innovation from penilaian (overrides pegawai data)
+    bukti_inovasi: string | null;
+    bukti_penghargaan: string | null;
+    memiliki_inovasi: boolean;
+    memiliki_penghargaan: boolean;
+    // Integrity from penilaian (overrides pegawai data)
+    bebas_temuan: boolean;
+    tidak_hukuman_disiplin: boolean;
+    tidak_pemeriksaan_disiplin: boolean;
+    // AI Analysis
+    analisis_ai_pro: string | null;
+    analisis_ai_kontra: string | null;
+    analisis_ai_kelebihan: string | null;
+    analisis_ai_kekurangan: string | null;
   }>;
 }
 
@@ -125,9 +153,54 @@ const Ranking = () => {
         .from("pegawai")
         .select(
           `
-          *,
+          id,
+          nama,
+          nip,
+          jabatan,
+          status_jabatan,
+          masa_kerja_tahun,
+          bebas_temuan,
+          bukti_inovasi,
+          bukti_penghargaan,
+          memiliki_inovasi,
+          memiliki_penghargaan,
+          tidak_hukuman_disiplin,
+          tidak_pemeriksaan_disiplin,
           unit_kerja:unit_kerja_id(nama_unit_kerja),
-          penilaian(*)
+          penilaian(
+            id,
+            tahun_penilaian,
+            persentase_akhir,
+            kinerja_perilaku_score,
+            inovasi_dampak_score,
+            prestasi_score,
+            inspiratif_score,
+            komunikasi_score,
+            kerjasama_kolaborasi_score,
+            leadership_score,
+            rekam_jejak_score,
+            integritas_moralitas_score,
+            adaptif_desc,
+            akuntabel_desc,
+            berorientasi_pelayanan_desc,
+            harmonis_desc,
+            kolaboratif_desc,
+            kompeten_desc,
+            loyal_desc,
+                        skp_2_tahun_terakhir_baik,
+            skp_peningkatan_prestasi,
+            bukti_inovasi,
+            bukti_penghargaan,
+            memiliki_inovasi,
+            memiliki_penghargaan,
+            bebas_temuan,
+            tidak_hukuman_disiplin,
+            tidak_pemeriksaan_disiplin,
+            analisis_ai_pro,
+            analisis_ai_kontra,
+            analisis_ai_kelebihan,
+            analisis_ai_kekurangan
+          )
         `,
         )
         .order("nama");
@@ -166,10 +239,9 @@ const Ranking = () => {
       setPegawai(pegawaiWithEvaluations);
       setUnitKerja(unitData || []);
     } catch (error) {
-      console.error("Error fetching data:", error);
       toast({
         title: "Error",
-        description: "Gagal memuat data ranking",
+        description: `Gagal memuat data ranking: ${error.message || error}`,
         variant: "destructive",
       });
     } finally {
@@ -585,134 +657,466 @@ const Ranking = () => {
                                   <Eye className="h-4 w-4" />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                              <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
-                                  <DialogTitle>
-                                    Detail Evaluasi - {p.nama}
+                                  <DialogTitle className="text-xl">
+                                    Detail Evaluasi Lengkap - {p.nama}
                                   </DialogTitle>
                                   <DialogDescription>
-                                    Rincian penilaian dan analisis AI
+                                    Rincian lengkap penilaian ASN meliputi
+                                    kriteria integritas, prestasi & inovasi,
+                                    SKP, dan analisis AI
                                   </DialogDescription>
                                 </DialogHeader>
-                                <div className="space-y-4">
-                                  {/* Score Breakdown */}
-                                  <div className="grid grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Kinerja & Perilaku
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.kinerja_perilaku_score}
+                                <div className="space-y-6">
+                                  {/* Overall Score */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className="text-lg">
+                                        Skor Akhir
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="text-4xl font-bold text-center mb-4">
+                                        {latestEval?.persentase_akhir?.toFixed(
+                                          1,
+                                        )}
+                                        %
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Inovasi & Dampak
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.inovasi_dampak_score}
+                                      <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
+                                        <strong>Aturan Penilaian:</strong>
+                                        <ul className="list-disc list-inside mt-1 space-y-1">
+                                          <li>
+                                            Integritas wajib sempurna untuk
+                                            score 70%+
+                                          </li>
+                                          <li>
+                                            Tanpa inovasi atau penghargaan
+                                            maksimal 85%
+                                          </li>
+                                          <li>
+                                            Score 90%+ butuh inovasi DAN
+                                            penghargaan
+                                          </li>
+                                          <li>
+                                            Komposisi: Integritas (30%) +
+                                            Prestasi (30%) + SKP (20%) + Core
+                                            Values (20%)
+                                          </li>
+                                        </ul>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Prestasi
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.prestasi_score}
+                                    </CardContent>
+                                  </Card>
+
+                                  {/* Kriteria Integritas */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className="text-lg">
+                                        Kriteria Integritas
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Bebas Temuan
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.bebas_temuan
+                                                ? "default"
+                                                : "destructive"
+                                            }
+                                          >
+                                            {latestEval?.bebas_temuan
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Tidak Ada Hukuman Disiplin
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.tidak_hukuman_disiplin
+                                                ? "default"
+                                                : "destructive"
+                                            }
+                                          >
+                                            {latestEval?.tidak_hukuman_disiplin
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Tidak Dalam Pemeriksaan
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.tidak_pemeriksaan_disiplin
+                                                ? "default"
+                                                : "destructive"
+                                            }
+                                          >
+                                            {latestEval?.tidak_pemeriksaan_disiplin
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                        </div>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Inspiratif
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.inspiratif_score}
+                                    </CardContent>
+                                  </Card>
+
+                                  {/* Prestasi & Inovasi */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className="text-lg">
+                                        Prestasi & Inovasi
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Memiliki Inovasi
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.memiliki_inovasi
+                                                ? "default"
+                                                : "secondary"
+                                            }
+                                          >
+                                            {latestEval?.memiliki_inovasi
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                          {/* Show description from penilaian table if available, fallback to pegawai table */}
+                                          {(latestEval?.bukti_inovasi ||
+                                            p.bukti_inovasi) && (
+                                            <div className="text-xs text-muted-foreground mt-1 p-2 bg-muted rounded">
+                                              <strong>
+                                                Deskripsi Inovasi:
+                                              </strong>{" "}
+                                              {latestEval?.bukti_inovasi ||
+                                                p.bukti_inovasi}
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Memiliki Penghargaan
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.memiliki_penghargaan
+                                                ? "default"
+                                                : "secondary"
+                                            }
+                                          >
+                                            {latestEval?.memiliki_penghargaan
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                          {/* Show description from penilaian table if available, fallback to pegawai table */}
+                                          {(latestEval?.bukti_penghargaan ||
+                                            p.bukti_penghargaan) && (
+                                            <div className="text-xs text-muted-foreground mt-1 p-2 bg-muted rounded">
+                                              <strong>
+                                                Deskripsi Penghargaan:
+                                              </strong>{" "}
+                                              {latestEval?.bukti_penghargaan ||
+                                                p.bukti_penghargaan}
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Komunikasi
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.komunikasi_score}
+                                    </CardContent>
+                                  </Card>
+
+                                  {/* Kriteria SKP */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className="text-lg">
+                                        Kriteria SKP (Sasaran Kerja Pegawai)
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            SKP 2 Tahun Terakhir Baik
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.skp_2_tahun_terakhir_baik
+                                                ? "default"
+                                                : "destructive"
+                                            }
+                                          >
+                                            {latestEval?.skp_2_tahun_terakhir_baik
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Peningkatan Prestasi SKP
+                                          </Label>
+                                          <Badge
+                                            variant={
+                                              latestEval?.skp_peningkatan_prestasi
+                                                ? "default"
+                                                : "secondary"
+                                            }
+                                          >
+                                            {latestEval?.skp_peningkatan_prestasi
+                                              ? "✓ Ya"
+                                              : "✗ Tidak"}
+                                          </Badge>
+                                        </div>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Kerjasama
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.kerjasama_kolaborasi_score}
+                                    </CardContent>
+                                  </Card>
+
+                                  {/* BerAKHLAK Core Values Scores */}
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle className="text-lg">
+                                        Penilaian ASN (9 Kriteria)
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Kinerja & Perilaku
+                                          </Label>
+                                          <div className="text-2xl font-bold text-blue-600">
+                                            {latestEval?.kinerja_perilaku_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Inovasi & Dampak
+                                          </Label>
+                                          <div className="text-2xl font-bold text-green-600">
+                                            {latestEval?.inovasi_dampak_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Prestasi
+                                          </Label>
+                                          <div className="text-2xl font-bold text-purple-600">
+                                            {latestEval?.prestasi_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Inspiratif
+                                          </Label>
+                                          <div className="text-2xl font-bold text-yellow-600">
+                                            {latestEval?.inspiratif_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Komunikasi
+                                          </Label>
+                                          <div className="text-2xl font-bold text-indigo-600">
+                                            {latestEval?.komunikasi_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Kerjasama
+                                          </Label>
+                                          <div className="text-2xl font-bold text-pink-600">
+                                            {
+                                              latestEval?.kerjasama_kolaborasi_score
+                                            }
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Leadership
+                                          </Label>
+                                          <div className="text-2xl font-bold text-orange-600">
+                                            {latestEval?.leadership_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Rekam Jejak
+                                          </Label>
+                                          <div className="text-2xl font-bold text-teal-600">
+                                            {latestEval?.rekam_jejak_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Integritas
+                                          </Label>
+                                          <div className="text-2xl font-bold text-red-600">
+                                            {
+                                              latestEval?.integritas_moralitas_score
+                                            }
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Leadership
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.leadership_score}
-                                      </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Rekam Jejak
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.rekam_jejak_score}
-                                      </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm font-medium">
-                                        Integritas
-                                      </Label>
-                                      <div className="text-2xl font-bold">
-                                        {latestEval?.integritas_moralitas_score}
-                                      </div>
-                                    </div>
-                                  </div>
+                                    </CardContent>
+                                  </Card>
+
+                                  {/* BerAKHLAK Core Values Descriptions */}
+                                  {latestEval &&
+                                    (latestEval.akuntabel_desc ||
+                                      latestEval.adaptif_desc ||
+                                      latestEval.berorientasi_pelayanan_desc ||
+                                      latestEval.harmonis_desc ||
+                                      latestEval.kolaboratif_desc ||
+                                      latestEval.kompeten_desc ||
+                                      latestEval.loyal_desc) && (
+                                      <Card>
+                                        <CardHeader>
+                                          <CardTitle className="text-lg">
+                                            Deskripsi Penilaian BerAKHLAK
+                                          </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                          <div className="grid grid-cols-1 gap-4">
+                                            {latestEval.akuntabel_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-blue-700">
+                                                  Akuntabel
+                                                </Label>
+                                                <div className="text-sm p-3 bg-blue-50 rounded-lg border">
+                                                  {latestEval.akuntabel_desc}
+                                                </div>
+                                              </div>
+                                            )}
+                                            {latestEval.adaptif_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-green-700">
+                                                  Adaptif
+                                                </Label>
+                                                <div className="text-sm p-3 bg-green-50 rounded-lg border">
+                                                  {latestEval.adaptif_desc}
+                                                </div>
+                                              </div>
+                                            )}
+                                            {latestEval.berorientasi_pelayanan_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-purple-700">
+                                                  Berorientasi Pelayanan
+                                                </Label>
+                                                <div className="text-sm p-3 bg-purple-50 rounded-lg border">
+                                                  {
+                                                    latestEval.berorientasi_pelayanan_desc
+                                                  }
+                                                </div>
+                                              </div>
+                                            )}
+                                            {latestEval.harmonis_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-yellow-700">
+                                                  Harmonis
+                                                </Label>
+                                                <div className="text-sm p-3 bg-yellow-50 rounded-lg border">
+                                                  {latestEval.harmonis_desc}
+                                                </div>
+                                              </div>
+                                            )}
+                                            {latestEval.kolaboratif_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-indigo-700">
+                                                  Kolaboratif
+                                                </Label>
+                                                <div className="text-sm p-3 bg-indigo-50 rounded-lg border">
+                                                  {latestEval.kolaboratif_desc}
+                                                </div>
+                                              </div>
+                                            )}
+                                            {latestEval.kompeten_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-pink-700">
+                                                  Kompeten
+                                                </Label>
+                                                <div className="text-sm p-3 bg-pink-50 rounded-lg border">
+                                                  {latestEval.kompeten_desc}
+                                                </div>
+                                              </div>
+                                            )}
+                                            {latestEval.loyal_desc && (
+                                              <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-orange-700">
+                                                  Loyal
+                                                </Label>
+                                                <div className="text-sm p-3 bg-orange-50 rounded-lg border">
+                                                  {latestEval.loyal_desc}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    )}
 
                                   {/* AI Analysis */}
                                   {latestEval &&
                                     (latestEval.analisis_ai_pro ||
-                                      latestEval.analisis_ai_kelebihan) && (
-                                      <div className="grid grid-cols-2 gap-4 mt-6">
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Analisis Positif
-                                          </Label>
-                                          <div className="text-sm p-3 bg-green-50 rounded-lg border">
-                                            {latestEval.analisis_ai_pro ||
-                                              "Tidak ada analisis positif"}
+                                      latestEval.analisis_ai_kelebihan ||
+                                      latestEval.analisis_ai_kontra ||
+                                      latestEval.analisis_ai_kekurangan) && (
+                                      <Card>
+                                        <CardHeader>
+                                          <CardTitle className="text-lg">
+                                            Analisis AI
+                                          </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                              <Label className="text-sm font-medium text-green-700">
+                                                Analisis Positif
+                                              </Label>
+                                              <div className="text-sm p-3 bg-green-50 rounded-lg border min-h-[100px]">
+                                                {latestEval.analisis_ai_pro ||
+                                                  "Tidak ada analisis positif"}
+                                              </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <Label className="text-sm font-medium text-orange-700">
+                                                Area Perbaikan
+                                              </Label>
+                                              <div className="text-sm p-3 bg-orange-50 rounded-lg border min-h-[100px]">
+                                                {latestEval.analisis_ai_kontra ||
+                                                  "Tidak ada area perbaikan"}
+                                              </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <Label className="text-sm font-medium text-blue-700">
+                                                Kelebihan
+                                              </Label>
+                                              <div className="text-sm p-3 bg-blue-50 rounded-lg border min-h-[100px]">
+                                                {latestEval.analisis_ai_kelebihan ||
+                                                  "Tidak ada analisis kelebihan"}
+                                              </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <Label className="text-sm font-medium text-red-700">
+                                                Kekurangan
+                                              </Label>
+                                              <div className="text-sm p-3 bg-red-50 rounded-lg border min-h-[100px]">
+                                                {latestEval.analisis_ai_kekurangan ||
+                                                  "Tidak ada analisis kekurangan"}
+                                              </div>
+                                            </div>
                                           </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Area Perbaikan
-                                          </Label>
-                                          <div className="text-sm p-3 bg-orange-50 rounded-lg border">
-                                            {latestEval.analisis_ai_kontra ||
-                                              "Tidak ada area perbaikan"}
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Kelebihan
-                                          </Label>
-                                          <div className="text-sm p-3 bg-blue-50 rounded-lg border">
-                                            {latestEval.analisis_ai_kelebihan ||
-                                              "Tidak ada analisis kelebihan"}
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Kekurangan
-                                          </Label>
-                                          <div className="text-sm p-3 bg-red-50 rounded-lg border">
-                                            {latestEval.analisis_ai_kekurangan ||
-                                              "Tidak ada analisis kekurangan"}
-                                          </div>
-                                        </div>
-                                      </div>
+                                        </CardContent>
+                                      </Card>
                                     )}
                                 </div>
                               </DialogContent>

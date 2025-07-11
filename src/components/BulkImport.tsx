@@ -273,7 +273,6 @@ Jane Smith,198502022345678901,Perancang Sistem,Direktorat Jenderal Pembinaan Pen
               result.success++;
             }
           } catch (error) {
-            console.error(`Error processing row ${i + 2}:`, error);
             result.errors.push({
               row: i + 2,
               error: error instanceof Error ? error.message : "Unknown error",
@@ -300,7 +299,6 @@ Jane Smith,198502022345678901,Perancang Sistem,Direktorat Jenderal Pembinaan Pen
 
       reader.readAsText(file);
     } catch (error) {
-      console.error("Import error:", error);
       toast({
         title: "Error",
         description: "Terjadi kesalahan saat import data",
