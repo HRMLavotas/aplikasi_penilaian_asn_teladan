@@ -59,6 +59,9 @@ interface PegawaiRanking {
   masa_kerja_tahun: number;
   memiliki_inovasi: boolean;
   memiliki_penghargaan: boolean;
+  bebas_temuan: boolean;
+  tidak_hukuman_disiplin: boolean;
+  tidak_pemeriksaan_disiplin: boolean;
   unit_kerja: {
     nama_unit_kerja: string;
   };
@@ -66,6 +69,7 @@ interface PegawaiRanking {
     id: string;
     tahun_penilaian: number;
     persentase_akhir: number;
+    // BerAKHLAK Core Values Scores
     kinerja_perilaku_score: number;
     inovasi_dampak_score: number;
     prestasi_score: number;
@@ -75,6 +79,18 @@ interface PegawaiRanking {
     leadership_score: number;
     rekam_jejak_score: number;
     integritas_moralitas_score: number;
+    // BerAKHLAK Core Values Descriptions
+    akuntabel_desc: string | null;
+    adaptif_desc: string | null;
+    berorientasi_pelayanan_desc: string | null;
+    harmonis_desc: string | null;
+    kolaboratif_desc: string | null;
+    kompeten_desc: string | null;
+    loyal_desc: string | null;
+    // SKP Criteria
+    skp_2_tahun_terakhir_baik: boolean;
+    skp_peningkatan_prestasi: boolean;
+    // AI Analysis
     analisis_ai_pro: string;
     analisis_ai_kontra: string;
     analisis_ai_kelebihan: string;
