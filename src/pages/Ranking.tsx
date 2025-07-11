@@ -57,6 +57,14 @@ interface PegawaiRanking {
   jabatan: string;
   status_jabatan: string;
   masa_kerja_tahun: number;
+  // Integrity and achievement fields (in pegawai table)
+  bebas_temuan: boolean;
+  bukti_inovasi: string | null;
+  bukti_penghargaan: string | null;
+  memiliki_inovasi: boolean;
+  memiliki_penghargaan: boolean;
+  tidak_hukuman_disiplin: boolean;
+  tidak_pemeriksaan_disiplin: boolean;
   unit_kerja: {
     nama_unit_kerja: string;
   };
@@ -64,17 +72,19 @@ interface PegawaiRanking {
     id: string;
     tahun_penilaian: number;
     persentase_akhir: number;
-    // BerAKHLAK Core Values Scores (new naming)
-    berorientasi_pelayanan_score: number;
-    akuntabel_score: number;
-    kompeten_score: number;
-    harmonis_score: number;
-    loyal_score: number;
-    adaptif_score: number;
-    kolaboratif_score: number;
+    // Original scoring system (still in database)
+    kinerja_perilaku_score: number;
+    inovasi_dampak_score: number;
+    prestasi_score: number;
+    inspiratif_score: number;
+    komunikasi_score: number;
+    kerjasama_kolaborasi_score: number;
+    leadership_score: number;
+    rekam_jejak_score: number;
+    integritas_moralitas_score: number;
     // BerAKHLAK Core Values Descriptions
-    akuntabel_desc: string | null;
     adaptif_desc: string | null;
+    akuntabel_desc: string | null;
     berorientasi_pelayanan_desc: string | null;
     harmonis_desc: string | null;
     kolaboratif_desc: string | null;
@@ -83,15 +93,6 @@ interface PegawaiRanking {
     // SKP Criteria
     skp_2_tahun_terakhir_baik: boolean;
     skp_peningkatan_prestasi: boolean;
-    // Integrity Criteria (moved to penilaian table)
-    bebas_temuan: boolean;
-    tidak_hukuman_disiplin: boolean;
-    tidak_pemeriksaan_disiplin: boolean;
-    // Achievement Criteria (moved to penilaian table)
-    memiliki_inovasi: boolean;
-    bukti_inovasi: string | null;
-    memiliki_penghargaan: boolean;
-    bukti_penghargaan: string | null;
     // AI Analysis
     analisis_ai_pro: string | null;
     analisis_ai_kontra: string | null;
