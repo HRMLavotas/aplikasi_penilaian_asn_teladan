@@ -687,12 +687,12 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              latestEval?.bebas_temuan
+                                              p.bebas_temuan
                                                 ? "default"
                                                 : "destructive"
                                             }
                                           >
-                                            {latestEval?.bebas_temuan
+                                            {p.bebas_temuan
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
