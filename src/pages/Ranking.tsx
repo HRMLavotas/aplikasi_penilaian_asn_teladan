@@ -886,18 +886,20 @@ const Ranking = () => {
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Adaptif
+                                            Kerjasama
                                           </Label>
                                           <div className="text-2xl font-bold text-pink-600">
-                                            {latestEval?.adaptif_score}
+                                            {
+                                              latestEval?.kerjasama_kolaborasi_score
+                                            }
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Kolaboratif
+                                            Leadership
                                           </Label>
                                           <div className="text-2xl font-bold text-orange-600">
-                                            {latestEval?.kolaboratif_score}
+                                            {latestEval?.leadership_score}
                                           </div>
                                         </div>
                                       </div>
