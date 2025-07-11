@@ -11,6 +11,10 @@ import {
   useActivityTracker,
   createActivityHelpers,
 } from "@/hooks/useActivityTracker";
+import {
+  debugDatabaseConnection,
+  testActivityInsertion,
+} from "@/utils/debugDatabase";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +39,7 @@ import {
   Shield,
   Clock,
   Activity,
+  Bug,
 } from "lucide-react";
 import WorkflowTracker from "@/components/WorkflowTracker";
 
