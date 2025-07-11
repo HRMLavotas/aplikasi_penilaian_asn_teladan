@@ -902,6 +902,24 @@ const Ranking = () => {
                                             {latestEval?.leadership_score}
                                           </div>
                                         </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Rekam Jejak
+                                          </Label>
+                                          <div className="text-2xl font-bold text-teal-600">
+                                            {latestEval?.rekam_jejak_score}
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label className="text-sm font-medium">
+                                            Integritas
+                                          </Label>
+                                          <div className="text-2xl font-bold text-red-600">
+                                            {
+                                              latestEval?.integritas_moralitas_score
+                                            }
+                                          </div>
+                                        </div>
                                       </div>
                                     </CardContent>
                                   </Card>
