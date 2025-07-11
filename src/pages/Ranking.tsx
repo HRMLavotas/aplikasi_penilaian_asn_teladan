@@ -846,12 +846,10 @@ const Ranking = () => {
                                       <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Berorientasi Pelayanan
+                                            Kinerja & Perilaku
                                           </Label>
                                           <div className="text-2xl font-bold text-blue-600">
-                                            {
-                                              latestEval?.berorientasi_pelayanan_score
-                                            }
+                                            {latestEval?.kinerja_perilaku_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
