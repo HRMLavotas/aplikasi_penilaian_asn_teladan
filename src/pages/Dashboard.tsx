@@ -358,18 +358,101 @@ const Dashboard = () => {
         <Card className="mt-8">
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
+              <Activity className="h-5 w-5 mr-2" />
               Aktivitas Terbaru
             </CardTitle>
+            <CardDescription>
+              Riwayat aktivitas sistem dan tindakan pengguna
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Belum ada aktivitas terbaru</p>
-              <p className="text-sm">
-                Mulai dengan menambahkan data pegawai atau melakukan evaluasi
-              </p>
-            </div>
+            {activitiesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Belum ada aktivitas terbaru</p>
+                <p className="text-sm">
+                  Mulai dengan menambahkan data pegawai atau melakukan evaluasi
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {activities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm">
+                        {getActivityIcon(activity.action_type)}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {formatActivityDescription(activity)}
+                        </p>
+                        <div className="flex items-center text-xs text-muted-foreground ml-2">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {formatRelativeTime(activity.created_at)}
+                        </div>
+                      </div>
+                      {activity.profiles && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          oleh{" "}
+                          {activity.profiles.nama_lengkap ||
+                            activity.profiles.username ||
+                            "Pengguna"}
+                        </p>
+                      )}
+                      {activity.details && activity.details.pegawaiName && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Target: {activity.details.pegawaiName}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0">
+                      <Badge
+                        variant={
+                          activity.action_type === "create"
+                            ? "default"
+                            : activity.action_type === "update"
+                              ? "secondary"
+                              : activity.action_type === "delete"
+                                ? "destructive"
+                                : activity.action_type === "evaluate"
+                                  ? "default"
+                                  : "outline"
+                        }
+                        className="text-xs"
+                      >
+                        {activity.action_type}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+                {activities.length >= 8 && (
+                  <div className="text-center pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        // Navigate to a full activities page (could be implemented later)
+                        activityHelpers.logView(
+                          "dashboard",
+                          "Melihat semua aktivitas",
+                        );
+                      }}
+                    >
+                      Lihat Semua Aktivitas
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
