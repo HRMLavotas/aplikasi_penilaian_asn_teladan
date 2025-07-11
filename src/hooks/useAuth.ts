@@ -18,6 +18,17 @@ export const useAuth = () => {
 
     const checkAuth = async () => {
       try {
+        // Check for corrupted session data first
+        if (isSessionCorrupted()) {
+          console.log("Detected corrupted session, clearing...");
+          await clearCorruptedSession();
+          setUser(null);
+          setIsSuperAdmin(false);
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        }
+
         // First check if we have a session before calling getUser
         const {
           data: { session },
