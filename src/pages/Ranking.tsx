@@ -701,12 +701,12 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              !p.bebas_temuan
+                                              latestEval?.bebas_temuan
                                                 ? "default"
                                                 : "destructive"
                                             }
                                           >
-                                            {!p.bebas_temuan
+                                            {latestEval?.bebas_temuan
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
@@ -717,12 +717,12 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              !p.tidak_hukuman_disiplin
+                                              latestEval?.tidak_hukuman_disiplin
                                                 ? "default"
                                                 : "destructive"
                                             }
                                           >
-                                            {!p.tidak_hukuman_disiplin
+                                            {latestEval?.tidak_hukuman_disiplin
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
@@ -733,12 +733,12 @@ const Ranking = () => {
                                           </Label>
                                           <Badge
                                             variant={
-                                              !p.tidak_pemeriksaan_disiplin
+                                              latestEval?.tidak_pemeriksaan_disiplin
                                                 ? "default"
                                                 : "destructive"
                                             }
                                           >
-                                            {!p.tidak_pemeriksaan_disiplin
+                                            {latestEval?.tidak_pemeriksaan_disiplin
                                               ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
