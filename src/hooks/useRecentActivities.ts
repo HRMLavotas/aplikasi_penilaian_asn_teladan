@@ -34,23 +34,6 @@ export const useRecentActivities = (limit: number = 10) => {
       setIsLoading(true);
       setError(null);
 
-      // First check if activities table exists
-      const { error: testError } = await supabase
-        .from("activities")
-        .select("id", { count: "exact", head: true });
-
-      if (testError) {
-        if (testError.code === "42P01") {
-          console.warn(
-            "Activities table does not exist yet. Showing empty activities.",
-          );
-          setActivities([]);
-          setIsLoading(false);
-          return;
-        }
-        throw testError;
-      }
-
       let query = supabase
         .from("activities")
         .select(
@@ -80,14 +63,24 @@ export const useRecentActivities = (limit: number = 10) => {
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
+        if (fetchError.code === "42P01") {
+          console.warn(
+            "Activities table does not exist yet. Showing empty activities.",
+          );
+          setActivities([]);
+          return;
+        }
         throw fetchError;
       }
 
       setActivities(data || []);
     } catch (err) {
-      console.error("Error fetching activities:", err);
-      console.error("Error details:", JSON.stringify(err, null, 2));
+      console.error("Error fetching activities:", {
+        error: err,
+        message: err instanceof Error ? err.message : "Unknown error",
+      });
       setError(err instanceof Error ? err.message : "Gagal memuat aktivitas");
+      setActivities([]); // Set empty array on error
     } finally {
       setIsLoading(false);
     }
