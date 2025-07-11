@@ -103,13 +103,6 @@ const Auth = () => {
         return;
       }
 
-      // Log successful registration activity
-      activityHelpers.logCreate("user", "", `Registrasi akun baru: ${email}`, {
-        email,
-        namaLengkap,
-        username,
-      });
-
       toast({
         title: "Registrasi Berhasil",
         description:
