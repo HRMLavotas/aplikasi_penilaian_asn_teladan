@@ -22,7 +22,6 @@ if (import.meta.env.VITE_TEMPO) {
     const tempoRoutes = await import("tempo-routes");
     routes = tempoRoutes.default;
   } catch (error) {
-    console.warn("Tempo routes not available:", error);
   }
 }
 
