@@ -141,9 +141,45 @@ const Ranking = () => {
         .from("pegawai")
         .select(
           `
-          *,
+          id,
+          nama,
+          nip,
+          jabatan,
+          status_jabatan,
+          masa_kerja_tahun,
+          memiliki_inovasi,
+          memiliki_penghargaan,
+          bebas_temuan,
+          tidak_hukuman_disiplin,
+          tidak_pemeriksaan_disiplin,
           unit_kerja:unit_kerja_id(nama_unit_kerja),
-          penilaian(*)
+          penilaian(
+            id,
+            tahun_penilaian,
+            persentase_akhir,
+            kinerja_perilaku_score,
+            inovasi_dampak_score,
+            prestasi_score,
+            inspiratif_score,
+            komunikasi_score,
+            kerjasama_kolaborasi_score,
+            leadership_score,
+            rekam_jejak_score,
+            integritas_moralitas_score,
+            akuntabel_desc,
+            adaptif_desc,
+            berorientasi_pelayanan_desc,
+            harmonis_desc,
+            kolaboratif_desc,
+            kompeten_desc,
+            loyal_desc,
+            skp_2_tahun_terakhir_baik,
+            skp_peningkatan_prestasi,
+            analisis_ai_pro,
+            analisis_ai_kontra,
+            analisis_ai_kelebihan,
+            analisis_ai_kekurangan
+          )
         `,
         )
         .order("nama");
