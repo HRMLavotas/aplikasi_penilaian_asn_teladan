@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { setupActivitiesTableIfNeeded } from "@/utils/initActivitiesTable";
 
 export type ActivityType =
   | "login"
