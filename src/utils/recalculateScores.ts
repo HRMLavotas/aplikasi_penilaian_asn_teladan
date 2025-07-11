@@ -84,15 +84,10 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
 
 export const recalculateAllScores = async () => {
   try {
-    // Ambil semua data penilaian
+    // Ambil semua data penilaian dengan join ke pegawai
     const { data: penilaianData, error } = await supabase.from("penilaian")
       .select(`
         id,
-        bebas_temuan,
-        tidak_hukuman_disiplin,
-        tidak_pemeriksaan_disiplin,
-        memiliki_inovasi,
-        memiliki_penghargaan,
         skp_2_tahun_terakhir_baik,
         skp_peningkatan_prestasi,
         inovasi_dampak_score,
@@ -104,7 +99,14 @@ export const recalculateAllScores = async () => {
         leadership_score,
         rekam_jejak_score,
         prestasi_score,
-        persentase_akhir
+        persentase_akhir,
+        pegawai:pegawai_id(
+          bebas_temuan,
+          tidak_hukuman_disiplin,
+          tidak_pemeriksaan_disiplin,
+          memiliki_inovasi,
+          memiliki_penghargaan
+        )
       `);
 
     if (error) throw error;
