@@ -677,11 +677,33 @@ const Ranking = () => {
                                       </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                      <div className="text-4xl font-bold text-center">
+                                      <div className="text-4xl font-bold text-center mb-4">
                                         {latestEval?.persentase_akhir?.toFixed(
                                           1,
                                         )}
                                         %
+                                      </div>
+                                      <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
+                                        <strong>Aturan Penilaian:</strong>
+                                        <ul className="list-disc list-inside mt-1 space-y-1">
+                                          <li>
+                                            Integritas wajib sempurna untuk
+                                            score 70%+
+                                          </li>
+                                          <li>
+                                            Tanpa inovasi atau penghargaan
+                                            maksimal 85%
+                                          </li>
+                                          <li>
+                                            Score 90%+ butuh inovasi DAN
+                                            penghargaan
+                                          </li>
+                                          <li>
+                                            Komposisi: Integritas (30%) +
+                                            Prestasi (30%) + SKP (20%) + Core
+                                            Values (20%)
+                                          </li>
+                                        </ul>
                                       </div>
                                     </CardContent>
                                   </Card>
