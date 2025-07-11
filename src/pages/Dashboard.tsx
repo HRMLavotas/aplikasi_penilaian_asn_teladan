@@ -201,6 +201,17 @@ const Dashboard = () => {
       href: "/settings",
       color: "bg-gray-500/10 text-gray-600",
     },
+    ...(isSuperAdmin
+      ? [
+          {
+            title: "Admin Tools",
+            description: "Perbaiki skor & validasi data",
+            icon: Wrench,
+            href: "/admin/score-fix",
+            color: "bg-red-500/10 text-red-600",
+          },
+        ]
+      : []),
   ];
 
   return (
