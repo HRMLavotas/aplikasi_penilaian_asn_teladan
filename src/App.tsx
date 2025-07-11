@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useRoutes } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -21,8 +22,7 @@ if (import.meta.env.VITE_TEMPO) {
   try {
     const tempoRoutes = await import("tempo-routes");
     routes = tempoRoutes.default;
-  } catch (error) {
-  }
+  } catch (error) {}
 }
 
 const queryClient = new QueryClient();
