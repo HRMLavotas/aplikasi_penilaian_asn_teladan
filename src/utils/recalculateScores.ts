@@ -2,11 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface PenilaianData {
   id: string;
-  bebas_temuan: boolean;
-  tidak_hukuman_disiplin: boolean;
-  tidak_pemeriksaan_disiplin: boolean;
-  memiliki_inovasi: boolean;
-  memiliki_penghargaan: boolean;
   skp_2_tahun_terakhir_baik: boolean;
   skp_peningkatan_prestasi: boolean;
   inovasi_dampak_score: number;
@@ -18,6 +13,13 @@ interface PenilaianData {
   leadership_score: number;
   rekam_jejak_score: number;
   prestasi_score: number;
+  pegawai: {
+    bebas_temuan: boolean;
+    tidak_hukuman_disiplin: boolean;
+    tidak_pemeriksaan_disiplin: boolean;
+    memiliki_inovasi: boolean;
+    memiliki_penghargaan: boolean;
+  };
 }
 
 const calculateCorrectScore = (penilaian: PenilaianData): number => {
