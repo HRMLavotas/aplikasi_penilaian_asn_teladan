@@ -621,12 +621,12 @@ const Ranking = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              {p.memiliki_inovasi && (
+                              {latestEval?.memiliki_inovasi && (
                                 <Badge variant="outline" className="text-xs">
                                   Inovasi
                                 </Badge>
                               )}
-                              {p.memiliki_penghargaan && (
+                              {latestEval?.memiliki_penghargaan && (
                                 <Badge variant="outline" className="text-xs">
                                   Award
                                 </Badge>
