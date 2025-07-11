@@ -25,9 +25,9 @@ interface PenilaianData {
 const calculateCorrectScore = (penilaian: PenilaianData): number => {
   // Kriteria Integritas (30%) - WAJIB SEMPURNA
   let integritasScore = 0;
-  if (penilaian.bebas_temuan) integritasScore += 10;
-  if (penilaian.tidak_hukuman_disiplin) integritasScore += 10;
-  if (penilaian.tidak_pemeriksaan_disiplin) integritasScore += 10;
+  if (penilaian.pegawai.bebas_temuan) integritasScore += 10;
+  if (penilaian.pegawai.tidak_hukuman_disiplin) integritasScore += 10;
+  if (penilaian.pegawai.tidak_pemeriksaan_disiplin) integritasScore += 10;
 
   // Jika integritas tidak sempurna, maksimal score adalah 70%
   if (integritasScore < 30) {
