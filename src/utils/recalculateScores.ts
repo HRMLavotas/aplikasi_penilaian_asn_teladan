@@ -42,8 +42,8 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
 
   // Prestasi & Inovasi (30%) - WAJIB MINIMAL SALAH SATU
   let prestasiScore = 0;
-  if (penilaian.memiliki_inovasi) prestasiScore += 20;
-  if (penilaian.memiliki_penghargaan) prestasiScore += 10;
+  if (penilaian.pegawai.memiliki_inovasi) prestasiScore += 20;
+  if (penilaian.pegawai.memiliki_penghargaan) prestasiScore += 10;
 
   // Kriteria SKP (20%)
   let skpScore = 0;
