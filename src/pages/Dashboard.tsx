@@ -53,10 +53,15 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Activity tracking
-  const { logActivity } = useActivityTracker();
-  const activityHelpers = createActivityHelpers(logActivity);
-  const { activities, isLoading: activitiesLoading } = useRecentActivities(8);
+  // Simple recent activities state
+  const [recentActivities, setRecentActivities] = useState<
+    Array<{
+      id: string;
+      description: string;
+      timestamp: string;
+      type: string;
+    }>
+  >([]);
 
   const fetchStats = useCallback(async () => {
     if (!user) return;
