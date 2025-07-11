@@ -257,13 +257,24 @@ const FormEvaluasi = () => {
   };
 
   const calculatePreviewScore = () => {
-    // Kriteria Integritas (30%)
+    // Kriteria Integritas (30%) - WAJIB SEMPURNA
     let integritasScore = 0;
     if (penilaian.bebas_temuan) integritasScore += 10;
     if (penilaian.tidak_hukuman_disiplin) integritasScore += 10;
     if (penilaian.tidak_pemeriksaan_disiplin) integritasScore += 10;
 
-    // Prestasi & Inovasi (30%)
+    // Jika integritas tidak sempurna, maksimal score adalah 70%
+    if (integritasScore < 30) {
+      const partialScore =
+        integritasScore +
+        (penilaian.skp_2_tahun_terakhir_baik ? 10 : 0) +
+        (penilaian.skp_peningkatan_prestasi ? 10 : 0) +
+        (penilaian.memiliki_inovasi ? 20 : 0) +
+        (penilaian.memiliki_penghargaan ? 10 : 0);
+      return Math.min(partialScore, 70);
+    }
+
+    // Prestasi & Inovasi (30%) - WAJIB MINIMAL SALAH SATU
     let prestasiScore = 0;
     if (penilaian.memiliki_inovasi) prestasiScore += 20;
     if (penilaian.memiliki_penghargaan) prestasiScore += 10;
@@ -288,8 +299,22 @@ const FormEvaluasi = () => {
       coreValuesScores.length;
     const coreValuesScore = (coreValuesAverage / 100) * 20; // 20% dari rata-rata core values
 
-    const totalScore =
+    let totalScore =
       integritasScore + prestasiScore + skpScore + coreValuesScore;
+
+    // Aturan tambahan: Tanpa inovasi ATAU penghargaan, maksimal 85%
+    if (!penilaian.memiliki_inovasi && !penilaian.memiliki_penghargaan) {
+      totalScore = Math.min(totalScore, 85);
+    }
+
+    // Aturan tambahan: Untuk score 90%+, wajib memiliki inovasi DAN penghargaan
+    if (
+      totalScore >= 90 &&
+      (!penilaian.memiliki_inovasi || !penilaian.memiliki_penghargaan)
+    ) {
+      totalScore = Math.min(totalScore, 89);
+    }
+
     return Math.min(totalScore, 100);
   };
 
