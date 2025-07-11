@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  clearCorruptedSession,
+  isSessionCorrupted,
+} from "@/utils/clearSession";
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
