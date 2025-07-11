@@ -93,6 +93,15 @@ interface PegawaiRanking {
     // SKP Criteria
     skp_2_tahun_terakhir_baik: boolean;
     skp_peningkatan_prestasi: boolean;
+    // Achievement & Innovation from penilaian (overrides pegawai data)
+    bukti_inovasi: string | null;
+    bukti_penghargaan: string | null;
+    memiliki_inovasi: boolean;
+    memiliki_penghargaan: boolean;
+    // Integrity from penilaian (overrides pegawai data)
+    bebas_temuan: boolean;
+    tidak_hukuman_disiplin: boolean;
+    tidak_pemeriksaan_disiplin: boolean;
     // AI Analysis
     analisis_ai_pro: string | null;
     analisis_ai_kontra: string | null;
