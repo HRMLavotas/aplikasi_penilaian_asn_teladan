@@ -382,6 +382,55 @@ const Dashboard = () => {
           <WorkflowTracker />
         </div>
 
+        {/* Debug Section (Development Only) */}
+        {import.meta.env.DEV && (
+          <Card className="mt-8 border-yellow-200 bg-yellow-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-yellow-800">
+                <Bug className="h-5 w-5 mr-2" />
+                Debug Tools (Development Only)
+              </CardTitle>
+              <CardDescription className="text-yellow-700">
+                Tools untuk debugging sistem aktivitas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={debugDatabaseConnection}
+                  className="border-yellow-300 hover:bg-yellow-100"
+                >
+                  Test Database Connection
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={testActivityInsertion}
+                  className="border-yellow-300 hover:bg-yellow-100"
+                >
+                  Test Activity Insertion
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    activityHelpers.logCreate(
+                      "debug",
+                      "test-id",
+                      "Test manual activity creation",
+                    );
+                  }}
+                  className="border-yellow-300 hover:bg-yellow-100"
+                >
+                  Log Test Activity
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Recent Activity */}
         <Card className="mt-8">
           <CardHeader>
