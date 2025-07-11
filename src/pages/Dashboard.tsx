@@ -1,20 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  useRecentActivities,
-  formatActivityDescription,
-  getActivityIcon,
-  formatRelativeTime,
-} from "@/hooks/useRecentActivities";
-import {
-  useActivityTracker,
-  createActivityHelpers,
-} from "@/hooks/useActivityTracker";
-import {
-  debugDatabaseConnection,
-  testActivityInsertion,
-} from "@/utils/debugDatabase";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
