@@ -1,10 +1,7 @@
-import { useEffect } from "react";
-import {
-  useActivityTracker,
-  createActivityHelpers,
-  ActivityType,
-  EntityType,
-} from "@/hooks/useActivityTracker";
+// Placeholder for ActivityLogger - activities table not yet implemented
+import React from 'react';
+
+export type EntityType = 'pegawai' | 'penilaian' | 'user';
 
 interface ActivityLoggerProps {
   children: React.ReactNode;
@@ -13,38 +10,17 @@ interface ActivityLoggerProps {
   autoLog?: boolean;
 }
 
-/**
- * ActivityLogger component that wraps pages to provide automatic activity tracking
- *
- * Usage:
- * <ActivityLogger pageType="pegawai" pageTitle="Data Pegawai" autoLog>
- *   <YourPageContent />
- * </ActivityLogger>
- */
-export const ActivityLogger: React.FC<ActivityLoggerProps> = ({
-  children,
-  pageType,
-  pageTitle,
-  autoLog = true,
-}) => {
-  const { logActivity } = useActivityTracker();
-  const activityHelpers = createActivityHelpers(logActivity);
-
-  useEffect(() => {
-    if (autoLog) {
-      activityHelpers.logView(pageType, `Mengakses halaman ${pageTitle}`);
-    }
-  }, [autoLog, pageType, pageTitle, activityHelpers]);
-
+export const ActivityLogger: React.FC<ActivityLoggerProps> = ({ children }) => {
   return <>{children}</>;
 };
 
-/**
- * Hook for accessing activity helpers within an ActivityLogger context
- */
 export const useActivityLogger = () => {
-  const { logActivity } = useActivityTracker();
-  return createActivityHelpers(logActivity);
+  return {
+    logView: () => {},
+    logCreate: () => {},
+    logUpdate: () => {},
+    logDelete: () => {},
+  };
 };
 
 export default ActivityLogger;

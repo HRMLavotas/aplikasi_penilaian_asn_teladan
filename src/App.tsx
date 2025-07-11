@@ -19,18 +19,20 @@ import NotFound from "./pages/NotFound";
 
 // Import tempo routes conditionally
 let routes: any = null;
-if (import.meta.env.VITE_TEMPO) {
-  try {
-    const tempoRoutes = await import("tempo-routes");
-    routes = tempoRoutes.default;
-  } catch (error) {}
-}
+// Disabled tempo routes for now
+// if (import.meta.env.VITE_TEMPO) {
+//   try {
+//     const tempoRoutes = await import("tempo-routes");
+//     routes = tempoRoutes.default;
+//   } catch (error) {}
+// }
 
 const queryClient = new QueryClient();
 
 const AppRoutes = () => {
-  const tempoRoutes =
-    import.meta.env.VITE_TEMPO && routes ? useRoutes(routes) : null;
+  const tempoRoutes = null; // Disabled for now
+  // const tempoRoutes =
+  //   import.meta.env.VITE_TEMPO && routes ? useRoutes(routes) : null;
 
   return (
     <>
@@ -47,8 +49,8 @@ const AppRoutes = () => {
         <Route path="/laporan" element={<Laporan />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin/score-fix" element={<AdminScoreFix />} />
-        {/* Tempo catch-all route */}
-        {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
+        {/* Tempo catch-all route - disabled */}
+        {/* {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />} */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

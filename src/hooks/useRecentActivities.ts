@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+// Placeholder hook - activities table not yet implemented
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -64,6 +65,7 @@ export const useRecentActivities = (limit: number = 10) => {
 
       if (fetchError) {
         if (fetchError.code === "42P01") {
+          console.log(
             "Activities table does not exist yet. Showing empty activities.",
           );
           setActivities([]);
@@ -74,6 +76,7 @@ export const useRecentActivities = (limit: number = 10) => {
 
       setActivities(data || []);
     } catch (err) {
+      console.error({
         error: err,
         message: err instanceof Error ? err.message : "Unknown error",
       });
