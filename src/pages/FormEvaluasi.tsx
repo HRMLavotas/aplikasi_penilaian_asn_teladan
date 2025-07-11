@@ -228,12 +228,11 @@ const FormEvaluasi = () => {
           analisis_ai_kontra: data.analisis_ai_kontra || "",
           analisis_ai_kelebihan: data.analisis_ai_kelebihan || "",
           analisis_ai_kekurangan: data.analisis_ai_kekurangan || "",
-                };
+        };
 
         setPenilaian(loadedPenilaian);
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleScoreChange = (field: keyof PenilaianData, value: number[]) => {
@@ -424,7 +423,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
       const data = await response.json();
       const analysis = data.choices[0]?.message?.content || "";
 
-
       // Parse the analysis into sections with more comprehensive regex patterns
       const prosMatch =
         analysis.match(
@@ -455,13 +453,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
           /\*\*KEKURANGAN YANG PERLU DIPERBAIKI:\*\*([\s\S]*?)$/i,
         ) ||
         analysis.match(/\*\*(?:Weaknesses?|Kekurangan).*:\*\*([\s\S]*?)$/i);
-
-        fullAnalysis: analysis,
-        prosMatch: prosMatch?.[1]?.trim(),
-        consMatch: consMatch?.[1]?.trim(),
-        strengthsMatch: strengthsMatch?.[1]?.trim(),
-        weaknessesMatch: weaknessesMatch?.[1]?.trim(),
-      });
 
       // Clean and format the extracted content
       const cleanText = (text: string) => {
@@ -601,10 +592,10 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         rekam_jejak_score: penilaian.kolaboratif_score || 70,
         integritas_moralitas_score: 70,
         // AI Analysis
-        analisis_ai_pro: penilaian.analisis_ai_pro || '',
-        analisis_ai_kontra: penilaian.analisis_ai_kontra || '',
-        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan || '',
-        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan || '',
+        analisis_ai_pro: penilaian.analisis_ai_pro || "",
+        analisis_ai_kontra: penilaian.analisis_ai_kontra || "",
+        analisis_ai_kelebihan: penilaian.analisis_ai_kelebihan || "",
+        analisis_ai_kekurangan: penilaian.analisis_ai_kekurangan || "",
       };
 
       // Try to add the new fields if they exist in the database
@@ -614,27 +605,27 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
           // Kriteria Integritas
           bebas_temuan: penilaian.bebas_temuan || false,
           tidak_hukuman_disiplin: penilaian.tidak_hukuman_disiplin || false,
-          tidak_pemeriksaan_disiplin: penilaian.tidak_pemeriksaan_disiplin || false,
+          tidak_pemeriksaan_disiplin:
+            penilaian.tidak_pemeriksaan_disiplin || false,
           // Prestasi & Inovasi
           memiliki_inovasi: penilaian.memiliki_inovasi || false,
-          bukti_inovasi: penilaian.bukti_inovasi || '',
+          bukti_inovasi: penilaian.bukti_inovasi || "",
           memiliki_penghargaan: penilaian.memiliki_penghargaan || false,
-          bukti_penghargaan: penilaian.bukti_penghargaan || '',
+          bukti_penghargaan: penilaian.bukti_penghargaan || "",
           // Core value descriptions
-          berorientasi_pelayanan_desc: penilaian.berorientasi_pelayanan_desc || '',
-          akuntabel_desc: penilaian.akuntabel_desc || '',
-          kompeten_desc: penilaian.kompeten_desc || '',
-          harmonis_desc: penilaian.harmonis_desc || '',
-          loyal_desc: penilaian.loyal_desc || '',
-          adaptif_desc: penilaian.adaptif_desc || '',
-          kolaboratif_desc: penilaian.kolaboratif_desc || '',
+          berorientasi_pelayanan_desc:
+            penilaian.berorientasi_pelayanan_desc || "",
+          akuntabel_desc: penilaian.akuntabel_desc || "",
+          kompeten_desc: penilaian.kompeten_desc || "",
+          harmonis_desc: penilaian.harmonis_desc || "",
+          loyal_desc: penilaian.loyal_desc || "",
+          adaptif_desc: penilaian.adaptif_desc || "",
+          kolaboratif_desc: penilaian.kolaboratif_desc || "",
         };
 
         // Add the new fields to dataToSave
         Object.assign(dataToSave, newFields);
-      } catch (error) {
-      }
-
+      } catch (error) {}
 
       // Create a type-safe object that matches the database schema
       const dbData = {
@@ -658,22 +649,49 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         analisis_ai_kelebihan: dataToSave.analisis_ai_kelebihan,
         analisis_ai_kekurangan: dataToSave.analisis_ai_kekurangan,
         // Add optional fields if they exist
-        ...(dataToSave.bebas_temuan !== undefined && { bebas_temuan: dataToSave.bebas_temuan }),
-        ...(dataToSave.tidak_hukuman_disiplin !== undefined && { tidak_hukuman_disiplin: dataToSave.tidak_hukuman_disiplin }),
-        ...(dataToSave.tidak_pemeriksaan_disiplin !== undefined && { tidak_pemeriksaan_disiplin: dataToSave.tidak_pemeriksaan_disiplin }),
-        ...(dataToSave.memiliki_inovasi !== undefined && { memiliki_inovasi: dataToSave.memiliki_inovasi }),
-        ...(dataToSave.bukti_inovasi !== undefined && { bukti_inovasi: dataToSave.bukti_inovasi }),
-        ...(dataToSave.memiliki_penghargaan !== undefined && { memiliki_penghargaan: dataToSave.memiliki_penghargaan }),
-        ...(dataToSave.bukti_penghargaan !== undefined && { bukti_penghargaan: dataToSave.bukti_penghargaan }),
-        ...(dataToSave.berorientasi_pelayanan_desc !== undefined && { berorientasi_pelayanan_desc: dataToSave.berorientasi_pelayanan_desc }),
-        ...(dataToSave.akuntabel_desc !== undefined && { akuntabel_desc: dataToSave.akuntabel_desc }),
-        ...(dataToSave.kompeten_desc !== undefined && { kompeten_desc: dataToSave.kompeten_desc }),
-        ...(dataToSave.harmonis_desc !== undefined && { harmonis_desc: dataToSave.harmonis_desc }),
-        ...(dataToSave.loyal_desc !== undefined && { loyal_desc: dataToSave.loyal_desc }),
-        ...(dataToSave.adaptif_desc !== undefined && { adaptif_desc: dataToSave.adaptif_desc }),
-        ...(dataToSave.kolaboratif_desc !== undefined && { kolaboratif_desc: dataToSave.kolaboratif_desc })
+        ...(dataToSave.bebas_temuan !== undefined && {
+          bebas_temuan: dataToSave.bebas_temuan,
+        }),
+        ...(dataToSave.tidak_hukuman_disiplin !== undefined && {
+          tidak_hukuman_disiplin: dataToSave.tidak_hukuman_disiplin,
+        }),
+        ...(dataToSave.tidak_pemeriksaan_disiplin !== undefined && {
+          tidak_pemeriksaan_disiplin: dataToSave.tidak_pemeriksaan_disiplin,
+        }),
+        ...(dataToSave.memiliki_inovasi !== undefined && {
+          memiliki_inovasi: dataToSave.memiliki_inovasi,
+        }),
+        ...(dataToSave.bukti_inovasi !== undefined && {
+          bukti_inovasi: dataToSave.bukti_inovasi,
+        }),
+        ...(dataToSave.memiliki_penghargaan !== undefined && {
+          memiliki_penghargaan: dataToSave.memiliki_penghargaan,
+        }),
+        ...(dataToSave.bukti_penghargaan !== undefined && {
+          bukti_penghargaan: dataToSave.bukti_penghargaan,
+        }),
+        ...(dataToSave.berorientasi_pelayanan_desc !== undefined && {
+          berorientasi_pelayanan_desc: dataToSave.berorientasi_pelayanan_desc,
+        }),
+        ...(dataToSave.akuntabel_desc !== undefined && {
+          akuntabel_desc: dataToSave.akuntabel_desc,
+        }),
+        ...(dataToSave.kompeten_desc !== undefined && {
+          kompeten_desc: dataToSave.kompeten_desc,
+        }),
+        ...(dataToSave.harmonis_desc !== undefined && {
+          harmonis_desc: dataToSave.harmonis_desc,
+        }),
+        ...(dataToSave.loyal_desc !== undefined && {
+          loyal_desc: dataToSave.loyal_desc,
+        }),
+        ...(dataToSave.adaptif_desc !== undefined && {
+          adaptif_desc: dataToSave.adaptif_desc,
+        }),
+        ...(dataToSave.kolaboratif_desc !== undefined && {
+          kolaboratif_desc: dataToSave.kolaboratif_desc,
+        }),
       };
-
 
       const { error } = await supabase.from("penilaian").upsert([dbData], {
         onConflict: "pegawai_id,penilai_user_id,tahun_penilaian",
@@ -688,7 +706,6 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
 
       navigate("/evaluasi");
     } catch (error: any) {
-
       let errorMessage = "Gagal menyimpan evaluasi";
 
       if (error?.message) {
