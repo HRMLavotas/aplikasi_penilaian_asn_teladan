@@ -125,8 +125,6 @@ const Dashboard = () => {
 
     if (user) {
       fetchStats();
-      // Log dashboard view activity
-      activityHelpers.logView("dashboard", "Mengakses dashboard utama");
     }
 
     const {
@@ -136,8 +134,6 @@ const Dashboard = () => {
         navigate("/auth");
       } else if (event === "SIGNED_IN") {
         fetchStats();
-        // Log login activity
-        activityHelpers.logLogin();
       }
     });
 
@@ -146,7 +142,7 @@ const Dashboard = () => {
         subscription.unsubscribe();
       }
     };
-  }, [user, authLoading, isInitialized, navigate, fetchStats, activityHelpers]);
+  }, [user, authLoading, isInitialized, navigate, fetchStats]);
 
   const handleSignOut = async () => {
     // Log logout activity before signing out
