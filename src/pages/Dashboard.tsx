@@ -23,9 +23,7 @@ import {
   FileText,
   BarChart3,
   Shield,
-  Clock,
   Activity,
-  Bug,
 } from "lucide-react";
 import WorkflowTracker from "@/components/WorkflowTracker";
 
@@ -52,16 +50,6 @@ const Dashboard = () => {
   });
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Simple recent activities state
-  const [recentActivities, setRecentActivities] = useState<
-    Array<{
-      id: string;
-      description: string;
-      timestamp: string;
-      type: string;
-    }>
-  >([]);
 
   const fetchStats = useCallback(async () => {
     if (!user) return;
@@ -346,55 +334,6 @@ const Dashboard = () => {
           <WorkflowTracker />
         </div>
 
-        {/* Debug Section (Development Only) */}
-        {import.meta.env.DEV && (
-          <Card className="mt-8 border-yellow-200 bg-yellow-50">
-            <CardHeader>
-              <CardTitle className="flex items-center text-yellow-800">
-                <Bug className="h-5 w-5 mr-2" />
-                Debug Tools (Development Only)
-              </CardTitle>
-              <CardDescription className="text-yellow-700">
-                Tools untuk debugging sistem aktivitas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={debugDatabaseConnection}
-                  className="border-yellow-300 hover:bg-yellow-100"
-                >
-                  Test Database Connection
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={testActivityInsertion}
-                  className="border-yellow-300 hover:bg-yellow-100"
-                >
-                  Test Activity Insertion
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    activityHelpers.logCreate(
-                      "debug",
-                      "test-id",
-                      "Test manual activity creation",
-                    );
-                  }}
-                  className="border-yellow-300 hover:bg-yellow-100"
-                >
-                  Log Test Activity
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Recent Activity */}
         <Card className="mt-8">
           <CardHeader>
@@ -403,97 +342,18 @@ const Dashboard = () => {
               Aktivitas Terbaru
             </CardTitle>
             <CardDescription>
-              Riwayat aktivitas sistem dan tindakan pengguna
+              Aktivitas akan muncul saat Anda berhasil menambahkan atau mengubah
+              data
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {activitiesLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : activities.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Belum ada aktivitas terbaru</p>
-                <p className="text-sm">
-                  Mulai dengan menambahkan data pegawai atau melakukan evaluasi
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm">
-                        {getActivityIcon(activity.action_type)}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {formatActivityDescription(activity)}
-                        </p>
-                        <div className="flex items-center text-xs text-muted-foreground ml-2">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatRelativeTime(activity.created_at)}
-                        </div>
-                      </div>
-                      {activity.profiles && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          oleh{" "}
-                          {activity.profiles.nama_lengkap ||
-                            activity.profiles.username ||
-                            "Pengguna"}
-                        </p>
-                      )}
-                      {activity.details && activity.details.pegawaiName && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Target: {activity.details.pegawaiName}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0">
-                      <Badge
-                        variant={
-                          activity.action_type === "create"
-                            ? "default"
-                            : activity.action_type === "update"
-                              ? "secondary"
-                              : activity.action_type === "delete"
-                                ? "destructive"
-                                : activity.action_type === "evaluate"
-                                  ? "default"
-                                  : "outline"
-                        }
-                        className="text-xs"
-                      >
-                        {activity.action_type}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-                {activities.length >= 8 && (
-                  <div className="text-center pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        // Navigate to a full activities page (could be implemented later)
-                        activityHelpers.logView(
-                          "dashboard",
-                          "Melihat semua aktivitas",
-                        );
-                      }}
-                    >
-                      Lihat Semua Aktivitas
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>Belum ada aktivitas terbaru</p>
+              <p className="text-sm">
+                Mulai dengan menambahkan data pegawai atau melakukan evaluasi
+              </p>
+            </div>
           </CardContent>
         </Card>
       </main>
