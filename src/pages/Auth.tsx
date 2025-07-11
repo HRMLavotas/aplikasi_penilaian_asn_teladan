@@ -53,6 +53,9 @@ const Auth = () => {
         return;
       }
 
+      // Log successful login activity
+      activityHelpers.logLogin();
+
       toast({
         title: "Login Berhasil",
         description: "Selamat datang di sistem evaluasi ASN!",
