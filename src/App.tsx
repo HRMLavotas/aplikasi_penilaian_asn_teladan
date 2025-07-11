@@ -46,6 +46,7 @@ const AppRoutes = () => {
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/laporan" element={<Laporan />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/admin/score-fix" element={<AdminScoreFix />} />
         {/* Tempo catch-all route */}
         {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
