@@ -99,12 +99,12 @@ Jane Smith,198502022345678901,Perancang Sistem,Direktorat Jenderal Pembinaan Pen
             "memiliki_penghargaan",
           ].includes(header)
         ) {
-          value = value.toLowerCase() === "true";
+          value = (value.toLowerCase() === "true").toString();
         }
 
         // Handle numeric fields
         if (header === "masa_kerja_tahun") {
-          value = parseInt(value) || 0;
+          value = (parseInt(value) || 0).toString();
         }
 
         row[header] = value;
