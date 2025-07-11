@@ -330,7 +330,27 @@ const Dashboard = () => {
             <Card
               key={item.href}
               className="cursor-pointer hover:shadow-md transition-shadow group"
-              onClick={() => navigate(item.href)}
+              onClick={() => {
+                // Log navigation activity
+                const entityType = item.href.includes("pegawai")
+                  ? "pegawai"
+                  : item.href.includes("evaluasi")
+                    ? "evaluasi"
+                    : item.href.includes("ranking")
+                      ? "ranking"
+                      : item.href.includes("laporan")
+                        ? "laporan"
+                        : item.href.includes("settings")
+                          ? "settings"
+                          : "dashboard";
+
+                activityHelpers.logView(
+                  entityType as any,
+                  `Mengakses halaman ${item.title}`,
+                );
+
+                navigate(item.href);
+              }}
             >
               <CardHeader>
                 <div className="flex items-center space-x-3">
