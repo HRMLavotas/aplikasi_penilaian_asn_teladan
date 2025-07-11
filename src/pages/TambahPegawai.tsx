@@ -185,10 +185,6 @@ const TambahPegawai = () => {
         bukti_penghargaan: null,
       };
 
-      // Debug: log the data being inserted
-      console.log("Inserting pegawai data:", insertData);
-      console.log("Unit kerja ID:", unitKerjaId);
-
       // Validate required fields
       if (
         !insertData.nama ||
@@ -229,18 +225,9 @@ const TambahPegawai = () => {
 
       navigate("/pegawai");
     } catch (error) {
-      console.error("Error adding pegawai:", error);
-      console.error("Error type:", typeof error);
-      console.error("Error keys:", error ? Object.keys(error) : "null");
-
       // Log each property of the error object for debugging
       if (error && typeof error === "object") {
         const errorObj = error as any;
-        console.error("Error.message:", errorObj.message);
-        console.error("Error.details:", errorObj.details);
-        console.error("Error.hint:", errorObj.hint);
-        console.error("Error.code:", errorObj.code);
-        console.error("Full error object:", JSON.stringify(error, null, 2));
       }
 
       let errorMessage = "Unknown error occurred";
@@ -279,7 +266,6 @@ const TambahPegawai = () => {
           errorMessage = error;
         }
       } catch (stringifyError) {
-        console.error("Error while processing error:", stringifyError);
         errorMessage = "Error occurred but details could not be extracted";
       }
 
