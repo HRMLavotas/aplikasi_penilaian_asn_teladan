@@ -37,6 +37,7 @@ interface DashboardStats {
 const Dashboard = () => {
   const {
     user,
+    isSuperAdmin,
     isLoading: authLoading,
     isInitialized,
     signOut: authSignOut,
