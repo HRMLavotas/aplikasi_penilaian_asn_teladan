@@ -44,31 +44,10 @@ export const useActivityTracker = () => {
   const logActivity = useCallback(
     async (activityData: ActivityData) => {
       if (!user) {
-        console.log("No user logged in, skipping activity log");
-        return;
+        return; // Silently skip if no user
       }
 
       try {
-        // First check if activities table exists by doing a simple count query
-        const { error: testError } = await supabase
-          .from("activities")
-          .select("id", { count: "exact", head: true });
-
-        if (testError) {
-          if (testError.code === "42P01") {
-            console.warn(
-              "Activities table does not exist yet. Please run the migration.",
-            );
-            return;
-          }
-          console.error("Error testing activities table:", testError);
-          console.error(
-            "Test error details:",
-            JSON.stringify(testError, null, 2),
-          );
-          return;
-        }
-
         const { error } = await supabase.from("activities").insert({
           user_id: user.id,
           action_type: activityData.actionType,
@@ -79,15 +58,38 @@ export const useActivityTracker = () => {
         });
 
         if (error) {
-          console.error("Failed to log activity:", error);
-          console.error("Error details:", JSON.stringify(error, null, 2));
-          console.error("Activity data:", activityData);
-          console.error("User:", user.id);
+          // Check for common error types
+          if (error.code === "42P01") {
+            console.warn(
+              "Activities table does not exist. Activity logging disabled.",
+            );
+            return;
+          }
+
+          if (error.code === "23503") {
+            console.warn(
+              "Foreign key constraint error. User profile might not exist.",
+            );
+            return;
+          }
+
+          console.error("Failed to log activity:", {
+            error: error,
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            activity: activityData,
+            userId: user.id,
+          });
         }
       } catch (error) {
-        console.error("Error logging activity:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
-        console.error("Activity data:", activityData);
+        // Network or other errors
+        console.error("Error logging activity:", {
+          error: error,
+          message: error instanceof Error ? error.message : "Unknown error",
+          activity: activityData,
+        });
       }
     },
     [user],
