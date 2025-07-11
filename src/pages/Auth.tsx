@@ -24,6 +24,8 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logActivity } = useActivityTracker();
+  const activityHelpers = createActivityHelpers(logActivity);
 
   const handleSignIn = async (email: string, password: string) => {
     setIsLoading(true);
