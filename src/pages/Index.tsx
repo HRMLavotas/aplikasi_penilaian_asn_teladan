@@ -35,7 +35,6 @@ const Index = () => {
           navigate("/dashboard");
         }
       } catch (error) {
-        console.error("Error in getSession:", error);
         setUser(null);
       }
     };
