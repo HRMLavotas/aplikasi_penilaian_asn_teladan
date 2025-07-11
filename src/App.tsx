@@ -14,6 +14,7 @@ import FormEvaluasi from "./pages/FormEvaluasi";
 import Ranking from "./pages/Ranking";
 import Laporan from "./pages/Laporan";
 import Settings from "./pages/Settings";
+import AdminScoreFix from "./pages/AdminScoreFix";
 import NotFound from "./pages/NotFound";
 
 // Import tempo routes conditionally
