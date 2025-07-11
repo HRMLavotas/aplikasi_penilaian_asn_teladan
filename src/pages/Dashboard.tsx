@@ -94,7 +94,6 @@ const Dashboard = () => {
         asnTeladan,
       });
     } catch (error) {
-      console.error("Error fetching stats:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data statistik. Silakan coba lagi.",

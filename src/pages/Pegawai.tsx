@@ -104,7 +104,6 @@ const Pegawai = () => {
       setUnitKerja(unitData || []);
       
       // First, let's check the structure of the pegawai table
-      console.log('Fetching pegawai data...');
       
       // Define the type for our pegawai data
       interface PegawaiData {
@@ -128,11 +127,9 @@ const Pegawai = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching pegawai:', error);
         throw error;
       }
 
-      console.log('Pegawai data:', data);
       
       // If we have data, process it
       if (data && data.length > 0) {
@@ -149,7 +146,6 @@ const Pegawai = () => {
             .in('id', unitKerjaIds);
             
           if (unitError) {
-            console.error('Error fetching unit_kerja:', unitError);
           } else if (unitKerjaData) {
             unitKerjaMap = new Map(unitKerjaData.map(uk => [uk.id, uk]));
           }
@@ -192,7 +188,6 @@ const Pegawai = () => {
         setPegawai([]);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
       toast({
         title: 'Error',
         description: 'Gagal memuat data pegawai. Silakan coba lagi.',
@@ -254,7 +249,6 @@ const Pegawai = () => {
 
       fetchData();
     } catch (error) {
-      console.error("Error deleting pegawai:", error);
       toast({
         title: "Error",
         description: "Gagal menghapus data pegawai",

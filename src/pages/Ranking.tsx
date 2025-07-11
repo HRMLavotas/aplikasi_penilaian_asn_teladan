@@ -223,8 +223,6 @@ const Ranking = () => {
       setPegawai(pegawaiWithEvaluations);
       setUnitKerja(unitData || []);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
       toast({
         title: "Error",
         description: `Gagal memuat data ranking: ${error.message || error}`,
