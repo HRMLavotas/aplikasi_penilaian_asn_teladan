@@ -56,9 +56,11 @@ export const useActivityTracker = () => {
 
         if (error) {
           console.error("Failed to log activity:", error);
+          console.error("Error details:", JSON.stringify(error, null, 2));
         }
       } catch (error) {
         console.error("Error logging activity:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
       }
     },
     [user],
