@@ -839,7 +839,7 @@ const Ranking = () => {
                                   <Card>
                                     <CardHeader>
                                       <CardTitle className="text-lg">
-                                        Penilaian BerAKHLAK Core Values
+                                        Penilaian ASN (9 Kriteria)
                                       </CardTitle>
                                     </CardHeader>
                                     <CardContent>
