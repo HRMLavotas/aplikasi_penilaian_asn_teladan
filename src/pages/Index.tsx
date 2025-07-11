@@ -18,21 +18,26 @@ const Index = () => {
 
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error("Error getting session:", error);
+        if (error) {
+          console.error("Error getting session:", error);
+          setUser(null);
+          return;
+        }
+
+        setUser(session?.user ?? null);
+
+        if (session) {
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("Error in getSession:", error);
         setUser(null);
-        return;
-      }
-
-      setUser(session?.user ?? null);
-
-      if (session) {
-        navigate("/dashboard");
       }
     };
 
