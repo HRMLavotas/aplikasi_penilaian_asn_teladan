@@ -57,11 +57,6 @@ interface PegawaiRanking {
   jabatan: string;
   status_jabatan: string;
   masa_kerja_tahun: number;
-  memiliki_inovasi: boolean;
-  memiliki_penghargaan: boolean;
-  bebas_temuan: boolean;
-  tidak_hukuman_disiplin: boolean;
-  tidak_pemeriksaan_disiplin: boolean;
   unit_kerja: {
     nama_unit_kerja: string;
   };
