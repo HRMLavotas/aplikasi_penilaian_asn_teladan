@@ -228,12 +228,7 @@ const FormEvaluasi = () => {
           analisis_ai_kontra: data.analisis_ai_kontra || "",
           analisis_ai_kelebihan: data.analisis_ai_kelebihan || "",
           analisis_ai_kekurangan: data.analisis_ai_kekurangan || "",
-        };
-
-          databaseData: data,
-          pegawaiData: pegawaiData.data,
-          loadedPenilaian,
-        });
+                };
 
         setPenilaian(loadedPenilaian);
       }
