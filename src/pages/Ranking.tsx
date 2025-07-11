@@ -843,78 +843,60 @@ const Ranking = () => {
                                       <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Kinerja & Perilaku
+                                            Berorientasi Pelayanan
                                           </Label>
                                           <div className="text-2xl font-bold text-blue-600">
-                                            {latestEval?.kinerja_perilaku_score}
+                                            {
+                                              latestEval?.berorientasi_pelayanan_score
+                                            }
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Inovasi & Dampak
+                                            Akuntabel
                                           </Label>
                                           <div className="text-2xl font-bold text-green-600">
-                                            {latestEval?.inovasi_dampak_score}
+                                            {latestEval?.akuntabel_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Prestasi
+                                            Kompeten
                                           </Label>
                                           <div className="text-2xl font-bold text-purple-600">
-                                            {latestEval?.prestasi_score}
+                                            {latestEval?.kompeten_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Inspiratif
+                                            Harmonis
                                           </Label>
                                           <div className="text-2xl font-bold text-yellow-600">
-                                            {latestEval?.inspiratif_score}
+                                            {latestEval?.harmonis_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Komunikasi
+                                            Loyal
                                           </Label>
                                           <div className="text-2xl font-bold text-indigo-600">
-                                            {latestEval?.komunikasi_score}
+                                            {latestEval?.loyal_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Kerjasama
+                                            Adaptif
                                           </Label>
                                           <div className="text-2xl font-bold text-pink-600">
-                                            {
-                                              latestEval?.kerjasama_kolaborasi_score
-                                            }
+                                            {latestEval?.adaptif_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Leadership
+                                            Kolaboratif
                                           </Label>
                                           <div className="text-2xl font-bold text-orange-600">
-                                            {latestEval?.leadership_score}
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Rekam Jejak
-                                          </Label>
-                                          <div className="text-2xl font-bold text-teal-600">
-                                            {latestEval?.rekam_jejak_score}
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Integritas
-                                          </Label>
-                                          <div className="text-2xl font-bold text-red-600">
-                                            {
-                                              latestEval?.integritas_moralitas_score
-                                            }
+                                            {latestEval?.kolaboratif_score}
                                           </div>
                                         </div>
                                       </div>
