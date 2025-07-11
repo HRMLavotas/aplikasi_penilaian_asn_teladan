@@ -145,9 +145,6 @@ const Dashboard = () => {
   }, [user, authLoading, isInitialized, navigate, fetchStats]);
 
   const handleSignOut = async () => {
-    // Log logout activity before signing out
-    activityHelpers.logLogout();
-
     const { error } = await authSignOut();
     if (error) {
       toast({
