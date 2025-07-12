@@ -18,6 +18,9 @@ import {
   UserPlus,
   CheckCircle,
   AlertTriangle,
+  Edit3,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import {
   DataValidator,
@@ -51,6 +54,18 @@ const TambahPegawai = () => {
     status_jabatan: "",
     masa_kerja_tahun: 0,
   });
+
+  const [adminDocs, setAdminDocs] = useState({
+    bukti_inovasi_link: "",
+    bukti_penghargaan_link: "",
+    bebas_temuan_link: "",
+    tidak_hukuman_disiplin_link: "",
+    tidak_pemeriksaan_disiplin_link: "",
+    skp_2_tahun_terakhir_baik_link: "",
+    skp_peningkatan_prestasi_link: "",
+  });
+
+  const [editMode, setEditMode] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     checkAuth();
@@ -119,6 +134,22 @@ const TambahPegawai = () => {
       return;
     }
 
+    // Validate Google Drive links
+    const invalidLinks = Object.entries(adminDocs)
+      .filter(
+        ([_, link]) => link.trim() !== "" && !isValidGoogleDriveLink(link),
+      )
+      .map(([key, _]) => adminDocFields.find((f) => f.key === key)?.label);
+
+    if (invalidLinks.length > 0) {
+      toast({
+        title: "Link Google Drive Tidak Valid",
+        description: `Link tidak valid untuk: ${invalidLinks.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -179,10 +210,10 @@ const TambahPegawai = () => {
         bebas_temuan: false,
         tidak_hukuman_disiplin: false,
         tidak_pemeriksaan_disiplin: false,
-        memiliki_inovasi: false,
-        bukti_inovasi: null,
-        memiliki_penghargaan: false,
-        bukti_penghargaan: null,
+        memiliki_inovasi: !!adminDocs.bukti_inovasi_link,
+        bukti_inovasi: adminDocs.bukti_inovasi_link || null,
+        memiliki_penghargaan: !!adminDocs.bukti_penghargaan_link,
+        bukti_penghargaan: adminDocs.bukti_penghargaan_link || null,
       };
 
       // Validate required fields
@@ -218,9 +249,13 @@ const TambahPegawai = () => {
         return;
       }
 
+      const adminDocCount = Object.values(adminDocs).filter(
+        (link) => link.trim() !== "",
+      ).length;
+
       toast({
         title: "Berhasil",
-        description: "Data pegawai berhasil ditambahkan",
+        description: `Data pegawai berhasil ditambahkan${adminDocCount > 0 ? ` dengan ${adminDocCount} dokumen administrasi` : ""}`,
       });
 
       navigate("/pegawai");
@@ -310,6 +345,82 @@ const TambahPegawai = () => {
     // Real-time validation with debounce
     setTimeout(() => validateForm(newFormData), 300);
   };
+
+  const handleAdminDocChange = (field: string, value: string) => {
+    setAdminDocs((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const toggleEditMode = (field: string) => {
+    setEditMode((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Berhasil",
+        description: `Link ${label} berhasil disalin`,
+      });
+    } catch (error) {
+      toast({
+        title: "Gagal",
+        description: "Gagal menyalin link ke clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isValidGoogleDriveLink = (url: string) => {
+    if (!url) return true; // Allow empty links
+    const googleDrivePattern =
+      /^https:\/\/drive\.google\.com\/|^https:\/\/docs\.google\.com\//;
+    return googleDrivePattern.test(url);
+  };
+
+  const adminDocFields = [
+    {
+      key: "bukti_inovasi_link",
+      label: "Bukti Inovasi",
+      description: "Dokumen yang membuktikan inovasi yang telah dibuat",
+    },
+    {
+      key: "bukti_penghargaan_link",
+      label: "Bukti Penghargaan",
+      description: "Dokumen penghargaan atau prestasi yang diterima",
+    },
+    {
+      key: "bebas_temuan_link",
+      label: "Bebas Temuan",
+      description:
+        "Dokumen yang membuktikan bebas dari temuan audit/pemeriksaan",
+    },
+    {
+      key: "tidak_hukuman_disiplin_link",
+      label: "Tidak Ada Hukuman Disiplin",
+      description: "Surat keterangan bebas dari hukuman disiplin",
+    },
+    {
+      key: "tidak_pemeriksaan_disiplin_link",
+      label: "Tidak Dalam Pemeriksaan",
+      description: "Surat keterangan tidak sedang dalam pemeriksaan disiplin",
+    },
+    {
+      key: "skp_2_tahun_terakhir_baik_link",
+      label: "SKP 2 Tahun Terakhir Baik",
+      description: "Dokumen SKP dengan nilai baik dalam 2 tahun terakhir",
+    },
+    {
+      key: "skp_peningkatan_prestasi_link",
+      label: "Peningkatan Prestasi SKP",
+      description: "Dokumen yang menunjukkan peningkatan prestasi kerja",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
@@ -441,6 +552,152 @@ const TambahPegawai = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Kelengkapan Administrasi Penilaian */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Kelengkapan Administrasi Penilaian</CardTitle>
+              <CardDescription>
+                Link Google Drive untuk dokumen persyaratan yang dijadikan
+                sebagai data kriteria penilaian
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {adminDocFields.map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={field.key} className="text-sm font-medium">
+                      {field.label}
+                    </Label>
+                    <div className="flex space-x-1">
+                      {adminDocs[field.key as keyof typeof adminDocs] && (
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              copyToClipboard(
+                                adminDocs[field.key as keyof typeof adminDocs],
+                                field.label,
+                              )
+                            }
+                            className="h-8 w-8 p-0"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          {isValidGoogleDriveLink(
+                            adminDocs[field.key as keyof typeof adminDocs],
+                          ) && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                window.open(
+                                  adminDocs[
+                                    field.key as keyof typeof adminDocs
+                                  ],
+                                  "_blank",
+                                )
+                              }
+                              className="h-8 w-8 p-0"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleEditMode(field.key)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {field.description}
+                  </p>
+
+                  {editMode[field.key] ? (
+                    <div className="flex space-x-2">
+                      <Input
+                        id={field.key}
+                        type="url"
+                        placeholder="https://drive.google.com/... atau https://docs.google.com/..."
+                        value={adminDocs[field.key as keyof typeof adminDocs]}
+                        onChange={(e) =>
+                          handleAdminDocChange(field.key, e.target.value)
+                        }
+                        className={
+                          adminDocs[field.key as keyof typeof adminDocs] &&
+                          !isValidGoogleDriveLink(
+                            adminDocs[field.key as keyof typeof adminDocs],
+                          )
+                            ? "border-red-300 focus:border-red-500"
+                            : ""
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleEditMode(field.key)}
+                      >
+                        Simpan
+                      </Button>
+                    </div>
+                  ) : (
+                    <div
+                      className="min-h-[40px] p-3 bg-muted/50 rounded-md border cursor-pointer hover:bg-muted/70 transition-colors"
+                      onClick={() => toggleEditMode(field.key)}
+                    >
+                      {adminDocs[field.key as keyof typeof adminDocs] ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-blue-600 hover:underline">
+                            {adminDocs[field.key as keyof typeof adminDocs]}
+                          </span>
+                          {!isValidGoogleDriveLink(
+                            adminDocs[field.key as keyof typeof adminDocs],
+                          ) && (
+                            <span className="text-xs text-red-500 ml-2">
+                              ⚠️ Bukan link Google Drive yang valid
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          Klik untuk menambahkan link Google Drive
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {adminDocs[field.key as keyof typeof adminDocs] &&
+                    !isValidGoogleDriveLink(
+                      adminDocs[field.key as keyof typeof adminDocs],
+                    ) && (
+                      <p className="text-xs text-red-500">
+                        Mohon masukkan link Google Drive yang valid
+                        (drive.google.com atau docs.google.com)
+                      </p>
+                    )}
+                </div>
+              ))}
+
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Petunjuk:</strong> Pastikan dokumen di Google Drive
+                  dapat diakses oleh evaluator. Gunakan pengaturan "Anyone with
+                  the link can view" untuk memudahkan proses penilaian.
+                </p>
               </div>
             </CardContent>
           </Card>
