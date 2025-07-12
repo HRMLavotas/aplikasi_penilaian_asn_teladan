@@ -622,7 +622,9 @@ const Ranking = () => {
                     {selectedPegawai.length} ASN Teladan Terpilih
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Export data detail evaluasi lengkap setiap pegawai
+                    Export data detail evaluasi lengkap meliputi: kriteria
+                    integritas, prestasi & inovasi, SKP, skor penilaian 9
+                    kriteria, deskripsi BerAKHLAK, dan analisis AI
                   </p>
                 </div>
                 <Button onClick={exportResults} className="gap-2">
@@ -824,7 +826,7 @@ const Ranking = () => {
                                             }
                                           >
                                             {latestEval?.bebas_temuan
-                                              ? "✓ Ya"
+                                              ? "�� Ya"
                                               : "✗ Tidak"}
                                           </Badge>
                                         </div>
