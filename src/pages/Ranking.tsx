@@ -463,7 +463,7 @@ const Ranking = () => {
         ],
       ];
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: yPosition,
         head: [["Kriteria SKP", "Status"]],
         body: skpData,
