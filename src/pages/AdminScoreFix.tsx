@@ -300,17 +300,17 @@ const AdminScoreFix = () => {
 
                   {/* Validation Alert */}
                   {scorer.persentase_akhir >= 90 &&
-                    (!scorer.pegawai?.memiliki_inovasi ||
-                      !scorer.pegawai?.memiliki_penghargaan) && (
+                    (!scorer.memiliki_inovasi ||
+                      !scorer.memiliki_penghargaan) && (
                       <div className="bg-red-50 border border-red-200 rounded p-2 text-red-800 text-sm">
                         ⚠️ INVALID: Score 90%+ requires both innovation AND
                         achievement
                       </div>
                     )}
 
-                  {(!scorer.pegawai?.bebas_temuan ||
-                    !scorer.pegawai?.tidak_hukuman_disiplin ||
-                    !scorer.pegawai?.tidak_pemeriksaan_disiplin) && (
+                  {(!scorer.bebas_temuan ||
+                    !scorer.tidak_hukuman_disiplin ||
+                    !scorer.tidak_pemeriksaan_disiplin) && (
                     <div className="bg-red-50 border border-red-200 rounded p-2 text-red-800 text-sm">
                       ⚠️ INVALID: Incomplete integrity should limit score to 70%
                     </div>
