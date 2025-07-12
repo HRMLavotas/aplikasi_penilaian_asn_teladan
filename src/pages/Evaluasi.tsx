@@ -410,7 +410,7 @@ const Evaluasi = () => {
                                   : "secondary"
                               }
                             >
-                              {p.status_jabatan}
+                              {getStatusJabatanDisplay(p.status_jabatan)}
                             </Badge>
                           </TableCell>
                           <TableCell>
