@@ -394,7 +394,7 @@ const Ranking = () => {
         ],
       ];
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: yPosition,
         head: [["Kriteria Integritas", "Status"]],
         body: integrityData,
