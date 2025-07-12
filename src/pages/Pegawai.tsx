@@ -306,7 +306,7 @@ const Pegawai = () => {
             row.status_jabatan === "fungsional" ? "default" : "secondary"
           }
         >
-          {row.status_jabatan}
+          {getStatusJabatanDisplay(row.status_jabatan)}
         </Badge>
       ),
     },
