@@ -769,14 +769,14 @@ const Ranking = () => {
                     {selectedPegawai.length} ASN Teladan Terpilih
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Export data detail evaluasi lengkap meliputi: kriteria
-                    integritas, prestasi & inovasi, SKP, skor penilaian 9
-                    kriteria, deskripsi BerAKHLAK, dan analisis AI
+                    Export laporan PDF detail evaluasi lengkap meliputi:
+                    kriteria integritas, prestasi & inovasi, SKP, skor penilaian
+                    9 kriteria, deskripsi BerAKHLAK, dan analisis AI
                   </p>
                 </div>
                 <Button onClick={exportResults} className="gap-2">
                   <Download className="h-4 w-4" />
-                  Export Detail Evaluasi
+                  Export PDF
                 </Button>
               </div>
             </CardContent>
