@@ -55,6 +55,20 @@ const TambahPegawai = () => {
     masa_kerja_tahun: 0,
   });
 
+  const [adminDocs, setAdminDocs] = useState({
+    bukti_inovasi_link: "",
+    bukti_penghargaan_link: "",
+    berorientasi_pelayanan_link: "",
+    akuntabel_link: "",
+    kompeten_link: "",
+    harmonis_link: "",
+    loyal_link: "",
+    adaptif_link: "",
+    kolaboratif_link: "",
+  });
+
+  const [editMode, setEditMode] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -531,7 +545,7 @@ const TambahPegawai = () => {
                   <div className="space-y-1">
                     {nipInfo.errors.map((error: string, i: number) => (
                       <p key={i} className="text-sm text-red-600">
-                        • {error}
+                        �� {error}
                       </p>
                     ))}
                   </div>
