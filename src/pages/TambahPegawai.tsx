@@ -395,39 +395,30 @@ const TambahPegawai = () => {
       description: "Dokumen penghargaan atau prestasi yang diterima",
     },
     {
-      key: "berorientasi_pelayanan_link",
-      label: "Berorientasi Pelayanan",
-      description: "Dokumen bukti orientasi pelayanan prima",
+      key: "bebas_temuan_link",
+      label: "Bebas Temuan",
+      description:
+        "Dokumen yang membuktikan bebas dari temuan audit/pemeriksaan",
     },
     {
-      key: "akuntabel_link",
-      label: "Akuntabel",
-      description: "Dokumen bukti akuntabilitas dan tanggung jawab",
+      key: "tidak_hukuman_disiplin_link",
+      label: "Tidak Ada Hukuman Disiplin",
+      description: "Surat keterangan bebas dari hukuman disiplin",
     },
     {
-      key: "kompeten_link",
-      label: "Kompeten",
-      description: "Dokumen bukti kompetensi dan keahlian",
+      key: "tidak_pemeriksaan_disiplin_link",
+      label: "Tidak Dalam Pemeriksaan",
+      description: "Surat keterangan tidak sedang dalam pemeriksaan disiplin",
     },
     {
-      key: "harmonis_link",
-      label: "Harmonis",
-      description: "Dokumen bukti kemampuan membangun harmoni",
+      key: "skp_2_tahun_terakhir_baik_link",
+      label: "SKP 2 Tahun Terakhir Baik",
+      description: "Dokumen SKP dengan nilai baik dalam 2 tahun terakhir",
     },
     {
-      key: "loyal_link",
-      label: "Loyal",
-      description: "Dokumen bukti loyalitas terhadap organisasi",
-    },
-    {
-      key: "adaptif_link",
-      label: "Adaptif",
-      description: "Dokumen bukti kemampuan adaptasi terhadap perubahan",
-    },
-    {
-      key: "kolaboratif_link",
-      label: "Kolaboratif",
-      description: "Dokumen bukti kemampuan berkolaborasi",
+      key: "skp_peningkatan_prestasi_link",
+      label: "Peningkatan Prestasi SKP",
+      description: "Dokumen yang menunjukkan peningkatan prestasi kerja",
     },
   ];
 
