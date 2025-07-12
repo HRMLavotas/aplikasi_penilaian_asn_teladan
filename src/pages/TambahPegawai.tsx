@@ -58,13 +58,11 @@ const TambahPegawai = () => {
   const [adminDocs, setAdminDocs] = useState({
     bukti_inovasi_link: "",
     bukti_penghargaan_link: "",
-    berorientasi_pelayanan_link: "",
-    akuntabel_link: "",
-    kompeten_link: "",
-    harmonis_link: "",
-    loyal_link: "",
-    adaptif_link: "",
-    kolaboratif_link: "",
+    bebas_temuan_link: "",
+    tidak_hukuman_disiplin_link: "",
+    tidak_pemeriksaan_disiplin_link: "",
+    skp_2_tahun_terakhir_baik_link: "",
+    skp_peningkatan_prestasi_link: "",
   });
 
   const [editMode, setEditMode] = useState<Record<string, boolean>>({});
