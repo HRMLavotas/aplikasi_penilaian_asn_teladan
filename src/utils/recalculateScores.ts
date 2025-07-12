@@ -52,21 +52,21 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
 
   // Core Values ASN BerAKHLAK (20%) - menggunakan mapping ke score yang ada
   const coreValuesScores = [
-    penilaian.kinerja_perilaku_score || 1, // Berorientasi Pelayanan
-    penilaian.inspiratif_score || 1, // Akuntabel
-    penilaian.integritas_moralitas_score || 1, // Kompeten
-    penilaian.kerjasama_kolaborasi_score || 1, // Harmonis
-    penilaian.kinerja_perilaku_score || 1, // Loyal
-    penilaian.komunikasi_score || 1, // Adaptif
-    penilaian.leadership_score || 1, // Kolaboratif
+    penilaian.kinerja_perilaku_score || 70, // Berorientasi Pelayanan
+    penilaian.inovasi_dampak_score || 70, // Akuntabel  
+    penilaian.inspiratif_score || 70, // Kompeten
+    penilaian.komunikasi_score || 70, // Harmonis
+    penilaian.kerjasama_kolaborasi_score || 70, // Loyal
+    penilaian.leadership_score || 70, // Adaptif
+    penilaian.rekam_jejak_score || 70, // Kolaboratif
   ];
 
   const coreValuesAverage =
     coreValuesScores.reduce((sum, score) => sum + score, 0) /
     coreValuesScores.length;
   
-  // Convert dari skala 1-5 ke 0-20 (20% dari total)
-  const coreValuesScore = ((coreValuesAverage - 1) / 4) * 20;
+  // Scores sudah dalam skala 1-100, convert ke 0-20 (20% dari total)
+  const coreValuesScore = (coreValuesAverage / 100) * 20;
 
   let totalScore = integritasScore + prestasiScore + skpScore + coreValuesScore;
 
