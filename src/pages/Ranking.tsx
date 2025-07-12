@@ -530,7 +530,7 @@ const Ranking = () => {
           yPosition = 20;
         }
 
-        (doc as any).autoTable({
+        autoTable(doc, {
           startY: yPosition,
           head: [["Analisis AI", "Detail"]],
           body: aiAnalysis,
