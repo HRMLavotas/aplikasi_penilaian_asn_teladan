@@ -27,6 +27,7 @@ import {
   Upload,
 } from "lucide-react";
 import BulkImport from "@/components/BulkImport";
+import { getStatusJabatanDisplay } from "@/utils/statusJabatan";
 import {
   Table,
   TableBody,
@@ -86,14 +87,19 @@ const Pegawai = () => {
   const [showBulkImport, setShowBulkImport] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isSuperAdmin, isLoading: authLoading, isInitialized } = useAuth();
+  const {
+    user,
+    isSuperAdmin,
+    isLoading: authLoading,
+    isInitialized,
+  } = useAuth();
 
   const fetchData = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // First, fetch unit kerja since it's needed for both admin and regular users
       const { data: unitData, error: unitError } = await supabase
         .from("unit_kerja")
@@ -102,9 +108,9 @@ const Pegawai = () => {
 
       if (unitError) throw unitError;
       setUnitKerja(unitData || []);
-      
+
       // First, let's check the structure of the pegawai table
-      
+
       // Define the type for our pegawai data
       interface PegawaiData {
         id: string;
@@ -122,76 +128,78 @@ const Pegawai = () => {
 
       // Simple query to get all columns without joins first
       const { data, error } = await supabase
-        .from('pegawai')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("pegawai")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      
       // If we have data, process it
       if (data && data.length > 0) {
         // Get unique unit_kerja_ids
-        const unitKerjaIds = [...new Set(data.map(p => (p as PegawaiData).unit_kerja_id))]
-          .filter((id): id is string => !!id);
+        const unitKerjaIds = [
+          ...new Set(data.map((p) => (p as PegawaiData).unit_kerja_id)),
+        ].filter((id): id is string => !!id);
 
         // Fetch unit_kerja data if we have any unit_kerja_ids
         let unitKerjaMap = new Map();
         if (unitKerjaIds.length > 0) {
           const { data: unitKerjaData, error: unitError } = await supabase
-            .from('unit_kerja')
-            .select('*')
-            .in('id', unitKerjaIds);
-            
+            .from("unit_kerja")
+            .select("*")
+            .in("id", unitKerjaIds);
+
           if (unitError) {
           } else if (unitKerjaData) {
-            unitKerjaMap = new Map(unitKerjaData.map(uk => [uk.id, uk]));
+            unitKerjaMap = new Map(unitKerjaData.map((uk) => [uk.id, uk]));
           }
         }
-        
+
         // Create user information
         const userMap = new Map<string, { id: string; email: string }>();
-        
+
         // Add current user's information
         if (user) {
           userMap.set(user.id, {
             id: user.id,
-            email: user.email || `user_${user.id.substring(0, 6)}`
+            email: user.email || `user_${user.id.substring(0, 6)}`,
           });
         }
-        
+
         // Format the data with related information
         const formattedData: Pegawai[] = data.map((item: unknown) => {
           const pegawai = item as PegawaiData;
           return {
             id: pegawai.id,
             user_id: pegawai.user_id,
-            nama: pegawai.nama || '',
-            nip: pegawai.nip || '',
-            jabatan: pegawai.jabatan || '',
-            status_jabatan: pegawai.status_jabatan || '',
+            nama: pegawai.nama || "",
+            nip: pegawai.nip || "",
+            jabatan: pegawai.jabatan || "",
+            status_jabatan: pegawai.status_jabatan || "",
             masa_kerja_tahun: pegawai.masa_kerja_tahun || 0,
             memiliki_inovasi: pegawai.memiliki_inovasi || false,
             memiliki_penghargaan: pegawai.memiliki_penghargaan || false,
             created_at: pegawai.created_at,
-            unit_kerja: unitKerjaMap.get(pegawai.unit_kerja_id) || { nama_unit_kerja: '' },
-            user: userMap.get(pegawai.user_id) || { 
-              email: `user_${pegawai.user_id?.substring(0, 6) || 'unknown'}` 
+            unit_kerja: unitKerjaMap.get(pegawai.unit_kerja_id) || {
+              nama_unit_kerja: "",
+            },
+            user: userMap.get(pegawai.user_id) || {
+              email: `user_${pegawai.user_id?.substring(0, 6) || "unknown"}`,
             },
           };
         });
-        
+
         setPegawai(formattedData);
       } else {
         setPegawai([]);
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Gagal memuat data pegawai. Silakan coba lagi.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Gagal memuat data pegawai. Silakan coba lagi.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -203,19 +211,19 @@ const Pegawai = () => {
       navigate("/auth");
       return;
     }
-    
+
     if (user) {
       fetchData();
     }
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!session) {
-          navigate("/auth");
-        }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
       }
-    );
-    
+    });
+
     return () => {
       if (subscription) {
         subscription.unsubscribe();
@@ -235,10 +243,7 @@ const Pegawai = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from("pegawai")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("pegawai").delete().eq("id", id);
 
       if (error) throw error;
 
@@ -296,7 +301,11 @@ const Pegawai = () => {
     {
       header: "Status",
       accessor: (row: Pegawai) => (
-        <Badge variant={row.status_jabatan === "fungsional" ? "default" : "secondary"}>
+        <Badge
+          variant={
+            row.status_jabatan === "fungsional" ? "default" : "secondary"
+          }
+        >
           {row.status_jabatan}
         </Badge>
       ),
@@ -415,7 +424,10 @@ const Pegawai = () => {
             <CardHeader className="pb-2">
               <CardDescription>Administrasi</CardDescription>
               <CardTitle className="text-2xl">
-                {pegawai.filter((p) => p.status_jabatan === "administrasi").length}
+                {
+                  pegawai.filter((p) => p.status_jabatan === "administrasi")
+                    .length
+                }
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -430,7 +442,10 @@ const Pegawai = () => {
             <CardHeader className="pb-2">
               <CardDescription>Fungsional</CardDescription>
               <CardTitle className="text-2xl">
-                {pegawai.filter((p) => p.status_jabatan === "fungsional").length}
+                {
+                  pegawai.filter((p) => p.status_jabatan === "fungsional")
+                    .length
+                }
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -555,7 +570,9 @@ const Pegawai = () => {
                   <TableHeader>
                     <TableRow>
                       {columns.map((column) => (
-                        <TableHead key={column.header}>{column.header}</TableHead>
+                        <TableHead key={column.header}>
+                          {column.header}
+                        </TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
@@ -592,7 +609,7 @@ const Pegawai = () => {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                const pegawaiToDelete = pegawai.find(p => p.id === deleteId);
+                const pegawaiToDelete = pegawai.find((p) => p.id === deleteId);
                 if (pegawaiToDelete) {
                   handleDelete(deleteId, pegawaiToDelete.user_id);
                 } else {
