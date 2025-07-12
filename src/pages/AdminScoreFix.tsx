@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +10,13 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, RefreshCw, CheckCircle, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  RefreshCw,
+  CheckCircle,
+  Users,
+  ArrowLeft,
+} from "lucide-react";
 import {
   recalculateAllScores,
   getHighScorers,
@@ -21,6 +28,7 @@ const AdminScoreFix = () => {
   const [recalcResult, setRecalcResult] = useState<any>(null);
   const [highScorers, setHighScorers] = useState<any[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleRecalculate = async () => {
     setIsRecalculating(true);
@@ -86,11 +94,21 @@ const AdminScoreFix = () => {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Admin Score Fix Tool</h1>
-          <p className="text-muted-foreground">
-            Tools untuk memperbaiki dan memverifikasi scoring system
-          </p>
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Kembali
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Admin Score Fix Tool</h1>
+            <p className="text-muted-foreground">
+              Tools untuk memperbaiki dan memverifikasi scoring system
+            </p>
+          </div>
         </div>
       </div>
 
