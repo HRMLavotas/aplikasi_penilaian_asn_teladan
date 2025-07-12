@@ -64,7 +64,9 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
   const coreValuesAverage =
     coreValuesScores.reduce((sum, score) => sum + score, 0) /
     coreValuesScores.length;
-  const coreValuesScore = (coreValuesAverage / 100) * 20; // 20% dari rata-rata core values
+  
+  // Convert dari skala 1-5 ke 0-20 (20% dari total)
+  const coreValuesScore = ((coreValuesAverage - 1) / 4) * 20;
 
   let totalScore = integritasScore + prestasiScore + skpScore + coreValuesScore;
 
