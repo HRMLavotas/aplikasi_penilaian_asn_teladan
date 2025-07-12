@@ -33,6 +33,9 @@ const AdminScoreFix = () => {
           title: "Recalculation Completed",
           description: `Updated ${result.updated} out of ${result.total} records`,
         });
+        
+        // Refresh halaman ranking jika ada
+        window.dispatchEvent(new CustomEvent('ranking-refresh'));
       } else {
         toast({
           title: "Error",

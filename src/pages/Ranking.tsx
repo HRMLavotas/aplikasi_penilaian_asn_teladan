@@ -131,6 +131,14 @@ const Ranking = () => {
   useEffect(() => {
     checkAuth();
     fetchData();
+    
+    // Listen untuk refresh dari AdminScoreFix
+    const handleRankingRefresh = () => {
+      fetchData();
+    };
+    
+    window.addEventListener('ranking-refresh', handleRankingRefresh);
+    return () => window.removeEventListener('ranking-refresh', handleRankingRefresh);
   }, []);
 
   useEffect(() => {
@@ -496,6 +504,14 @@ const Ranking = () => {
               <div className="space-y-2">
                 <Label className="invisible">Actions</Label>
                 <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchData}
+                    className="whitespace-nowrap"
+                  >
+                    🔄 Refresh
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
