@@ -235,9 +235,13 @@ const TambahPegawai = () => {
         return;
       }
 
+      const adminDocCount = Object.values(adminDocs).filter(
+        (link) => link.trim() !== "",
+      ).length;
+
       toast({
         title: "Berhasil",
-        description: "Data pegawai berhasil ditambahkan",
+        description: `Data pegawai berhasil ditambahkan${adminDocCount > 0 ? ` dengan ${adminDocCount} dokumen administrasi` : ""}`,
       });
 
       navigate("/pegawai");
