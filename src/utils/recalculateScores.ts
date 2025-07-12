@@ -113,6 +113,11 @@ export const recalculateAllScores = async () => {
         rekam_jejak_score,
         prestasi_score,
         persentase_akhir,
+        bebas_temuan,
+        tidak_hukuman_disiplin,
+        tidak_pemeriksaan_disiplin,
+        memiliki_inovasi,
+        memiliki_penghargaan,
         pegawai:pegawai_id(
           bebas_temuan,
           tidak_hukuman_disiplin,
