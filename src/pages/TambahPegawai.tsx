@@ -328,6 +328,91 @@ const TambahPegawai = () => {
     setTimeout(() => validateForm(newFormData), 300);
   };
 
+  const handleAdminDocChange = (field: string, value: string) => {
+    setAdminDocs((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const toggleEditMode = (field: string) => {
+    setEditMode((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Berhasil",
+        description: `Link ${label} berhasil disalin`,
+      });
+    } catch (error) {
+      toast({
+        title: "Gagal",
+        description: "Gagal menyalin link ke clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const isValidGoogleDriveLink = (url: string) => {
+    if (!url) return true; // Allow empty links
+    const googleDrivePattern =
+      /^https:\/\/drive\.google\.com\/|^https:\/\/docs\.google\.com\//;
+    return googleDrivePattern.test(url);
+  };
+
+  const adminDocFields = [
+    {
+      key: "bukti_inovasi_link",
+      label: "Bukti Inovasi",
+      description: "Dokumen yang membuktikan inovasi yang telah dibuat",
+    },
+    {
+      key: "bukti_penghargaan_link",
+      label: "Bukti Penghargaan",
+      description: "Dokumen penghargaan atau prestasi yang diterima",
+    },
+    {
+      key: "berorientasi_pelayanan_link",
+      label: "Berorientasi Pelayanan",
+      description: "Dokumen bukti orientasi pelayanan prima",
+    },
+    {
+      key: "akuntabel_link",
+      label: "Akuntabel",
+      description: "Dokumen bukti akuntabilitas dan tanggung jawab",
+    },
+    {
+      key: "kompeten_link",
+      label: "Kompeten",
+      description: "Dokumen bukti kompetensi dan keahlian",
+    },
+    {
+      key: "harmonis_link",
+      label: "Harmonis",
+      description: "Dokumen bukti kemampuan membangun harmoni",
+    },
+    {
+      key: "loyal_link",
+      label: "Loyal",
+      description: "Dokumen bukti loyalitas terhadap organisasi",
+    },
+    {
+      key: "adaptif_link",
+      label: "Adaptif",
+      description: "Dokumen bukti kemampuan adaptasi terhadap perubahan",
+    },
+    {
+      key: "kolaboratif_link",
+      label: "Kolaboratif",
+      description: "Dokumen bukti kemampuan berkolaborasi",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
       {/* Header */}
@@ -545,7 +630,7 @@ const TambahPegawai = () => {
                   <div className="space-y-1">
                     {nipInfo.errors.map((error: string, i: number) => (
                       <p key={i} className="text-sm text-red-600">
-                        �� {error}
+                        • {error}
                       </p>
                     ))}
                   </div>
