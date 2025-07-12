@@ -422,7 +422,7 @@ const Pegawai = () => {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Administrasi</CardDescription>
+              <CardDescription>Administrator</CardDescription>
               <CardTitle className="text-2xl">
                 {
                   pegawai.filter((p) => p.status_jabatan === "administrasi")
