@@ -186,17 +186,6 @@ const TambahPegawai = () => {
         dbStatusJabatan = "administrasi";
       }
 
-      // Prepare admin documents data
-      const adminDocsData = Object.entries(adminDocs)
-        .filter(([_, link]) => link.trim() !== "")
-        .reduce(
-          (acc, [key, link]) => {
-            acc[key] = link;
-            return acc;
-          },
-          {} as Record<string, string>,
-        );
-
       // Prepare data for insertion
       const insertData = {
         ...pegawaiData,
@@ -211,11 +200,6 @@ const TambahPegawai = () => {
         bukti_inovasi: adminDocs.bukti_inovasi_link || null,
         memiliki_penghargaan: !!adminDocs.bukti_penghargaan_link,
         bukti_penghargaan: adminDocs.bukti_penghargaan_link || null,
-        // Store other admin docs as JSON in a new field (if we add it) or in notes
-        admin_documents:
-          Object.keys(adminDocsData).length > 0
-            ? JSON.stringify(adminDocsData)
-            : null,
       };
 
       // Validate required fields
