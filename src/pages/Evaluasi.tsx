@@ -324,7 +324,7 @@ const Evaluasi = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="administrasi">Administrasi</SelectItem>
+                    <SelectItem value="administrasi">Administrator</SelectItem>
                     <SelectItem value="fungsional">Fungsional</SelectItem>
                   </SelectContent>
                 </Select>
