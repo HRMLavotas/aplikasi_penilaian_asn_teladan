@@ -368,7 +368,7 @@ const Ranking = () => {
         ["Tahun Penilaian", latestEval?.tahun_penilaian?.toString() || "-"],
       ];
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: yPosition,
         head: [["Informasi Dasar", "Detail"]],
         body: basicInfoData,
