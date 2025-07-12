@@ -49,6 +49,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getStatusJabatanDisplay } from "@/utils/statusJabatan";
 
 interface PegawaiRanking {
   id: string;
@@ -131,14 +132,15 @@ const Ranking = () => {
   useEffect(() => {
     checkAuth();
     fetchData();
-    
+
     // Listen untuk refresh dari AdminScoreFix
     const handleRankingRefresh = () => {
       fetchData();
     };
-    
-    window.addEventListener('ranking-refresh', handleRankingRefresh);
-    return () => window.removeEventListener('ranking-refresh', handleRankingRefresh);
+
+    window.addEventListener("ranking-refresh", handleRankingRefresh);
+    return () =>
+      window.removeEventListener("ranking-refresh", handleRankingRefresh);
   }, []);
 
   useEffect(() => {
