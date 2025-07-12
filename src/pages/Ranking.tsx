@@ -308,32 +308,109 @@ const Ranking = () => {
   const exportResults = () => {
     const selectedData = filteredPegawai
       .filter((p) => selectedPegawai.includes(p.id))
-      .map((p, index) => ({
-        Rank: index + 1,
-        Nama: p.nama,
-        NIP: p.nip,
-        Jabatan: p.jabatan,
-        "Unit Kerja": p.unit_kerja?.nama_unit_kerja,
-        "Status Jabatan": p.status_jabatan,
-        "Skor Akhir": p.penilaian[0]?.persentase_akhir?.toFixed(1) + "%",
-      }));
+      .map((p, index) => {
+        const latestEval = p.penilaian[0];
+        return {
+          Rank: index + 1,
+          Nama: p.nama,
+          NIP: p.nip,
+          Jabatan: p.jabatan,
+          "Unit Kerja": p.unit_kerja?.nama_unit_kerja || "-",
+          "Status Jabatan": getStatusJabatanDisplay(p.status_jabatan),
+          "Masa Kerja (Tahun)": p.masa_kerja_tahun,
+
+          // Skor Akhir
+          "Skor Akhir (%)": latestEval?.persentase_akhir?.toFixed(1) || "0",
+          "Tahun Penilaian": latestEval?.tahun_penilaian || "-",
+
+          // Kriteria Integritas
+          "Bebas Temuan": latestEval?.bebas_temuan ? "Ya" : "Tidak",
+          "Tidak Ada Hukuman Disiplin": latestEval?.tidak_hukuman_disiplin
+            ? "Ya"
+            : "Tidak",
+          "Tidak Dalam Pemeriksaan": latestEval?.tidak_pemeriksaan_disiplin
+            ? "Ya"
+            : "Tidak",
+
+          // Prestasi & Inovasi
+          "Memiliki Inovasi": latestEval?.memiliki_inovasi ? "Ya" : "Tidak",
+          "Bukti Inovasi": latestEval?.bukti_inovasi || p.bukti_inovasi || "-",
+          "Memiliki Penghargaan": latestEval?.memiliki_penghargaan
+            ? "Ya"
+            : "Tidak",
+          "Bukti Penghargaan":
+            latestEval?.bukti_penghargaan || p.bukti_penghargaan || "-",
+
+          // Kriteria SKP
+          "SKP 2 Tahun Terakhir Baik": latestEval?.skp_2_tahun_terakhir_baik
+            ? "Ya"
+            : "Tidak",
+          "Peningkatan Prestasi SKP": latestEval?.skp_peningkatan_prestasi
+            ? "Ya"
+            : "Tidak",
+
+          // Penilaian ASN (9 Kriteria)
+          "Skor Kinerja Perilaku": latestEval?.kinerja_perilaku_score || 0,
+          "Skor Inovasi Dampak": latestEval?.inovasi_dampak_score || 0,
+          "Skor Prestasi": latestEval?.prestasi_score || 0,
+          "Skor Inspiratif": latestEval?.inspiratif_score || 0,
+          "Skor Komunikasi": latestEval?.komunikasi_score || 0,
+          "Skor Kerjasama": latestEval?.kerjasama_kolaborasi_score || 0,
+          "Skor Leadership": latestEval?.leadership_score || 0,
+          "Skor Rekam Jejak": latestEval?.rekam_jejak_score || 0,
+          "Skor Integritas": latestEval?.integritas_moralitas_score || 0,
+
+          // BerAKHLAK Core Values Descriptions
+          "Deskripsi Akuntabel": latestEval?.akuntabel_desc || "-",
+          "Deskripsi Adaptif": latestEval?.adaptif_desc || "-",
+          "Deskripsi Berorientasi Pelayanan":
+            latestEval?.berorientasi_pelayanan_desc || "-",
+          "Deskripsi Harmonis": latestEval?.harmonis_desc || "-",
+          "Deskripsi Kolaboratif": latestEval?.kolaboratif_desc || "-",
+          "Deskripsi Kompeten": latestEval?.kompeten_desc || "-",
+          "Deskripsi Loyal": latestEval?.loyal_desc || "-",
+
+          // AI Analysis
+          "Analisis AI Positif": latestEval?.analisis_ai_pro || "-",
+          "Analisis AI Area Perbaikan": latestEval?.analisis_ai_kontra || "-",
+          "Analisis AI Kelebihan": latestEval?.analisis_ai_kelebihan || "-",
+          "Analisis AI Kekurangan": latestEval?.analisis_ai_kekurangan || "-",
+        };
+      });
+
+    // Escape CSV values properly
+    const escapeCSV = (value: any) => {
+      if (value === null || value === undefined) return "-";
+      const str = String(value);
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
 
     const csvContent = [
-      Object.keys(selectedData[0] || {}).join(","),
-      ...selectedData.map((row) => Object.values(row).join(",")),
+      Object.keys(selectedData[0] || {})
+        .map(escapeCSV)
+        .join(","),
+      ...selectedData.map((row) => Object.values(row).map(escapeCSV).join(",")),
     ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    // Add BOM for proper UTF-8 encoding in Excel
+    const csvContentWithBOM = "\uFEFF" + csvContent;
+
+    const blob = new Blob([csvContentWithBOM], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `ASN_Teladan_Ranking_${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `ASN_Teladan_Detail_Evaluasi_${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
     toast({
       title: "Berhasil",
-      description: "Data ranking berhasil diekspor",
+      description: `Data detail evaluasi lengkap ${selectedPegawai.length} pegawai berhasil diekspor`,
     });
   };
 
