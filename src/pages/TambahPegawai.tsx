@@ -18,6 +18,9 @@ import {
   UserPlus,
   CheckCircle,
   AlertTriangle,
+  Edit3,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import {
   DataValidator,
