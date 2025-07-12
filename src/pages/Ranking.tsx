@@ -308,111 +308,256 @@ const Ranking = () => {
   };
 
   const exportResults = () => {
-    const selectedData = filteredPegawai
-      .filter((p) => selectedPegawai.includes(p.id))
-      .map((p, index) => {
-        const latestEval = p.penilaian[0];
-        return {
-          Rank: index + 1,
-          Nama: p.nama,
-          NIP: p.nip,
-          Jabatan: p.jabatan,
-          "Unit Kerja": p.unit_kerja?.nama_unit_kerja || "-",
-          "Status Jabatan": getStatusJabatanDisplay(p.status_jabatan),
-          "Masa Kerja (Tahun)": p.masa_kerja_tahun,
+    const selectedEmployees = filteredPegawai.filter((p) =>
+      selectedPegawai.includes(p.id),
+    );
 
-          // Skor Akhir
-          "Skor Akhir (%)": latestEval?.persentase_akhir?.toFixed(1) || "0",
-          "Tahun Penilaian": latestEval?.tahun_penilaian || "-",
+    const doc = new jsPDF("l", "mm", "a4"); // landscape orientation
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
 
-          // Kriteria Integritas
-          "Bebas Temuan": latestEval?.bebas_temuan ? "Ya" : "Tidak",
-          "Tidak Ada Hukuman Disiplin": latestEval?.tidak_hukuman_disiplin
-            ? "Ya"
-            : "Tidak",
-          "Tidak Dalam Pemeriksaan": latestEval?.tidak_pemeriksaan_disiplin
-            ? "Ya"
-            : "Tidak",
+    // Header
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("LAPORAN DETAIL EVALUASI ASN TELADAN", pageWidth / 2, 20, {
+      align: "center",
+    });
 
-          // Prestasi & Inovasi
-          "Memiliki Inovasi": latestEval?.memiliki_inovasi ? "Ya" : "Tidak",
-          "Bukti Inovasi": latestEval?.bukti_inovasi || p.bukti_inovasi || "-",
-          "Memiliki Penghargaan": latestEval?.memiliki_penghargaan
-            ? "Ya"
-            : "Tidak",
-          "Bukti Penghargaan":
-            latestEval?.bukti_penghargaan || p.bukti_penghargaan || "-",
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `Tanggal Export: ${new Date().toLocaleDateString("id-ID")}`,
+      pageWidth / 2,
+      30,
+      { align: "center" },
+    );
+    doc.text(
+      `Jumlah Pegawai: ${selectedEmployees.length} orang`,
+      pageWidth / 2,
+      38,
+      { align: "center" },
+    );
 
-          // Kriteria SKP
-          "SKP 2 Tahun Terakhir Baik": latestEval?.skp_2_tahun_terakhir_baik
-            ? "Ya"
-            : "Tidak",
-          "Peningkatan Prestasi SKP": latestEval?.skp_peningkatan_prestasi
-            ? "Ya"
-            : "Tidak",
+    let yPosition = 50;
 
-          // Penilaian ASN (9 Kriteria)
-          "Skor Kinerja Perilaku": latestEval?.kinerja_perilaku_score || 0,
-          "Skor Inovasi Dampak": latestEval?.inovasi_dampak_score || 0,
-          "Skor Prestasi": latestEval?.prestasi_score || 0,
-          "Skor Inspiratif": latestEval?.inspiratif_score || 0,
-          "Skor Komunikasi": latestEval?.komunikasi_score || 0,
-          "Skor Kerjasama": latestEval?.kerjasama_kolaborasi_score || 0,
-          "Skor Leadership": latestEval?.leadership_score || 0,
-          "Skor Rekam Jejak": latestEval?.rekam_jejak_score || 0,
-          "Skor Integritas": latestEval?.integritas_moralitas_score || 0,
+    selectedEmployees.forEach((p, index) => {
+      const latestEval = p.penilaian[0];
 
-          // BerAKHLAK Core Values Descriptions
-          "Deskripsi Akuntabel": latestEval?.akuntabel_desc || "-",
-          "Deskripsi Adaptif": latestEval?.adaptif_desc || "-",
-          "Deskripsi Berorientasi Pelayanan":
-            latestEval?.berorientasi_pelayanan_desc || "-",
-          "Deskripsi Harmonis": latestEval?.harmonis_desc || "-",
-          "Deskripsi Kolaboratif": latestEval?.kolaboratif_desc || "-",
-          "Deskripsi Kompeten": latestEval?.kompeten_desc || "-",
-          "Deskripsi Loyal": latestEval?.loyal_desc || "-",
+      // Check if we need a new page
+      if (yPosition > pageHeight - 60) {
+        doc.addPage();
+        yPosition = 20;
+      }
 
-          // AI Analysis
-          "Analisis AI Positif": latestEval?.analisis_ai_pro || "-",
-          "Analisis AI Area Perbaikan": latestEval?.analisis_ai_kontra || "-",
-          "Analisis AI Kelebihan": latestEval?.analisis_ai_kelebihan || "-",
-          "Analisis AI Kekurangan": latestEval?.analisis_ai_kekurangan || "-",
-        };
+      // Employee header
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${index + 1}. ${p.nama} (${p.nip})`, 20, yPosition);
+      yPosition += 8;
+
+      // Basic info table
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+
+      const basicInfoData = [
+        ["Jabatan", p.jabatan],
+        ["Unit Kerja", p.unit_kerja?.nama_unit_kerja || "-"],
+        ["Status Jabatan", getStatusJabatanDisplay(p.status_jabatan)],
+        ["Masa Kerja", `${p.masa_kerja_tahun} tahun`],
+        ["Skor Akhir", `${latestEval?.persentase_akhir?.toFixed(1) || 0}%`],
+        ["Tahun Penilaian", latestEval?.tahun_penilaian?.toString() || "-"],
+      ];
+
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [["Informasi Dasar", "Detail"]],
+        body: basicInfoData,
+        theme: "grid",
+        headStyles: { fillColor: [70, 130, 180], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 80 } },
+        margin: { left: 20 },
       });
 
-    // Escape CSV values properly
-    const escapeCSV = (value: any) => {
-      if (value === null || value === undefined) return "-";
-      const str = String(value);
-      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-        return `"${str.replace(/"/g, '""')}"`;
+      yPosition = (doc as any).lastAutoTable.finalY + 5;
+
+      // Integrity criteria
+      const integrityData = [
+        ["Bebas Temuan", latestEval?.bebas_temuan ? "Ya" : "Tidak"],
+        [
+          "Tidak Ada Hukuman Disiplin",
+          latestEval?.tidak_hukuman_disiplin ? "Ya" : "Tidak",
+        ],
+        [
+          "Tidak Dalam Pemeriksaan",
+          latestEval?.tidak_pemeriksaan_disiplin ? "Ya" : "Tidak",
+        ],
+      ];
+
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [["Kriteria Integritas", "Status"]],
+        body: integrityData,
+        theme: "grid",
+        headStyles: { fillColor: [220, 20, 60], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
+        margin: { left: 140 },
+      });
+
+      // Achievement & Innovation (next to integrity)
+      const achievementData = [
+        ["Memiliki Inovasi", latestEval?.memiliki_inovasi ? "Ya" : "Tidak"],
+        [
+          "Memiliki Penghargaan",
+          latestEval?.memiliki_penghargaan ? "Ya" : "Tidak",
+        ],
+      ];
+
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [["Prestasi & Inovasi", "Status"]],
+        body: achievementData,
+        theme: "grid",
+        headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
+        margin: { left: 230 },
+      });
+
+      yPosition = Math.max((doc as any).lastAutoTable.finalY) + 5;
+
+      // Assessment scores
+      const scoresData = [
+        ["Kinerja Perilaku", latestEval?.kinerja_perilaku_score || 0],
+        ["Inovasi Dampak", latestEval?.inovasi_dampak_score || 0],
+        ["Prestasi", latestEval?.prestasi_score || 0],
+        ["Inspiratif", latestEval?.inspiratif_score || 0],
+        ["Komunikasi", latestEval?.komunikasi_score || 0],
+        ["Kerjasama", latestEval?.kerjasama_kolaborasi_score || 0],
+        ["Leadership", latestEval?.leadership_score || 0],
+        ["Rekam Jejak", latestEval?.rekam_jejak_score || 0],
+        ["Integritas", latestEval?.integritas_moralitas_score || 0],
+      ];
+
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [["Penilaian ASN (9 Kriteria)", "Skor"]],
+        body: scoresData,
+        theme: "grid",
+        headStyles: { fillColor: [255, 140, 0], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 20 } },
+        margin: { left: 20 },
+      });
+
+      // SKP Criteria (next to scores)
+      const skpData = [
+        [
+          "SKP 2 Tahun Terakhir Baik",
+          latestEval?.skp_2_tahun_terakhir_baik ? "Ya" : "Tidak",
+        ],
+        [
+          "Peningkatan Prestasi SKP",
+          latestEval?.skp_peningkatan_prestasi ? "Ya" : "Tidak",
+        ],
+      ];
+
+      (doc as any).autoTable({
+        startY: yPosition,
+        head: [["Kriteria SKP", "Status"]],
+        body: skpData,
+        theme: "grid",
+        headStyles: { fillColor: [138, 43, 226], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
+        margin: { left: 110 },
+      });
+
+      yPosition = Math.max((doc as any).lastAutoTable.finalY) + 10;
+
+      // BerAKHLAK descriptions (if available)
+      const berakhlakDescs = [
+        ["Akuntabel", latestEval?.akuntabel_desc || "-"],
+        ["Adaptif", latestEval?.adaptif_desc || "-"],
+        [
+          "Berorientasi Pelayanan",
+          latestEval?.berorientasi_pelayanan_desc || "-",
+        ],
+        ["Harmonis", latestEval?.harmonis_desc || "-"],
+        ["Kolaboratif", latestEval?.kolaboratif_desc || "-"],
+        ["Kompeten", latestEval?.kompeten_desc || "-"],
+        ["Loyal", latestEval?.loyal_desc || "-"],
+      ].filter(([_, desc]) => desc && desc !== "-");
+
+      if (berakhlakDescs.length > 0) {
+        // Check if we need a new page for descriptions
+        if (yPosition > pageHeight - 80) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [["Deskripsi BerAKHLAK", "Detail"]],
+          body: berakhlakDescs,
+          theme: "grid",
+          headStyles: {
+            fillColor: [72, 61, 139],
+            textColor: 255,
+            fontSize: 10,
+          },
+          bodyStyles: { fontSize: 8 },
+          columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 200 } },
+          margin: { left: 20 },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 5;
       }
-      return str;
-    };
 
-    const csvContent = [
-      Object.keys(selectedData[0] || {})
-        .map(escapeCSV)
-        .join(","),
-      ...selectedData.map((row) => Object.values(row).map(escapeCSV).join(",")),
-    ].join("\n");
+      // AI Analysis (if available)
+      const aiAnalysis = [
+        ["Analisis Positif", latestEval?.analisis_ai_pro || "-"],
+        ["Area Perbaikan", latestEval?.analisis_ai_kontra || "-"],
+        ["Kelebihan", latestEval?.analisis_ai_kelebihan || "-"],
+        ["Kekurangan", latestEval?.analisis_ai_kekurangan || "-"],
+      ].filter(([_, desc]) => desc && desc !== "-");
 
-    // Add BOM for proper UTF-8 encoding in Excel
-    const csvContentWithBOM = "\uFEFF" + csvContent;
+      if (aiAnalysis.length > 0) {
+        // Check if we need a new page for AI analysis
+        if (yPosition > pageHeight - 60) {
+          doc.addPage();
+          yPosition = 20;
+        }
 
-    const blob = new Blob([csvContentWithBOM], {
-      type: "text/csv;charset=utf-8;",
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [["Analisis AI", "Detail"]],
+          body: aiAnalysis,
+          theme: "grid",
+          headStyles: {
+            fillColor: [205, 92, 92],
+            textColor: 255,
+            fontSize: 10,
+          },
+          bodyStyles: { fontSize: 8 },
+          columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 210 } },
+          margin: { left: 20 },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 15;
+      } else {
+        yPosition += 15;
+      }
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ASN_Teladan_Detail_Evaluasi_${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    // Save the PDF
+    const fileName = `ASN_Teladan_Detail_Evaluasi_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(fileName);
 
     toast({
       title: "Berhasil",
-      description: `Data detail evaluasi lengkap ${selectedPegawai.length} pegawai berhasil diekspor`,
+      description: `Laporan PDF detail evaluasi ${selectedEmployees.length} pegawai berhasil diunduh`,
     });
   };
 
