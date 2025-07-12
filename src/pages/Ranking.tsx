@@ -440,7 +440,7 @@ const Ranking = () => {
         ["Integritas", latestEval?.integritas_moralitas_score || 0],
       ];
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: yPosition,
         head: [["Penilaian ASN (9 Kriteria)", "Skor"]],
         body: scoresData,
