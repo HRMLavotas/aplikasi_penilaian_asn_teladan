@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import {
   Card,
   CardContent,
@@ -826,7 +828,7 @@ const Ranking = () => {
                                             }
                                           >
                                             {latestEval?.bebas_temuan
-                                              ? "�� Ya"
+                                              ? "✓ Ya"
                                               : "✗ Tidak"}
                                           </Badge>
                                         </div>
