@@ -2,18 +2,24 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  ArrowLeft, 
-  Search, 
-  ClipboardCheck, 
+import {
+  ArrowLeft,
+  Search,
+  ClipboardCheck,
   Star,
   TrendingUp,
   Users,
-  Award
+  Award,
 } from "lucide-react";
 import {
   Table,
@@ -30,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getStatusJabatanDisplay } from "@/utils/statusJabatan";
 
 interface Pegawai {
   id: string;
@@ -71,7 +78,9 @@ const Evaluasi = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
     }
@@ -82,11 +91,13 @@ const Evaluasi = () => {
       // Fetch pegawai with unit kerja and latest evaluations
       const { data: pegawaiData, error: pegawaiError } = await supabase
         .from("pegawai")
-        .select(`
+        .select(
+          `
           *,
           unit_kerja:unit_kerja_id(nama_unit_kerja),
           penilaian(id, tahun_penilaian, persentase_akhir)
-        `)
+        `,
+        )
         .order("nama");
 
       if (pegawaiError) throw pegawaiError;
@@ -114,50 +125,66 @@ const Evaluasi = () => {
 
   const getLatestEvaluation = (evaluations: any[]) => {
     if (!evaluations || evaluations.length === 0) return null;
-    return evaluations.reduce((latest, current) => 
-      current.tahun_penilaian > latest.tahun_penilaian ? current : latest
+    return evaluations.reduce((latest, current) =>
+      current.tahun_penilaian > latest.tahun_penilaian ? current : latest,
     );
   };
 
   const getEvaluationStatus = (evaluations: any[]) => {
     const currentYear = new Date().getFullYear();
-    const hasCurrentYearEval = evaluations?.some(e => e.tahun_penilaian === currentYear);
-    
+    const hasCurrentYearEval = evaluations?.some(
+      (e) => e.tahun_penilaian === currentYear,
+    );
+
     if (hasCurrentYearEval) {
-      return { status: "completed", label: "Sudah Dinilai", variant: "default" as const };
+      return {
+        status: "completed",
+        label: "Sudah Dinilai",
+        variant: "default" as const,
+      };
     } else if (evaluations && evaluations.length > 0) {
-      return { status: "outdated", label: "Perlu Update", variant: "secondary" as const };
+      return {
+        status: "outdated",
+        label: "Perlu Update",
+        variant: "secondary" as const,
+      };
     } else {
-      return { status: "pending", label: "Belum Dinilai", variant: "destructive" as const };
+      return {
+        status: "pending",
+        label: "Belum Dinilai",
+        variant: "destructive" as const,
+      };
     }
   };
 
   const filteredPegawai = pegawai.filter((p) => {
-    const matchesSearch = 
+    const matchesSearch =
       p.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.nip.includes(searchTerm) ||
       p.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesUnit = filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
-    const matchesStatus = filterStatus === "all" || p.status_jabatan === filterStatus;
+
+    const matchesUnit =
+      filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
+    const matchesStatus =
+      filterStatus === "all" || p.status_jabatan === filterStatus;
 
     return matchesSearch && matchesUnit && matchesStatus;
   });
 
   const stats = {
     total: pegawai.length,
-    evaluated: pegawai.filter(p => {
+    evaluated: pegawai.filter((p) => {
       const currentYear = new Date().getFullYear();
-      return p.penilaian?.some(e => e.tahun_penilaian === currentYear);
+      return p.penilaian?.some((e) => e.tahun_penilaian === currentYear);
     }).length,
-    pending: pegawai.filter(p => {
+    pending: pegawai.filter((p) => {
       const currentYear = new Date().getFullYear();
-      return !p.penilaian?.some(e => e.tahun_penilaian === currentYear);
+      return !p.penilaian?.some((e) => e.tahun_penilaian === currentYear);
     }).length,
-    highPerformers: pegawai.filter(p => {
+    highPerformers: pegawai.filter((p) => {
       const latest = getLatestEvaluation(p.penilaian);
       return latest && latest.persentase_akhir >= 85;
-    }).length
+    }).length,
   };
 
   if (isLoading) {
@@ -175,13 +202,19 @@ const Evaluasi = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/dashboard")}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Evaluasi Pegawai</h1>
-                <p className="text-sm text-muted-foreground">Lakukan penilaian kinerja pegawai ASN</p>
+                <p className="text-sm text-muted-foreground">
+                  Lakukan penilaian kinerja pegawai ASN
+                </p>
               </div>
             </div>
             <ClipboardCheck className="h-8 w-8 text-primary" />
@@ -204,7 +237,7 @@ const Evaluasi = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Sudah Dievaluasi</CardDescription>
@@ -291,15 +324,15 @@ const Evaluasi = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="administrasi">Administrasi</SelectItem>
+                    <SelectItem value="administrasi">Administrator</SelectItem>
                     <SelectItem value="fungsional">Fungsional</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium invisible">Actions</label>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full"
                   onClick={() => {
                     setSearchTerm("");
@@ -317,7 +350,9 @@ const Evaluasi = () => {
         {/* Data Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Daftar Pegawai untuk Evaluasi ({filteredPegawai.length})</CardTitle>
+            <CardTitle>
+              Daftar Pegawai untuk Evaluasi ({filteredPegawai.length})
+            </CardTitle>
             <CardDescription>
               Pilih pegawai untuk melakukan evaluasi kinerja
             </CardDescription>
@@ -328,10 +363,9 @@ const Evaluasi = () => {
                 <ClipboardCheck className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="font-semibold mb-2">Tidak ada data pegawai</h3>
                 <p className="text-muted-foreground mb-4">
-                  {pegawai.length === 0 
+                  {pegawai.length === 0
                     ? "Belum ada pegawai yang terdaftar untuk dievaluasi."
-                    : "Tidak ada pegawai yang cocok dengan filter yang dipilih."
-                  }
+                    : "Tidak ada pegawai yang cocok dengan filter yang dipilih."}
                 </p>
               </div>
             ) : (
@@ -353,13 +387,15 @@ const Evaluasi = () => {
                     {filteredPegawai.map((p) => {
                       const latestEval = getLatestEvaluation(p.penilaian);
                       const evalStatus = getEvaluationStatus(p.penilaian);
-                      
+
                       return (
                         <TableRow key={p.id}>
                           <TableCell>
                             <div>
                               <div className="font-medium">{p.nama}</div>
-                              <div className="text-sm text-muted-foreground font-mono">{p.nip}</div>
+                              <div className="text-sm text-muted-foreground font-mono">
+                                {p.nip}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>{p.jabatan}</TableCell>
@@ -367,8 +403,14 @@ const Evaluasi = () => {
                             {p.unit_kerja?.nama_unit_kerja || "-"}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={p.status_jabatan === "fungsional" ? "default" : "secondary"}>
-                              {p.status_jabatan}
+                            <Badge
+                              variant={
+                                p.status_jabatan === "fungsional"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
+                              {getStatusJabatanDisplay(p.status_jabatan)}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -384,7 +426,9 @@ const Evaluasi = () => {
                                   <Award className="h-4 w-4 text-yellow-500" />
                                 )}
                               </div>
-                            ) : "-"}
+                            ) : (
+                              "-"
+                            )}
                           </TableCell>
                           <TableCell>
                             <Badge variant={evalStatus.variant}>
@@ -392,7 +436,7 @@ const Evaluasi = () => {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button 
+                            <Button
                               size="sm"
                               onClick={() => navigate(`/evaluasi/${p.id}`)}
                             >

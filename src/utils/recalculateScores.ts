@@ -13,6 +13,13 @@ interface PenilaianData {
   leadership_score: number;
   rekam_jejak_score: number;
   prestasi_score: number;
+  // Data integritas dari penilaian table (bukan pegawai table)
+  bebas_temuan: boolean;
+  tidak_hukuman_disiplin: boolean;
+  tidak_pemeriksaan_disiplin: boolean;
+  // Data prestasi & inovasi dari penilaian table (bukan pegawai table)
+  memiliki_inovasi: boolean;
+  memiliki_penghargaan: boolean;
   pegawai: {
     bebas_temuan: boolean;
     tidak_hukuman_disiplin: boolean;
@@ -24,10 +31,11 @@ interface PenilaianData {
 
 const calculateCorrectScore = (penilaian: PenilaianData): number => {
   // Kriteria Integritas (30%) - WAJIB SEMPURNA
+  // Gunakan data dari penilaian table (bukan pegawai table) karena evaluasi bisa override data pegawai
   let integritasScore = 0;
-  if (penilaian.pegawai.bebas_temuan) integritasScore += 10;
-  if (penilaian.pegawai.tidak_hukuman_disiplin) integritasScore += 10;
-  if (penilaian.pegawai.tidak_pemeriksaan_disiplin) integritasScore += 10;
+  if (penilaian.bebas_temuan) integritasScore += 10;
+  if (penilaian.tidak_hukuman_disiplin) integritasScore += 10;
+  if (penilaian.tidak_pemeriksaan_disiplin) integritasScore += 10;
 
   // Jika integritas tidak sempurna, maksimal score adalah 70%
   if (integritasScore < 30) {
@@ -35,15 +43,16 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
       integritasScore +
       (penilaian.skp_2_tahun_terakhir_baik ? 10 : 0) +
       (penilaian.skp_peningkatan_prestasi ? 10 : 0) +
-      (penilaian.pegawai.memiliki_inovasi ? 20 : 0) +
-      (penilaian.pegawai.memiliki_penghargaan ? 10 : 0);
+      (penilaian.memiliki_inovasi ? 20 : 0) +
+      (penilaian.memiliki_penghargaan ? 10 : 0);
     return Math.min(partialScore, 70);
   }
 
   // Prestasi & Inovasi (30%) - WAJIB MINIMAL SALAH SATU
+  // Gunakan data dari penilaian table (bukan pegawai table)
   let prestasiScore = 0;
-  if (penilaian.pegawai.memiliki_inovasi) prestasiScore += 20;
-  if (penilaian.pegawai.memiliki_penghargaan) prestasiScore += 10;
+  if (penilaian.memiliki_inovasi) prestasiScore += 20;
+  if (penilaian.memiliki_penghargaan) prestasiScore += 10;
 
   // Kriteria SKP (20%)
   let skpScore = 0;
@@ -53,7 +62,7 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
   // Core Values ASN BerAKHLAK (20%) - menggunakan mapping ke score yang ada
   const coreValuesScores = [
     penilaian.kinerja_perilaku_score || 70, // Berorientasi Pelayanan
-    penilaian.inovasi_dampak_score || 70, // Akuntabel  
+    penilaian.inovasi_dampak_score || 70, // Akuntabel
     penilaian.inspiratif_score || 70, // Kompeten
     penilaian.komunikasi_score || 70, // Harmonis
     penilaian.kerjasama_kolaborasi_score || 70, // Loyal
@@ -64,25 +73,21 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
   const coreValuesAverage =
     coreValuesScores.reduce((sum, score) => sum + score, 0) /
     coreValuesScores.length;
-  
+
   // Scores sudah dalam skala 1-100, convert ke 0-20 (20% dari total)
   const coreValuesScore = (coreValuesAverage / 100) * 20;
 
   let totalScore = integritasScore + prestasiScore + skpScore + coreValuesScore;
 
   // Aturan tambahan: Tanpa inovasi ATAU penghargaan, maksimal 85%
-  if (
-    !penilaian.pegawai.memiliki_inovasi &&
-    !penilaian.pegawai.memiliki_penghargaan
-  ) {
+  if (!penilaian.memiliki_inovasi && !penilaian.memiliki_penghargaan) {
     totalScore = Math.min(totalScore, 85);
   }
 
   // Aturan tambahan: Untuk score 90%+, wajib memiliki inovasi DAN penghargaan
   if (
     totalScore >= 90 &&
-    (!penilaian.pegawai.memiliki_inovasi ||
-      !penilaian.pegawai.memiliki_penghargaan)
+    (!penilaian.memiliki_inovasi || !penilaian.memiliki_penghargaan)
   ) {
     totalScore = Math.min(totalScore, 89);
   }
@@ -108,6 +113,11 @@ export const recalculateAllScores = async () => {
         rekam_jejak_score,
         prestasi_score,
         persentase_akhir,
+        bebas_temuan,
+        tidak_hukuman_disiplin,
+        tidak_pemeriksaan_disiplin,
+        memiliki_inovasi,
+        memiliki_penghargaan,
         pegawai:pegawai_id(
           bebas_temuan,
           tidak_hukuman_disiplin,
@@ -182,6 +192,11 @@ export const getHighScorers = async () => {
         `
         id,
         persentase_akhir,
+        memiliki_inovasi,
+        memiliki_penghargaan,
+        bebas_temuan,
+        tidak_hukuman_disiplin,
+        tidak_pemeriksaan_disiplin,
         pegawai:pegawai_id(
           nama,
           nip,
