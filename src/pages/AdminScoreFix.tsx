@@ -33,9 +33,9 @@ const AdminScoreFix = () => {
           title: "Recalculation Completed",
           description: `Updated ${result.updated} out of ${result.total} records`,
         });
-        
+
         // Refresh halaman ranking jika ada
-        window.dispatchEvent(new CustomEvent('ranking-refresh'));
+        window.dispatchEvent(new CustomEvent("ranking-refresh"));
       } else {
         toast({
           title: "Error",
@@ -235,86 +235,86 @@ const AdminScoreFix = () => {
                     </Badge>
                   </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                      <div className="flex items-center space-x-1">
-                        <span
-                          className={
-                            scorer.pegawai?.bebas_temuan
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {scorer.pegawai?.bebas_temuan ? "✓" : "✗"}
-                        </span>
-                        <span>Bebas Temuan</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span
-                          className={
-                            scorer.pegawai?.tidak_hukuman_disiplin
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {scorer.pegawai?.tidak_hukuman_disiplin ? "✓" : "✗"}
-                        </span>
-                        <span>No Hukuman</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span
-                          className={
-                            scorer.pegawai?.tidak_pemeriksaan_disiplin
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {scorer.pegawai?.tidak_pemeriksaan_disiplin ? "✓" : "✗"}
-                        </span>
-                        <span>No Pemeriksaan</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span
-                          className={
-                            scorer.pegawai?.memiliki_inovasi
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {scorer.pegawai?.memiliki_inovasi ? "✓" : "✗"}
-                        </span>
-                        <span>Inovasi</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span
-                          className={
-                            scorer.pegawai?.memiliki_penghargaan
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {scorer.pegawai?.memiliki_penghargaan ? "✓" : "✗"}
-                        </span>
-                        <span>Penghargaan</span>
-                      </div>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                    <div className="flex items-center space-x-1">
+                      <span
+                        className={
+                          scorer.bebas_temuan
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {scorer.bebas_temuan ? "✓" : "✗"}
+                      </span>
+                      <span>Bebas Temuan</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <span
+                        className={
+                          scorer.tidak_hukuman_disiplin
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {scorer.tidak_hukuman_disiplin ? "✓" : "✗"}
+                      </span>
+                      <span>No Hukuman</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <span
+                        className={
+                          scorer.tidak_pemeriksaan_disiplin
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {scorer.tidak_pemeriksaan_disiplin ? "✓" : "✗"}
+                      </span>
+                      <span>No Pemeriksaan</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <span
+                        className={
+                          scorer.memiliki_inovasi
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {scorer.memiliki_inovasi ? "✓" : "✗"}
+                      </span>
+                      <span>Inovasi</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <span
+                        className={
+                          scorer.memiliki_penghargaan
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {scorer.memiliki_penghargaan ? "✓" : "✗"}
+                      </span>
+                      <span>Penghargaan</span>
+                    </div>
                   </div>
 
-                    {/* Validation Alert */}
-                    {scorer.persentase_akhir >= 90 &&
-                      (!scorer.pegawai?.memiliki_inovasi ||
-                        !scorer.pegawai?.memiliki_penghargaan) && (
-                        <div className="bg-red-50 border border-red-200 rounded p-2 text-red-800 text-sm">
-                          ⚠️ INVALID: Score 90%+ requires both innovation AND
-                          achievement
-                        </div>
-                      )}
-
-                    {(!scorer.pegawai?.bebas_temuan ||
-                      !scorer.pegawai?.tidak_hukuman_disiplin ||
-                      !scorer.pegawai?.tidak_pemeriksaan_disiplin) && (
+                  {/* Validation Alert */}
+                  {scorer.persentase_akhir >= 90 &&
+                    (!scorer.pegawai?.memiliki_inovasi ||
+                      !scorer.pegawai?.memiliki_penghargaan) && (
                       <div className="bg-red-50 border border-red-200 rounded p-2 text-red-800 text-sm">
-                        ⚠️ INVALID: Incomplete integrity should limit score to 70%
+                        ⚠️ INVALID: Score 90%+ requires both innovation AND
+                        achievement
                       </div>
                     )}
+
+                  {(!scorer.pegawai?.bebas_temuan ||
+                    !scorer.pegawai?.tidak_hukuman_disiplin ||
+                    !scorer.pegawai?.tidak_pemeriksaan_disiplin) && (
+                    <div className="bg-red-50 border border-red-200 rounded p-2 text-red-800 text-sm">
+                      ⚠️ INVALID: Incomplete integrity should limit score to 70%
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
