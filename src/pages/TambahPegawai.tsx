@@ -136,6 +136,22 @@ const TambahPegawai = () => {
       return;
     }
 
+    // Validate Google Drive links
+    const invalidLinks = Object.entries(adminDocs)
+      .filter(
+        ([_, link]) => link.trim() !== "" && !isValidGoogleDriveLink(link),
+      )
+      .map(([key, _]) => adminDocFields.find((f) => f.key === key)?.label);
+
+    if (invalidLinks.length > 0) {
+      toast({
+        title: "Link Google Drive Tidak Valid",
+        description: `Link tidak valid untuk: ${invalidLinks.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
