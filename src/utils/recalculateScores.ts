@@ -53,6 +53,9 @@ const calculateCorrectScore = (penilaian: PenilaianData): number => {
   let prestasiScore = 0;
   if (penilaian.memiliki_inovasi) prestasiScore += 20;
   if (penilaian.memiliki_penghargaan) prestasiScore += 10;
+  
+  // Pastikan prestasi_score field tetap konsisten dengan logika boolean
+  // prestasi_score digunakan untuk display, tapi logika menggunakan boolean
 
   // Kriteria SKP (20%)
   let skpScore = 0;
