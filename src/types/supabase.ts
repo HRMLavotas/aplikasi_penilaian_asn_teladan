@@ -17,9 +17,11 @@ export type Database = {
       pegawai: {
         Row: {
           bebas_temuan: boolean
+          bebas_temuan_link: string | null
           bukti_inovasi: string | null
           bukti_penghargaan: string | null
           created_at: string
+          drh_link: string | null
           id: string
           jabatan: string
           masa_kerja_tahun: number
@@ -27,18 +29,24 @@ export type Database = {
           memiliki_penghargaan: boolean
           nama: string
           nip: string
+          skp_2_tahun_terakhir_baik_link: string | null
+          skp_peningkatan_prestasi_link: string | null
           status_jabatan: string
           tidak_hukuman_disiplin: boolean
+          tidak_hukuman_disiplin_link: string | null
           tidak_pemeriksaan_disiplin: boolean
+          tidak_pemeriksaan_disiplin_link: string | null
           unit_kerja_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
           bebas_temuan?: boolean
+          bebas_temuan_link?: string | null
           bukti_inovasi?: string | null
           bukti_penghargaan?: string | null
           created_at?: string
+          drh_link?: string | null
           id?: string
           jabatan: string
           masa_kerja_tahun?: number
@@ -46,18 +54,24 @@ export type Database = {
           memiliki_penghargaan?: boolean
           nama: string
           nip: string
+          skp_2_tahun_terakhir_baik_link?: string | null
+          skp_peningkatan_prestasi_link?: string | null
           status_jabatan: string
           tidak_hukuman_disiplin?: boolean
+          tidak_hukuman_disiplin_link?: string | null
           tidak_pemeriksaan_disiplin?: boolean
+          tidak_pemeriksaan_disiplin_link?: string | null
           unit_kerja_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
           bebas_temuan?: boolean
+          bebas_temuan_link?: string | null
           bukti_inovasi?: string | null
           bukti_penghargaan?: string | null
           created_at?: string
+          drh_link?: string | null
           id?: string
           jabatan?: string
           masa_kerja_tahun?: number
@@ -65,9 +79,13 @@ export type Database = {
           memiliki_penghargaan?: boolean
           nama?: string
           nip?: string
+          skp_2_tahun_terakhir_baik_link?: string | null
+          skp_peningkatan_prestasi_link?: string | null
           status_jabatan?: string
           tidak_hukuman_disiplin?: boolean
+          tidak_hukuman_disiplin_link?: string | null
           tidak_pemeriksaan_disiplin?: boolean
+          tidak_pemeriksaan_disiplin_link?: string | null
           unit_kerja_id?: string
           updated_at?: string
           user_id?: string
@@ -90,7 +108,10 @@ export type Database = {
           analisis_ai_kelebihan: string | null
           analisis_ai_kontra: string | null
           analisis_ai_pro: string | null
+          bebas_temuan: boolean | null
           berorientasi_pelayanan_desc: string | null
+          bukti_inovasi: string | null
+          bukti_penghargaan: string | null
           created_at: string
           harmonis_desc: string | null
           id: string
@@ -104,6 +125,8 @@ export type Database = {
           komunikasi_score: number
           leadership_score: number
           loyal_desc: string | null
+          memiliki_inovasi: boolean | null
+          memiliki_penghargaan: boolean | null
           pegawai_id: string
           penilai_user_id: string
           persentase_akhir: number | null
@@ -112,6 +135,8 @@ export type Database = {
           skp_2_tahun_terakhir_baik: boolean
           skp_peningkatan_prestasi: boolean
           tahun_penilaian: number
+          tidak_hukuman_disiplin: boolean | null
+          tidak_pemeriksaan_disiplin: boolean | null
           updated_at: string
         }
         Insert: {
@@ -121,7 +146,10 @@ export type Database = {
           analisis_ai_kelebihan?: string | null
           analisis_ai_kontra?: string | null
           analisis_ai_pro?: string | null
+          bebas_temuan?: boolean | null
           berorientasi_pelayanan_desc?: string | null
+          bukti_inovasi?: string | null
+          bukti_penghargaan?: string | null
           created_at?: string
           harmonis_desc?: string | null
           id?: string
@@ -135,6 +163,8 @@ export type Database = {
           komunikasi_score: number
           leadership_score: number
           loyal_desc?: string | null
+          memiliki_inovasi?: boolean | null
+          memiliki_penghargaan?: boolean | null
           pegawai_id: string
           penilai_user_id: string
           persentase_akhir?: number | null
@@ -143,6 +173,8 @@ export type Database = {
           skp_2_tahun_terakhir_baik?: boolean
           skp_peningkatan_prestasi?: boolean
           tahun_penilaian?: number
+          tidak_hukuman_disiplin?: boolean | null
+          tidak_pemeriksaan_disiplin?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -152,7 +184,10 @@ export type Database = {
           analisis_ai_kelebihan?: string | null
           analisis_ai_kontra?: string | null
           analisis_ai_pro?: string | null
+          bebas_temuan?: boolean | null
           berorientasi_pelayanan_desc?: string | null
+          bukti_inovasi?: string | null
+          bukti_penghargaan?: string | null
           created_at?: string
           harmonis_desc?: string | null
           id?: string
@@ -166,6 +201,8 @@ export type Database = {
           komunikasi_score?: number
           leadership_score?: number
           loyal_desc?: string | null
+          memiliki_inovasi?: boolean | null
+          memiliki_penghargaan?: boolean | null
           pegawai_id?: string
           penilai_user_id?: string
           persentase_akhir?: number | null
@@ -174,6 +211,8 @@ export type Database = {
           skp_2_tahun_terakhir_baik?: boolean
           skp_peningkatan_prestasi?: boolean
           tahun_penilaian?: number
+          tidak_hukuman_disiplin?: boolean | null
+          tidak_pemeriksaan_disiplin?: boolean | null
           updated_at?: string
         }
         Relationships: [
@@ -244,7 +283,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

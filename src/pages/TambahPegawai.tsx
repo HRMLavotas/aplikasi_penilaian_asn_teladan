@@ -216,6 +216,17 @@ const TambahPegawai = () => {
         bukti_inovasi: adminDocs.bukti_inovasi_link || null,
         memiliki_penghargaan: !!adminDocs.bukti_penghargaan_link,
         bukti_penghargaan: adminDocs.bukti_penghargaan_link || null,
+        // Add all admin document links
+        drh_link: adminDocs.drh_link || null,
+        bebas_temuan_link: adminDocs.bebas_temuan_link || null,
+        tidak_hukuman_disiplin_link:
+          adminDocs.tidak_hukuman_disiplin_link || null,
+        tidak_pemeriksaan_disiplin_link:
+          adminDocs.tidak_pemeriksaan_disiplin_link || null,
+        skp_2_tahun_terakhir_baik_link:
+          adminDocs.skp_2_tahun_terakhir_baik_link || null,
+        skp_peningkatan_prestasi_link:
+          adminDocs.skp_peningkatan_prestasi_link || null,
       };
 
       // Validate required fields
@@ -373,12 +384,37 @@ const TambahPegawai = () => {
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      if (!text || text.trim() === "") {
+        toast({
+          title: "Gagal",
+          description: "Tidak ada link untuk disalin",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        textArea.remove();
+      }
+
       toast({
         title: "Berhasil",
         description: `Link ${label} berhasil disalin`,
       });
     } catch (error) {
+      console.error("Copy to clipboard failed:", error);
       toast({
         title: "Gagal",
         description: "Gagal menyalin link ke clipboard",
@@ -609,7 +645,9 @@ const TambahPegawai = () => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeAdminDoc(field.key, field.label)}
+                            onClick={() =>
+                              removeAdminDoc(field.key, field.label)
+                            }
                             className="h-8 w-8 p-0"
                           >
                             <X className="h-3 w-3" />
