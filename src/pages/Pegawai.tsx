@@ -380,14 +380,14 @@ const Pegawai = () => {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Data Pegawai</h1>
-                <p className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground flex items-center">
                   Kelola data pegawai ASN
                   {isSuperAdmin && (
                     <Badge variant="destructive" className="ml-2">
                       Super Admin
                     </Badge>
                   )}
-                </p>
+                </div>
               </div>
             </div>
             <div className="flex space-x-2">

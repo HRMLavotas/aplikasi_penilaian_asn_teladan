@@ -21,6 +21,7 @@ import {
   Edit3,
   Copy,
   ExternalLink,
+  X,
 } from "lucide-react";
 import {
   DataValidator,
@@ -58,6 +59,7 @@ const TambahPegawai = () => {
   const [adminDocs, setAdminDocs] = useState({
     bukti_inovasi_link: "",
     bukti_penghargaan_link: "",
+    drh_link: "",
     bebas_temuan_link: "",
     tidak_hukuman_disiplin_link: "",
     tidak_pemeriksaan_disiplin_link: "",
@@ -360,6 +362,15 @@ const TambahPegawai = () => {
     }));
   };
 
+  const removeAdminDoc = (fieldKey: string, label: string) => {
+    setAdminDocs((prev) => ({ ...prev, [fieldKey]: "" }));
+    setEditMode((prev) => ({ ...prev, [fieldKey]: false }));
+    toast({
+      title: "Berhasil",
+      description: `Link ${label} berhasil dihapus`,
+    });
+  };
+
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -393,6 +404,11 @@ const TambahPegawai = () => {
       key: "bukti_penghargaan_link",
       label: "Bukti Penghargaan",
       description: "Dokumen penghargaan atau prestasi yang diterima",
+    },
+    {
+      key: "drh_link",
+      label: "Daftar Riwayat Hidup (DRH)",
+      description: "Lampiran daftar riwayat hidup terbaru",
     },
     {
       key: "bebas_temuan_link",
@@ -588,6 +604,15 @@ const TambahPegawai = () => {
                             className="h-8 w-8 p-0"
                           >
                             <Copy className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeAdminDoc(field.key, field.label)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <X className="h-3 w-3" />
                           </Button>
                           {isValidGoogleDriveLink(
                             adminDocs[field.key as keyof typeof adminDocs],

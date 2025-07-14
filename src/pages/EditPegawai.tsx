@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Save, Edit, Loader2, Copy, ExternalLink, Edit3 } from "lucide-react";
+import { ArrowLeft, Save, Edit, Loader2, Copy, ExternalLink, Edit3, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 interface UnitKerja {
   id: string;
@@ -67,6 +67,7 @@ const EditPegawai = () => {
   const [adminDocs, setAdminDocs] = useState({
     bukti_inovasi_link: "",
     bukti_penghargaan_link: "",
+    drh_link: "",
     bebas_temuan_link: "",
     tidak_hukuman_disiplin_link: "",
     tidak_pemeriksaan_disiplin_link: "",
@@ -134,6 +135,7 @@ const EditPegawai = () => {
       setAdminDocs({
         bukti_inovasi_link: pegawaiData.bukti_inovasi || "",
         bukti_penghargaan_link: pegawaiData.bukti_penghargaan || "",
+        drh_link: "",
         bebas_temuan_link: "",
         tidak_hukuman_disiplin_link: "",
         tidak_pemeriksaan_disiplin_link: "",
@@ -263,12 +265,47 @@ const EditPegawai = () => {
       [field]: value
     }));
   };
+/* Duplicate broken implementation retained for reference
   const toggleEditMode = (field: string) => {
-    setEditMode(prev => ({
+
       ...prev,
       [field]: !prev[field]
     }));
   };
+
+  const removeAdminDoc = (fieldKey: string, label: string) => {
+    setAdminDocs(prev => ({ ...prev, [fieldKey]: "" }));
+ ...prev, [fieldKey]: false }));
+    toast({
+      title: "Berhasil",
+      description: `Link ${label} berhasil dihapus`
+    });
+  };
+
+  
+
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+*/
+
+  const toggleEditMode = (field: string) => {
+    setEditMode((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const removeAdminDoc = (fieldKey: string, label: string) => {
+    setAdminDocs((prev) => ({ ...prev, [fieldKey]: "" }));
+    setEditMode((prev) => ({ ...prev, [fieldKey]: false }));
+    toast({
+      title: "Berhasil",
+      description: `Link ${label} berhasil dihapus`,
+    });
+  };
+
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -297,6 +334,10 @@ const EditPegawai = () => {
     key: "bukti_penghargaan_link",
     label: "Bukti Penghargaan",
     description: "Dokumen penghargaan atau prestasi yang diterima"
+  }, {
+    key: "drh_link",
+    label: "Daftar Riwayat Hidup (DRH)",
+    description: "Lampiran daftar riwayat hidup terbaru"
   }, {
     key: "bebas_temuan_link",
     label: "Bebas Temuan",
@@ -433,6 +474,9 @@ const EditPegawai = () => {
                       {adminDocs[field.key as keyof typeof adminDocs] && <>
                           <Button type="button" variant="ghost" size="sm" onClick={() => copyToClipboard(adminDocs[field.key as keyof typeof adminDocs], field.label)} className="h-8 w-8 p-0">
                             <Copy className="h-3 w-3" />
+                          </Button>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removeAdminDoc(field.key, field.label)} className="h-8 w-8 p-0">
+                            <X className="h-3 w-3" />
                           </Button>
                           {isValidGoogleDriveLink(adminDocs[field.key as keyof typeof adminDocs]) && <Button type="button" variant="ghost" size="sm" onClick={() => window.open(adminDocs[field.key as keyof typeof adminDocs], "_blank")} className="h-8 w-8 p-0">
                               <ExternalLink className="h-3 w-3" />

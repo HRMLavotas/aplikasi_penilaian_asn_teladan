@@ -75,16 +75,23 @@ interface PegawaiRanking {
     id: string;
     tahun_penilaian: number;
     persentase_akhir: number;
-    // Original scoring system (still in database)
-    kinerja_perilaku_score: number;
-    inovasi_dampak_score: number;
-    prestasi_score: number;
-    inspiratif_score: number;
-    komunikasi_score: number;
-    kerjasama_kolaborasi_score: number;
-    leadership_score: number;
-    rekam_jejak_score: number;
-    integritas_moralitas_score: number;
+    // Core Value scores (we will map from legacy DB columns)
+    berorientasi_pelayanan_score?: number;
+    akuntabel_score?: number;
+    kompeten_score?: number;
+    harmonis_score?: number;
+    loyal_score?: number;
+    adaptif_score?: number;
+    kolaboratif_score?: number;
+    // Legacy 9-criteria columns (existing in DB)
+    kinerja_perilaku_score?: number;
+    inovasi_dampak_score?: number;
+    inspiratif_score?: number;
+    komunikasi_score?: number;
+    kerjasama_kolaborasi_score?: number;
+    leadership_score?: number;
+    rekam_jejak_score?: number;
+    integritas_moralitas_score?: number;
     // BerAKHLAK Core Values Descriptions
     adaptif_desc: string | null;
     akuntabel_desc: string | null;
@@ -185,7 +192,6 @@ const Ranking = () => {
             persentase_akhir,
             kinerja_perilaku_score,
             inovasi_dampak_score,
-            prestasi_score,
             inspiratif_score,
             komunikasi_score,
             kerjasama_kolaborasi_score,
@@ -213,7 +219,7 @@ const Ranking = () => {
             analisis_ai_kelebihan,
             analisis_ai_kekurangan
           )
-        `,
+        `
         )
         .order("nama");
 
@@ -237,9 +243,29 @@ const Ranking = () => {
                 ? current
                 : latest,
           );
+
+          // Map legacy DB columns to core value score fields expected by UI
+          const mappedEvaluation = {
+            ...latestEvaluation,
+            berorientasi_pelayanan_score:
+              latestEvaluation.kinerja_perilaku_score ?? latestEvaluation.berorientasi_pelayanan_score,
+            akuntabel_score:
+              latestEvaluation.inovasi_dampak_score ?? latestEvaluation.akuntabel_score,
+            kompeten_score:
+              latestEvaluation.inspiratif_score ?? latestEvaluation.kompeten_score,
+            harmonis_score:
+              latestEvaluation.komunikasi_score ?? latestEvaluation.harmonis_score,
+            loyal_score:
+              latestEvaluation.kerjasama_kolaborasi_score ?? latestEvaluation.loyal_score,
+            adaptif_score:
+              latestEvaluation.leadership_score ?? latestEvaluation.adaptif_score,
+            kolaboratif_score:
+              latestEvaluation.rekam_jejak_score ?? latestEvaluation.kolaboratif_score,
+          };
+
           return {
             ...p,
-            penilaian: [latestEvaluation],
+            penilaian: [mappedEvaluation],
           };
         })
         .sort(
@@ -416,7 +442,7 @@ const Ranking = () => {
 
       autoTable(doc, {
         startY: yPosition,
-        head: [["Prestasi & Inovasi", "Status"]],
+        head: [["Kompeten & Inovasi", "Status"]],
         body: achievementData,
         theme: "grid",
         headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 10 },
@@ -429,20 +455,18 @@ const Ranking = () => {
 
       // Assessment scores
       const scoresData = [
-        ["Kinerja Perilaku", latestEval?.kinerja_perilaku_score || 0],
-        ["Inovasi Dampak", latestEval?.inovasi_dampak_score || 0],
-        ["Prestasi", latestEval?.prestasi_score || 0],
-        ["Inspiratif", latestEval?.inspiratif_score || 0],
-        ["Komunikasi", latestEval?.komunikasi_score || 0],
-        ["Kerjasama", latestEval?.kerjasama_kolaborasi_score || 0],
-        ["Leadership", latestEval?.leadership_score || 0],
-        ["Rekam Jejak", latestEval?.rekam_jejak_score || 0],
-        ["Integritas", latestEval?.integritas_moralitas_score || 0],
+        ["Berorientasi Pelayanan", latestEval?.berorientasi_pelayanan_score || 0],
+        ["Akuntabel", latestEval?.akuntabel_score || 0],
+        ["Kompeten", latestEval?.kompeten_score || 0],
+        ["Harmonis", latestEval?.harmonis_score || 0],
+        ["Loyal", latestEval?.loyal_score || 0],
+        ["Adaptif", latestEval?.adaptif_score || 0],
+        ["Kolaboratif", latestEval?.kolaboratif_score || 0],
       ];
 
       autoTable(doc, {
         startY: yPosition,
-        head: [["Penilaian ASN (9 Kriteria)", "Skor"]],
+        head: [["Penilaian Core Value ASN BerAKHLAK", "Skor"]],
         body: scoresData,
         theme: "grid",
         headStyles: { fillColor: [255, 140, 0], textColor: 255, fontSize: 10 },
@@ -458,7 +482,7 @@ const Ranking = () => {
           latestEval?.skp_2_tahun_terakhir_baik ? "Ya" : "Tidak",
         ],
         [
-          "Peningkatan Prestasi SKP",
+          "Peningkatan Kompeten SKP",
           latestEval?.skp_peningkatan_prestasi ? "Ya" : "Tidak",
         ],
       ];
@@ -944,7 +968,7 @@ const Ranking = () => {
                                           </li>
                                           <li>
                                             Komposisi: Integritas (30%) +
-                                            Prestasi (30%) + SKP (20%) + Core
+                                            Kompeten (30%) + SKP (20%) + Core
                                             Values (20%)
                                           </li>
                                         </ul>
@@ -1013,11 +1037,11 @@ const Ranking = () => {
                                     </CardContent>
                                   </Card>
 
-                                  {/* Prestasi & Inovasi */}
+                                  {/* Kompeten & Inovasi */}
                                   <Card>
                                     <CardHeader>
                                       <CardTitle className="text-lg">
-                                        Prestasi & Inovasi
+                                        Kompeten & Inovasi
                                       </CardTitle>
                                     </CardHeader>
                                     <CardContent>
@@ -1107,7 +1131,7 @@ const Ranking = () => {
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Peningkatan Prestasi SKP
+                                            Peningkatan Kompeten SKP
                                           </Label>
                                           <Badge
                                             variant={
@@ -1129,85 +1153,67 @@ const Ranking = () => {
                                   <Card>
                                     <CardHeader>
                                       <CardTitle className="text-lg">
-                                        Penilaian ASN (9 Kriteria)
+                                        Penilaian Core Value ASN BerAKHLAK
                                       </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                       <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Kinerja & Perilaku
+                                            Berorientasi Pelayanan
                                           </Label>
                                           <div className="text-2xl font-bold text-blue-600">
-                                            {latestEval?.kinerja_perilaku_score}
+                                            {latestEval?.berorientasi_pelayanan_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Inovasi & Dampak
+                                            Akuntabel
                                           </Label>
                                           <div className="text-2xl font-bold text-green-600">
-                                            {latestEval?.inovasi_dampak_score}
+                                            {latestEval?.akuntabel_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Prestasi
+                                            Kompeten
                                           </Label>
                                           <div className="text-2xl font-bold text-purple-600">
-                                            {latestEval?.prestasi_score}
+                                            {latestEval?.kompeten_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Inspiratif
+                                            Harmonis
                                           </Label>
                                           <div className="text-2xl font-bold text-yellow-600">
-                                            {latestEval?.inspiratif_score}
+                                            {latestEval?.harmonis_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Komunikasi
+                                            Loyal
                                           </Label>
-                                          <div className="text-2xl font-bold text-indigo-600">
-                                            {latestEval?.komunikasi_score}
+                                          <div className="text-2xl font-bold text-purple-600">
+                                            {latestEval?.loyal_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Kerjasama
+                                            Adaptif
                                           </Label>
                                           <div className="text-2xl font-bold text-pink-600">
                                             {
-                                              latestEval?.kerjasama_kolaborasi_score
+                                              latestEval?.adaptif_score
                                             }
                                           </div>
                                         </div>
                                         <div className="space-y-2">
                                           <Label className="text-sm font-medium">
-                                            Leadership
+                                            Kolaboratif
                                           </Label>
                                           <div className="text-2xl font-bold text-orange-600">
-                                            {latestEval?.leadership_score}
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Rekam Jejak
-                                          </Label>
-                                          <div className="text-2xl font-bold text-teal-600">
-                                            {latestEval?.rekam_jejak_score}
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label className="text-sm font-medium">
-                                            Integritas
-                                          </Label>
-                                          <div className="text-2xl font-bold text-red-600">
-                                            {
-                                              latestEval?.integritas_moralitas_score
-                                            }
+                                            {latestEval?.kolaboratif_score}
                                           </div>
                                         </div>
                                       </div>
