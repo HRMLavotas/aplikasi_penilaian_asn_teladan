@@ -124,7 +124,7 @@ const EditPegawai = () => {
         .single();
       if (pegawaiError) throw pegawaiError;
 
-      // Check permission
+      // Check permission - allow users to edit their own data or super admin to edit any data
       if (!isSuperAdmin && pegawaiData.user_id !== user?.id) {
         toast({
           title: "Akses Ditolak",
@@ -154,18 +154,18 @@ const EditPegawai = () => {
 
       // Set admin docs data - load from database
       setAdminDocs({
-        bukti_inovasi_link: pegawaiData.bukti_inovasi || "",
-        bukti_penghargaan_link: pegawaiData.bukti_penghargaan || "",
-        drh_link: pegawaiData.drh_link || "",
-        bebas_temuan_link: pegawaiData.bebas_temuan_link || "",
+        bukti_inovasi_link: (pegawaiData as any).bukti_inovasi || "",
+        bukti_penghargaan_link: (pegawaiData as any).bukti_penghargaan || "",
+        drh_link: (pegawaiData as any).drh_link || "",
+        bebas_temuan_link: (pegawaiData as any).bebas_temuan_link || "",
         tidak_hukuman_disiplin_link:
-          pegawaiData.tidak_hukuman_disiplin_link || "",
+          (pegawaiData as any).tidak_hukuman_disiplin_link || "",
         tidak_pemeriksaan_disiplin_link:
-          pegawaiData.tidak_pemeriksaan_disiplin_link || "",
+          (pegawaiData as any).tidak_pemeriksaan_disiplin_link || "",
         skp_2_tahun_terakhir_baik_link:
-          pegawaiData.skp_2_tahun_terakhir_baik_link || "",
+          (pegawaiData as any).skp_2_tahun_terakhir_baik_link || "",
         skp_peningkatan_prestasi_link:
-          pegawaiData.skp_peningkatan_prestasi_link || "",
+          (pegawaiData as any).skp_peningkatan_prestasi_link || "",
       });
     } catch (error) {
       toast({
