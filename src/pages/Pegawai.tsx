@@ -312,35 +312,47 @@ const Pegawai = () => {
     },
     {
       header: "Aksi",
-      accessor: (row: any) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/evaluasi/baru?pegawai_id=${row.id}`)}
-            title="Buat Evaluasi"
-          >
-            <Award className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(`/pegawai/${row.id}/edit`)}
-            title="Edit"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDeleteId(row.id)}
-            title="Hapus"
-            className="text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+      accessor: (row: any) => {
+        const canEdit = isSuperAdmin || row.user_id === user?.id;
+        const canDelete = isSuperAdmin || row.user_id === user?.id;
+        
+        return (
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(`/evaluasi/baru?pegawai_id=${row.id}`)}
+              title="Buat Evaluasi"
+            >
+              <Award className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(`/pegawai/${row.id}/edit`)}
+              title={canEdit ? "Edit" : "Anda tidak memiliki izin"}
+              disabled={!canEdit}
+              className={!canEdit ? "opacity-50 cursor-not-allowed" : ""}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => canDelete && setDeleteId(row.id)}
+              title={canDelete ? "Hapus" : "Anda tidak memiliki izin"}
+              disabled={!canDelete}
+              className={
+                !canDelete 
+                  ? "opacity-50 cursor-not-allowed" 
+                  : "text-red-600 hover:text-red-700"
+              }
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -370,6 +382,11 @@ const Pegawai = () => {
                 <h1 className="text-2xl font-bold">Data Pegawai</h1>
                 <p className="text-sm text-muted-foreground">
                   Kelola data pegawai ASN
+                  {isSuperAdmin && (
+                    <Badge variant="destructive" className="ml-2">
+                      Super Admin
+                    </Badge>
+                  )}
                 </p>
               </div>
             </div>

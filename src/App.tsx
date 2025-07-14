@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Pegawai from "./pages/Pegawai";
 import TambahPegawai from "./pages/TambahPegawai";
+import EditPegawai from "./pages/EditPegawai";
 import Evaluasi from "./pages/Evaluasi";
 import FormEvaluasi from "./pages/FormEvaluasi";
 import Ranking from "./pages/Ranking";
@@ -43,6 +44,7 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/pegawai" element={<Pegawai />} />
         <Route path="/pegawai/tambah" element={<TambahPegawai />} />
+        <Route path="/pegawai/:id/edit" element={<EditPegawai />} />
         <Route path="/evaluasi" element={<Evaluasi />} />
         <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
         <Route path="/ranking" element={<Ranking />} />
