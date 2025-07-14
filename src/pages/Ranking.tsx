@@ -219,7 +219,7 @@ const Ranking = () => {
             analisis_ai_kelebihan,
             analisis_ai_kekurangan
           )
-        `
+        `,
         )
         .order("nama");
 
@@ -248,19 +248,26 @@ const Ranking = () => {
           const mappedEvaluation = {
             ...latestEvaluation,
             berorientasi_pelayanan_score:
-              latestEvaluation.kinerja_perilaku_score ?? latestEvaluation.berorientasi_pelayanan_score,
+              latestEvaluation.kinerja_perilaku_score ??
+              latestEvaluation.berorientasi_pelayanan_score,
             akuntabel_score:
-              latestEvaluation.inovasi_dampak_score ?? latestEvaluation.akuntabel_score,
+              latestEvaluation.inovasi_dampak_score ??
+              latestEvaluation.akuntabel_score,
             kompeten_score:
-              latestEvaluation.inspiratif_score ?? latestEvaluation.kompeten_score,
+              latestEvaluation.inspiratif_score ??
+              latestEvaluation.kompeten_score,
             harmonis_score:
-              latestEvaluation.komunikasi_score ?? latestEvaluation.harmonis_score,
+              latestEvaluation.komunikasi_score ??
+              latestEvaluation.harmonis_score,
             loyal_score:
-              latestEvaluation.kerjasama_kolaborasi_score ?? latestEvaluation.loyal_score,
+              latestEvaluation.kerjasama_kolaborasi_score ??
+              latestEvaluation.loyal_score,
             adaptif_score:
-              latestEvaluation.leadership_score ?? latestEvaluation.adaptif_score,
+              latestEvaluation.leadership_score ??
+              latestEvaluation.adaptif_score,
             kolaboratif_score:
-              latestEvaluation.rekam_jejak_score ?? latestEvaluation.kolaboratif_score,
+              latestEvaluation.rekam_jejak_score ??
+              latestEvaluation.kolaboratif_score,
           };
 
           return {
@@ -341,6 +348,8 @@ const Ranking = () => {
     const doc = new jsPDF("l", "mm", "a4"); // landscape orientation
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
+    const margin = 15;
+    const usableWidth = pageWidth - margin * 2;
 
     // Header
     doc.setFontSize(16);
@@ -369,22 +378,24 @@ const Ranking = () => {
     selectedEmployees.forEach((p, index) => {
       const latestEval = p.penilaian[0];
 
-      // Check if we need a new page
-      if (yPosition > pageHeight - 60) {
+      // Check if we need a new page for new employee
+      if (yPosition > pageHeight - 100) {
         doc.addPage();
         yPosition = 20;
       }
 
-      // Employee header
+      // Employee header with separator line
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text(`${index + 1}. ${p.nama} (${p.nip})`, 20, yPosition);
+      doc.text(`${index + 1}. ${p.nama} (${p.nip})`, margin, yPosition);
       yPosition += 8;
 
-      // Basic info table
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
+      // Add separator line
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 5;
 
+      // Basic info table - full width
       const basicInfoData = [
         ["Jabatan", p.jabatan],
         ["Unit Kerja", p.unit_kerja?.nama_unit_kerja || "-"],
@@ -398,64 +409,90 @@ const Ranking = () => {
         startY: yPosition,
         head: [["Informasi Dasar", "Detail"]],
         body: basicInfoData,
-        theme: "grid",
+        theme: "striped",
         headStyles: { fillColor: [70, 130, 180], textColor: 255, fontSize: 10 },
         bodyStyles: { fontSize: 9 },
-        columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 80 } },
-        margin: { left: 20 },
+        columnStyles: {
+          0: { cellWidth: usableWidth * 0.3 },
+          1: { cellWidth: usableWidth * 0.7 },
+        },
+        margin: { left: margin, right: margin },
       });
 
-      yPosition = (doc as any).lastAutoTable.finalY + 5;
+      yPosition = (doc as any).lastAutoTable.finalY + 8;
 
-      // Integrity criteria
-      const integrityData = [
-        ["Bebas Temuan", latestEval?.bebas_temuan ? "Ya" : "Tidak"],
+      // Combined Criteria table - Integrity, Achievement, and SKP in one table
+      const combinedCriteriaData = [
+        // Integrity section
+        ["KRITERIA INTEGRITAS", "", ""],
+        ["Bebas Temuan", latestEval?.bebas_temuan ? "✓ Ya" : "✗ Tidak", ""],
         [
           "Tidak Ada Hukuman Disiplin",
-          latestEval?.tidak_hukuman_disiplin ? "Ya" : "Tidak",
+          latestEval?.tidak_hukuman_disiplin ? "✓ Ya" : "✗ Tidak",
+          "",
         ],
         [
           "Tidak Dalam Pemeriksaan",
-          latestEval?.tidak_pemeriksaan_disiplin ? "Ya" : "Tidak",
+          latestEval?.tidak_pemeriksaan_disiplin ? "✓ Ya" : "✗ Tidak",
+          "",
         ],
-      ];
-
-      autoTable(doc, {
-        startY: yPosition,
-        head: [["Kriteria Integritas", "Status"]],
-        body: integrityData,
-        theme: "grid",
-        headStyles: { fillColor: [220, 20, 60], textColor: 255, fontSize: 10 },
-        bodyStyles: { fontSize: 9 },
-        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
-        margin: { left: 140 },
-      });
-
-      // Achievement & Innovation (next to integrity)
-      const achievementData = [
-        ["Memiliki Inovasi", latestEval?.memiliki_inovasi ? "Ya" : "Tidak"],
+        // Achievement section
+        ["KOMPETEN & INOVASI", "", ""],
+        [
+          "Memiliki Inovasi",
+          latestEval?.memiliki_inovasi ? "✓ Ya" : "✗ Tidak",
+          "",
+        ],
         [
           "Memiliki Penghargaan",
-          latestEval?.memiliki_penghargaan ? "Ya" : "Tidak",
+          latestEval?.memiliki_penghargaan ? "✓ Ya" : "✗ Tidak",
+          "",
+        ],
+        // SKP section
+        ["KRITERIA SKP", "", ""],
+        [
+          "SKP 2 Tahun Terakhir Baik",
+          latestEval?.skp_2_tahun_terakhir_baik ? "✓ Ya" : "✗ Tidak",
+          "",
+        ],
+        [
+          "Peningkatan Kompeten SKP",
+          latestEval?.skp_peningkatan_prestasi ? "✓ Ya" : "✗ Tidak",
+          "",
         ],
       ];
 
       autoTable(doc, {
         startY: yPosition,
-        head: [["Kompeten & Inovasi", "Status"]],
-        body: achievementData,
-        theme: "grid",
-        headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 10 },
+        head: [["Kriteria Evaluasi", "Status", "Keterangan"]],
+        body: combinedCriteriaData,
+        theme: "striped",
+        headStyles: { fillColor: [220, 20, 60], textColor: 255, fontSize: 10 },
         bodyStyles: { fontSize: 9 },
-        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
-        margin: { left: 230 },
+        columnStyles: {
+          0: { cellWidth: usableWidth * 0.5 },
+          1: { cellWidth: usableWidth * 0.25 },
+          2: { cellWidth: usableWidth * 0.25 },
+        },
+        margin: { left: margin, right: margin },
+        didParseCell: function (data) {
+          // Style section headers
+          if (data.cell.text[0] && data.cell.text[0].includes("KRITERIA")) {
+            data.cell.styles.fillColor = [100, 100, 100];
+            data.cell.styles.textColor = 255;
+            data.cell.styles.fontStyle = "bold";
+          }
+        },
       });
 
-      yPosition = Math.max((doc as any).lastAutoTable.finalY) + 5;
+      yPosition = (doc as any).lastAutoTable.finalY + 8;
 
-      // Assessment scores
+      // Core Values Assessment scores
       const scoresData = [
-        ["Berorientasi Pelayanan", latestEval?.berorientasi_pelayanan_score || 0],
+        [
+          "Berorientasi Pelayanan",
+          latestEval?.berorientasi_pelayanan_score || 0,
+        ],
         ["Akuntabel", latestEval?.akuntabel_score || 0],
         ["Kompeten", latestEval?.kompeten_score || 0],
         ["Harmonis", latestEval?.harmonis_score || 0],
@@ -468,37 +505,17 @@ const Ranking = () => {
         startY: yPosition,
         head: [["Penilaian Core Value ASN BerAKHLAK", "Skor"]],
         body: scoresData,
-        theme: "grid",
+        theme: "striped",
         headStyles: { fillColor: [255, 140, 0], textColor: 255, fontSize: 10 },
         bodyStyles: { fontSize: 9 },
-        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 20 } },
-        margin: { left: 20 },
+        columnStyles: {
+          0: { cellWidth: usableWidth * 0.7 },
+          1: { cellWidth: usableWidth * 0.3, halign: "center" },
+        },
+        margin: { left: margin, right: margin },
       });
 
-      // SKP Criteria (next to scores)
-      const skpData = [
-        [
-          "SKP 2 Tahun Terakhir Baik",
-          latestEval?.skp_2_tahun_terakhir_baik ? "Ya" : "Tidak",
-        ],
-        [
-          "Peningkatan Kompeten SKP",
-          latestEval?.skp_peningkatan_prestasi ? "Ya" : "Tidak",
-        ],
-      ];
-
-      autoTable(doc, {
-        startY: yPosition,
-        head: [["Kriteria SKP", "Status"]],
-        body: skpData,
-        theme: "grid",
-        headStyles: { fillColor: [138, 43, 226], textColor: 255, fontSize: 10 },
-        bodyStyles: { fontSize: 9 },
-        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
-        margin: { left: 110 },
-      });
-
-      yPosition = Math.max((doc as any).lastAutoTable.finalY) + 10;
+      yPosition = (doc as any).lastAutoTable.finalY + 8;
 
       // BerAKHLAK descriptions (if available)
       const berakhlakDescs = [
@@ -516,7 +533,7 @@ const Ranking = () => {
 
       if (berakhlakDescs.length > 0) {
         // Check if we need a new page for descriptions
-        if (yPosition > pageHeight - 80) {
+        if (yPosition > pageHeight - 100) {
           doc.addPage();
           yPosition = 20;
         }
@@ -525,18 +542,21 @@ const Ranking = () => {
           startY: yPosition,
           head: [["Deskripsi BerAKHLAK", "Detail"]],
           body: berakhlakDescs,
-          theme: "grid",
+          theme: "striped",
           headStyles: {
             fillColor: [72, 61, 139],
             textColor: 255,
             fontSize: 10,
           },
           bodyStyles: { fontSize: 8 },
-          columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 200 } },
-          margin: { left: 20 },
+          columnStyles: {
+            0: { cellWidth: usableWidth * 0.25 },
+            1: { cellWidth: usableWidth * 0.75 },
+          },
+          margin: { left: margin, right: margin },
         });
 
-        yPosition = (doc as any).lastAutoTable.finalY + 5;
+        yPosition = (doc as any).lastAutoTable.finalY + 8;
       }
 
       // AI Analysis (if available)
@@ -549,7 +569,7 @@ const Ranking = () => {
 
       if (aiAnalysis.length > 0) {
         // Check if we need a new page for AI analysis
-        if (yPosition > pageHeight - 60) {
+        if (yPosition > pageHeight - 80) {
           doc.addPage();
           yPosition = 20;
         }
@@ -558,15 +578,18 @@ const Ranking = () => {
           startY: yPosition,
           head: [["Analisis AI", "Detail"]],
           body: aiAnalysis,
-          theme: "grid",
+          theme: "striped",
           headStyles: {
             fillColor: [205, 92, 92],
             textColor: 255,
             fontSize: 10,
           },
           bodyStyles: { fontSize: 8 },
-          columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 210 } },
-          margin: { left: 20 },
+          columnStyles: {
+            0: { cellWidth: usableWidth * 0.25 },
+            1: { cellWidth: usableWidth * 0.75 },
+          },
+          margin: { left: margin, right: margin },
         });
 
         yPosition = (doc as any).lastAutoTable.finalY + 15;
@@ -1163,7 +1186,9 @@ const Ranking = () => {
                                             Berorientasi Pelayanan
                                           </Label>
                                           <div className="text-2xl font-bold text-blue-600">
-                                            {latestEval?.berorientasi_pelayanan_score}
+                                            {
+                                              latestEval?.berorientasi_pelayanan_score
+                                            }
                                           </div>
                                         </div>
                                         <div className="space-y-2">
@@ -1203,9 +1228,7 @@ const Ranking = () => {
                                             Adaptif
                                           </Label>
                                           <div className="text-2xl font-bold text-pink-600">
-                                            {
-                                              latestEval?.adaptif_score
-                                            }
+                                            {latestEval?.adaptif_score}
                                           </div>
                                         </div>
                                         <div className="space-y-2">
