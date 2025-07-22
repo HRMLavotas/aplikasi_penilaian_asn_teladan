@@ -279,11 +279,20 @@ const Ranking = () => {
             penilaian: [mappedEvaluation],
           };
         })
-        .sort(
-          (a, b) =>
-            (b.penilaian[0]?.persentase_akhir || 0) -
-            (a.penilaian[0]?.persentase_akhir || 0),
-        );
+        .sort((a, b) => {
+          const aEval = a.penilaian[0];
+          const bEval = b.penilaian[0];
+          
+          // Priority 1: "Melebihi Kriteria" candidates should be in top 5
+          const aMelebihiKriteria = aEval?.verification_label === "melebihi_kriteria" && aEval?.verification_status === "verified";
+          const bMelebihiKriteria = bEval?.verification_label === "melebihi_kriteria" && bEval?.verification_status === "verified";
+          
+          if (aMelebihiKriteria && !bMelebihiKriteria) return -1;
+          if (!aMelebihiKriteria && bMelebihiKriteria) return 1;
+          
+          // Priority 2: Sort by score within same category
+          return (bEval?.persentase_akhir || 0) - (aEval?.persentase_akhir || 0);
+        });
 
       setPegawai(pegawaiWithEvaluations);
       setUnitKerja(unitData || []);
