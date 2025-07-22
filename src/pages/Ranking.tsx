@@ -52,6 +52,8 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getStatusJabatanDisplay } from "@/utils/statusJabatan";
+import { AdminVerification } from "@/components/AdminVerification";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PegawaiRanking {
   id: string;
@@ -117,6 +119,14 @@ interface PegawaiRanking {
     analisis_ai_kontra: string | null;
     analisis_ai_kelebihan: string | null;
     analisis_ai_kekurangan: string | null;
+    // Verification fields
+    verification_status: string;
+    verification_label: string | null;
+    verification_notes: string | null;
+    verified_by: string | null;
+    verified_at: string | null;
+    is_data_valid: boolean;
+    original_score: number | null;
   }>;
 }
 
@@ -137,6 +147,7 @@ const Ranking = () => {
   const [maxResults, setMaxResults] = useState<number>(10);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
 
   useEffect(() => {
     checkAuth();
@@ -217,7 +228,14 @@ const Ranking = () => {
             analisis_ai_pro,
             analisis_ai_kontra,
             analisis_ai_kelebihan,
-            analisis_ai_kekurangan
+            analisis_ai_kekurangan,
+            verification_status,
+            verification_label,
+            verification_notes,
+            verified_by,
+            verified_at,
+            is_data_valid,
+            original_score
           )
         `,
         )
@@ -247,27 +265,13 @@ const Ranking = () => {
           // Map legacy DB columns to core value score fields expected by UI
           const mappedEvaluation = {
             ...latestEvaluation,
-            berorientasi_pelayanan_score:
-              latestEvaluation.kinerja_perilaku_score ??
-              latestEvaluation.berorientasi_pelayanan_score,
-            akuntabel_score:
-              latestEvaluation.inovasi_dampak_score ??
-              latestEvaluation.akuntabel_score,
-            kompeten_score:
-              latestEvaluation.inspiratif_score ??
-              latestEvaluation.kompeten_score,
-            harmonis_score:
-              latestEvaluation.komunikasi_score ??
-              latestEvaluation.harmonis_score,
-            loyal_score:
-              latestEvaluation.kerjasama_kolaborasi_score ??
-              latestEvaluation.loyal_score,
-            adaptif_score:
-              latestEvaluation.leadership_score ??
-              latestEvaluation.adaptif_score,
-            kolaboratif_score:
-              latestEvaluation.rekam_jejak_score ??
-              latestEvaluation.kolaboratif_score,
+            berorientasi_pelayanan_score: latestEvaluation.kinerja_perilaku_score,
+            akuntabel_score: latestEvaluation.inovasi_dampak_score,
+            kompeten_score: latestEvaluation.inspiratif_score,
+            harmonis_score: latestEvaluation.komunikasi_score,
+            loyal_score: latestEvaluation.kerjasama_kolaborasi_score,
+            adaptif_score: latestEvaluation.leadership_score,
+            kolaboratif_score: latestEvaluation.rekam_jejak_score,
           };
 
           return {
@@ -859,11 +863,12 @@ const Ranking = () => {
                       <TableHead className="w-[80px]">Rank</TableHead>
                       <TableHead>Pegawai</TableHead>
                       <TableHead>Jabatan</TableHead>
-                      <TableHead>Unit Kerja</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Skor</TableHead>
-                      <TableHead>Badge</TableHead>
-                      <TableHead className="text-right">Detail</TableHead>
+                       <TableHead>Unit Kerja</TableHead>
+                       <TableHead>Status</TableHead>
+                       <TableHead>Skor</TableHead>
+                       <TableHead>Badge</TableHead>
+                       {isSuperAdmin && <TableHead>Verifikasi</TableHead>}
+                       <TableHead className="text-right">Detail</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -922,25 +927,67 @@ const Ranking = () => {
                               {getStatusJabatanDisplay(p.status_jabatan)}
                             </Badge>
                           </TableCell>
-                          <TableCell>
-                            <div className="font-mono text-lg font-bold">
-                              {latestEval?.persentase_akhir?.toFixed(1)}%
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              {p.memiliki_inovasi && (
-                                <Badge variant="outline" className="text-xs">
-                                  Inovasi
-                                </Badge>
-                              )}
-                              {p.memiliki_penghargaan && (
-                                <Badge variant="outline" className="text-xs">
-                                  Award
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
+                           <TableCell>
+                             <div className="flex flex-col items-start">
+                               <div className="font-mono text-lg font-bold">
+                                 {latestEval?.persentase_akhir?.toFixed(1)}%
+                               </div>
+                               {!latestEval?.is_data_valid && (
+                                 <Badge variant="destructive" className="text-xs mt-1">
+                                   Data Tidak Valid
+                                 </Badge>
+                               )}
+                             </div>
+                           </TableCell>
+                           <TableCell>
+                             <div className="flex gap-1">
+                               {p.memiliki_inovasi && (
+                                 <Badge variant="outline" className="text-xs">
+                                   Inovasi
+                                 </Badge>
+                               )}
+                               {p.memiliki_penghargaan && (
+                                 <Badge variant="outline" className="text-xs">
+                                   Award
+                                 </Badge>
+                               )}
+                             </div>
+                           </TableCell>
+                           {isSuperAdmin && (
+                             <TableCell>
+                               <div className="space-y-2">
+                                 <AdminVerification
+                                   penilaianId={latestEval.id}
+                                   currentStatus={latestEval.verification_status}
+                                   currentLabel={latestEval.verification_label}
+                                   currentNotes={latestEval.verification_notes}
+                                   isDataValid={latestEval.is_data_valid}
+                                   currentScore={latestEval.persentase_akhir}
+                                   pegawaiNama={p.nama}
+                                   onVerificationUpdate={fetchData}
+                                 />
+                                 {latestEval.verification_label && (
+                                   <div className="text-xs">
+                                     {latestEval.verification_label === 'tidak_memenuhi_kriteria' && (
+                                       <Badge variant="destructive" className="text-xs">
+                                         Tidak Memenuhi Kriteria
+                                       </Badge>
+                                     )}
+                                     {latestEval.verification_label === 'memenuhi_kriteria' && (
+                                       <Badge variant="default" className="text-xs">
+                                         Memenuhi Kriteria
+                                       </Badge>
+                                     )}
+                                     {latestEval.verification_label === 'melebihi_kriteria' && (
+                                       <Badge variant="outline" className="text-xs border-blue-500 text-blue-600">
+                                         Melebihi Kriteria
+                                       </Badge>
+                                     )}
+                                   </div>
+                                 )}
+                               </div>
+                             </TableCell>
+                           )}
                           <TableCell className="text-right">
                             <Dialog>
                               <DialogTrigger asChild>
