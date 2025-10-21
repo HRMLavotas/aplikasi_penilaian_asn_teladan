@@ -25,8 +25,10 @@ import {
   Shield,
   Activity,
   Wrench,
+  ClipboardList,
 } from "lucide-react";
 import WorkflowTracker from "@/components/WorkflowTracker";
+import { useQuery } from "@tanstack/react-query";
 
 interface DashboardStats {
   totalPegawai: number;
@@ -132,6 +134,20 @@ const Dashboard = () => {
       }
     };
   }, [user, authLoading, isInitialized, navigate, fetchStats]);
+
+  const { data: assessments } = useQuery({
+    queryKey: ["active-assessments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("assessment_templates")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   const handleSignOut = async () => {
     const { error } = await authSignOut();
@@ -316,29 +332,93 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Menu Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {menuItems.map((item) => (
-            <Card
-              key={item.href}
-              className="cursor-pointer hover:shadow-md transition-shadow group"
-              onClick={() => navigate(item.href)}
-            >
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`p-2 rounded-lg ${item.color} group-hover:scale-110 transition-transform`}
-                  >
-                    <item.icon className="h-6 w-6" />
+        {/* Super Admin Management */}
+        {isSuperAdmin && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Super Admin</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card
+                className="cursor-pointer hover:shadow-md transition-shadow border-primary/50"
+                onClick={() => navigate("/assessment-management")}
+              >
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <Settings className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Kelola Assessment</CardTitle>
+                      <CardDescription>Buat dan kelola template assessment</CardDescription>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">{item.title}</CardTitle>
-                    <CardDescription>{item.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Active Assessments */}
+        {assessments && assessments.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Assessment Aktif</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {assessments.map((assessment) => (
+                <Card
+                  key={assessment.id}
+                  className="cursor-pointer hover:shadow-md transition-shadow group"
+                  onClick={() => {
+                    if (assessment.assessment_type === "asn_teladan") {
+                      navigate("/pegawai");
+                    } else {
+                      navigate(`/assessment/${assessment.id}`);
+                    }
+                  }}
+                >
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 group-hover:scale-110 transition-transform">
+                        <ClipboardList className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{assessment.nama_assessment}</CardTitle>
+                        <CardDescription>{assessment.deskripsi}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Menu ASN Teladan (Legacy) */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">Menu ASN Teladan</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {menuItems.map((item) => (
+              <Card
+                key={item.href}
+                className="cursor-pointer hover:shadow-md transition-shadow group"
+                onClick={() => navigate(item.href)}
+              >
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className={`p-2 rounded-lg ${item.color} group-hover:scale-110 transition-transform`}
+                    >
+                      <item.icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardDescription>{item.description}</CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {/* Workflow Tracker */}

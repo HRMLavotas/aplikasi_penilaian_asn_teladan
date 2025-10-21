@@ -657,6 +657,7 @@ Pastikan analisis mengacu pada semua data evaluasi yang telah diberikan dan memb
         pegawai_id: dataToSave.pegawai_id,
         penilai_user_id: dataToSave.penilai_user_id,
         tahun_penilaian: dataToSave.tahun_penilaian,
+        assessment_template_id: "00000000-0000-0000-0000-000000000001", // ASN Teladan template
         persentase_akhir: dataToSave.persentase_akhir,
         skp_2_tahun_terakhir_baik: dataToSave.skp_2_tahun_terakhir_baik,
         skp_peningkatan_prestasi: dataToSave.skp_peningkatan_prestasi,
