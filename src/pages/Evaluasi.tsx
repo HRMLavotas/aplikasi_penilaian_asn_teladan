@@ -20,6 +20,11 @@ import {
   TrendingUp,
   Users,
   Award,
+  FileText,
+  Eye,
+  Check,
+  X,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -36,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getStatusJabatanDisplay } from "@/utils/statusJabatan";
 
 interface Pegawai {
@@ -62,400 +68,296 @@ interface UnitKerja {
   nama_unit_kerja: string;
 }
 
-const Evaluasi = () => {
-  const [pegawai, setPegawai] = useState<Pegawai[]>([]);
-  const [unitKerja, setUnitKerja] = useState<UnitKerja[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterUnit, setFilterUnit] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+export default function Evaluasi() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [penilaianData, setPenilaianData] = useState<any[]>([]);
+  const [assessments, setAssessments] = useState<any[]>([]);
+  const [selectedTab, setSelectedTab] = useState<string>('');
+
+  const loadUserData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) throw error;
+      setUser(data);
+      
+      // Check if user is super admin
+      const isSuperAdmin = data.role === 'super_admin';
+      setIsSuperAdmin(isSuperAdmin);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
+  const loadAssessments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assessment_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAssessments(data || []);
+      
+      // Set default tab to first assessment or ASN Teladan
+      if (data && data.length > 0) {
+        const asnTeladanAssessment = data.find(a => a.assessment_type === 'asn_teladan');
+        setSelectedTab(asnTeladanAssessment?.id || data[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading assessments:', error);
+    }
+  };
+
+  const loadPenilaianData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('penilaian')
+        .select(`
+          *,
+          pegawai (
+            id,
+            nama,
+            nip,
+            jabatan,
+            unit_kerja_id
+          ),
+          assessment_templates (
+            id,
+            nama_assessment,
+            assessment_type
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPenilaianData(data || []);
+    } catch (error) {
+      console.error('Error loading penilaian data:', error);
+    }
+  };
 
   useEffect(() => {
-    checkAuth();
-    fetchData();
+    loadUserData();
+    loadAssessments();
+    loadPenilaianData();
   }, []);
 
-  const checkAuth = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
+  const getPenilaianByAssessment = (assessmentId: string) => {
+    return penilaianData.filter(p => p.assessment_template_id === assessmentId);
+  };
+
+  const renderPenilaianTable = (assessmentPenilaian: any[]) => {
+    if (assessmentPenilaian.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <FileText className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            Belum ada penilaian
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Belum ada penilaian untuk assessment ini
+          </p>
+        </div>
+      );
     }
-  };
 
-  const fetchData = async () => {
-    try {
-      // Fetch pegawai with unit kerja and latest evaluations
-      const { data: pegawaiData, error: pegawaiError } = await supabase
-        .from("pegawai")
-        .select(
-          `
-          *,
-          unit_kerja:unit_kerja_id(nama_unit_kerja),
-          penilaian(id, tahun_penilaian, persentase_akhir)
-        `,
-        )
-        .order("nama");
-
-      if (pegawaiError) throw pegawaiError;
-
-      // Fetch unit kerja for filter
-      const { data: unitData, error: unitError } = await supabase
-        .from("unit_kerja")
-        .select("*")
-        .order("nama_unit_kerja");
-
-      if (unitError) throw unitError;
-
-      setPegawai(pegawaiData || []);
-      setUnitKerja(unitData || []);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal memuat data pegawai",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getLatestEvaluation = (evaluations: any[]) => {
-    if (!evaluations || evaluations.length === 0) return null;
-    return evaluations.reduce((latest, current) =>
-      current.tahun_penilaian > latest.tahun_penilaian ? current : latest,
-    );
-  };
-
-  const getEvaluationStatus = (evaluations: any[]) => {
-    const currentYear = new Date().getFullYear();
-    const hasCurrentYearEval = evaluations?.some(
-      (e) => e.tahun_penilaian === currentYear,
-    );
-
-    if (hasCurrentYearEval) {
-      return {
-        status: "completed",
-        label: "Sudah Dinilai",
-        variant: "default" as const,
-      };
-    } else if (evaluations && evaluations.length > 0) {
-      return {
-        status: "outdated",
-        label: "Perlu Update",
-        variant: "secondary" as const,
-      };
-    } else {
-      return {
-        status: "pending",
-        label: "Belum Dinilai",
-        variant: "destructive" as const,
-      };
-    }
-  };
-
-  const filteredPegawai = pegawai.filter((p) => {
-    const matchesSearch =
-      p.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.nip.includes(searchTerm) ||
-      p.jabatan.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesUnit =
-      filterUnit === "all" || p.unit_kerja?.nama_unit_kerja === filterUnit;
-    const matchesStatus =
-      filterStatus === "all" || p.status_jabatan === filterStatus;
-
-    return matchesSearch && matchesUnit && matchesStatus;
-  });
-
-  const stats = {
-    total: pegawai.length,
-    evaluated: pegawai.filter((p) => {
-      const currentYear = new Date().getFullYear();
-      return p.penilaian?.some((e) => e.tahun_penilaian === currentYear);
-    }).length,
-    pending: pegawai.filter((p) => {
-      const currentYear = new Date().getFullYear();
-      return !p.penilaian?.some((e) => e.tahun_penilaian === currentYear);
-    }).length,
-    highPerformers: pegawai.filter((p) => {
-      const latest = getLatestEvaluation(p.penilaian);
-      return latest && latest.persentase_akhir >= 85;
-    }).length,
-  };
-
-  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Pegawai
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                NIP
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Jabatan
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Skor
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tanggal
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {assessmentPenilaian.map((penilaian) => (
+              <tr key={penilaian.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {penilaian.pegawai?.nama}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {penilaian.pegawai?.nip}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {penilaian.pegawai?.jabatan}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {penilaian.persentase_akhir?.toFixed(1) || 0}%
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    penilaian.verification_status === 'approved' 
+                      ? 'bg-green-100 text-green-800'
+                      : penilaian.verification_status === 'rejected'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {penilaian.verification_status === 'approved' 
+                      ? 'Disetujui'
+                      : penilaian.verification_status === 'rejected'
+                      ? 'Ditolak'
+                      : 'Pending'
+                    }
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(penilaian.created_at).toLocaleDateString('id-ID')}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/assessment-detail/${penilaian.id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Detail
+                    </Button>
+                    {isSuperAdmin && penilaian.verification_status !== 'approved' && (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleApprove(penilaian.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Setujui
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleReject(penilaian.id)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Tolak
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/dashboard")}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Evaluasi & Approval</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Kelola dan setujui hasil penilaian
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <Button onClick={() => navigate('/dashboard')} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Kembali
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Evaluasi Pegawai</h1>
-                <p className="text-sm text-muted-foreground">
-                  Lakukan penilaian kinerja pegawai ASN
-                </p>
-              </div>
+              {isSuperAdmin && (
+                <Button onClick={() => navigate('/pegawai')}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Kelola Pegawai
+                </Button>
+              )}
             </div>
-            <ClipboardCheck className="h-8 w-8 text-primary" />
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Total Pegawai</CardDescription>
-              <CardTitle className="text-2xl">{stats.total}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Users className="h-4 w-4 mr-1" />
-                Terdaftar
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Sudah Dievaluasi</CardDescription>
-              <CardTitle className="text-2xl">{stats.evaluated}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <ClipboardCheck className="h-4 w-4 mr-1" />
-                Tahun ini
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Menunggu Evaluasi</CardDescription>
-              <CardTitle className="text-2xl">{stats.pending}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Star className="h-4 w-4 mr-1" />
-                Pending
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Performa Tinggi</CardDescription>
-              <CardTitle className="text-2xl">{stats.highPerformers}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                ≥85% Skor
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <Search className="h-5 w-5 mr-2" />
-              Filter & Pencarian
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Pencarian</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Cari nama, NIP, atau jabatan..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Unit Kerja</label>
-                <Select value={filterUnit} onValueChange={setFilterUnit}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Semua Unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Unit Kerja</SelectItem>
-                    {unitKerja.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.nama_unit_kerja}>
-                        {unit.nama_unit_kerja}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status Jabatan</label>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Semua Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="administrasi">Administrator</SelectItem>
-                    <SelectItem value="fungsional">Fungsional</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium invisible">Actions</label>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setFilterUnit("all");
-                    setFilterStatus("all");
-                  }}
-                >
-                  Reset Filter
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Table */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>
-            <CardTitle>
-              Daftar Pegawai untuk Evaluasi ({filteredPegawai.length})
-            </CardTitle>
+            <CardTitle>Daftar Penilaian</CardTitle>
             <CardDescription>
-              Pilih pegawai untuk melakukan evaluasi kinerja
+              Pilih assessment untuk melihat daftar penilaian
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {filteredPegawai.length === 0 ? (
-              <div className="text-center py-8">
-                <ClipboardCheck className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="font-semibold mb-2">Tidak ada data pegawai</h3>
-                <p className="text-muted-foreground mb-4">
-                  {pegawai.length === 0
-                    ? "Belum ada pegawai yang terdaftar untuk dievaluasi."
-                    : "Tidak ada pegawai yang cocok dengan filter yang dipilih."}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Pegawai</TableHead>
-                      <TableHead>Jabatan</TableHead>
-                      <TableHead>Unit Kerja</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Evaluasi Terakhir</TableHead>
-                      <TableHead>Skor Terakhir</TableHead>
-                      <TableHead>Status Evaluasi</TableHead>
-                      <TableHead className="text-right">Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPegawai.map((p) => {
-                      const latestEval = getLatestEvaluation(p.penilaian);
-                      const evalStatus = getEvaluationStatus(p.penilaian);
-
-                      return (
-                        <TableRow key={p.id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{p.nama}</div>
-                              <div className="text-sm text-muted-foreground font-mono">
-                                {p.nip}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{p.jabatan}</TableCell>
-                          <TableCell className="max-w-48 truncate">
-                            {p.unit_kerja?.nama_unit_kerja || "-"}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                p.status_jabatan === "fungsional"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                            >
-                              {getStatusJabatanDisplay(p.status_jabatan)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {latestEval ? latestEval.tahun_penilaian : "-"}
-                          </TableCell>
-                          <TableCell>
-                            {latestEval ? (
-                              <div className="flex items-center space-x-2">
-                                <span className="font-mono">
-                                  {latestEval.persentase_akhir?.toFixed(1)}%
-                                </span>
-                                {latestEval.persentase_akhir >= 85 && (
-                                  <Award className="h-4 w-4 text-yellow-500" />
-                                )}
-                              </div>
-                            ) : (
-                              "-"
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={evalStatus.variant}>
-                              {evalStatus.label}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              onClick={() => navigate(`/evaluasi/${p.id}`)}
-                            >
-                              <ClipboardCheck className="h-4 w-4 mr-2" />
-                              Evaluasi
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+              <TabsList className="grid w-full grid-cols-auto">
+                {assessments.map((assessment) => (
+                  <TabsTrigger key={assessment.id} value={assessment.id}>
+                    {assessment.nama_assessment}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              
+              {assessments.map((assessment) => (
+                <TabsContent key={assessment.id} value={assessment.id} className="mt-6">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {assessment.nama_assessment}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {assessment.deskripsi}
+                    </p>
+                  </div>
+                  {renderPenilaianTable(getPenilaianByAssessment(assessment.id))}
+                </TabsContent>
+              ))}
+            </Tabs>
           </CardContent>
         </Card>
       </main>
     </div>
   );
-};
-
-export default Evaluasi;
+}

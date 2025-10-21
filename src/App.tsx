@@ -19,6 +19,8 @@ import AdminScoreFix from "./pages/AdminScoreFix";
 import NotFound from "./pages/NotFound";
 import AssessmentManagement from "./pages/AssessmentManagement";
 import AssessmentCriteria from "./pages/AssessmentCriteria";
+import DynamicAssessment from "./pages/DynamicAssessment";
+import AssessmentDetail from "./pages/AssessmentDetail";
 
 // Import tempo routes conditionally
 let routes: any = null;
@@ -49,12 +51,14 @@ const AppRoutes = () => {
         <Route path="/pegawai/:id/edit" element={<EditPegawai />} />
         <Route path="/evaluasi" element={<Evaluasi />} />
         <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
+        <Route path="/assessment-detail/:id" element={<AssessmentDetail />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/laporan" element={<Laporan />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin/score-fix" element={<AdminScoreFix />} />
         <Route path="/assessment-management" element={<AssessmentManagement />} />
         <Route path="/assessment/:id/criteria" element={<AssessmentCriteria />} />
+        <Route path="/assessment/:assessmentId/pegawai/:pegawaiId" element={<DynamicAssessment />} />
         {/* Tempo catch-all route - disabled */}
         {/* {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />} */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

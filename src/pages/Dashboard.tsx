@@ -3,454 +3,327 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, FileText, Award, TrendingUp, Plus, Eye } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import {
-  Users,
-  ClipboardCheck,
-  TrendingUp,
-  Settings,
-  LogOut,
-  UserPlus,
-  FileText,
-  BarChart3,
-  Shield,
-  Activity,
-  Wrench,
-  ClipboardList,
-} from "lucide-react";
-import WorkflowTracker from "@/components/WorkflowTracker";
-import { useQuery } from "@tanstack/react-query";
 
-interface DashboardStats {
-  totalPegawai: number;
-  evaluasiSelesai: number;
-  rataSkor: number | null;
-  asnTeladan: number;
-}
-
-const Dashboard = () => {
-  const {
-    user,
-    isSuperAdmin,
-    isLoading: authLoading,
-    isInitialized,
-    signOut: authSignOut,
-  } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalPegawai: 0,
-    evaluasiSelesai: 0,
-    rataSkor: null,
-    asnTeladan: 0,
-  });
-  const { toast } = useToast();
+export default function Dashboard() {
   const navigate = useNavigate();
-
-  const fetchStats = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-
-      // Get total pegawai
-      const { count: totalPegawai, error: pegawaiError } = await supabase
-        .from("pegawai")
-        .select("*", { count: "exact", head: true });
-
-      if (pegawaiError) throw pegawaiError;
-
-      // Get evaluations for current year
-      const currentYear = new Date().getFullYear();
-      const { data: evaluations, error: evalError } = await supabase
-        .from("penilaian")
-        .select("pegawai_id, persentase_akhir")
-        .eq("tahun_penilaian", currentYear);
-
-      if (evalError) throw evalError;
-
-      // Calculate stats
-      const evaluasiSelesai = evaluations?.length || 0;
-      const rataSkor =
-        evaluations && evaluations.length > 0
-          ? evaluations.reduce(
-              (sum, evaluation) => sum + (evaluation.persentase_akhir || 0),
-              0,
-            ) / evaluations.length
-          : null;
-      const asnTeladan =
-        evaluations?.filter(
-          (evaluation) => (evaluation.persentase_akhir || 0) >= 85,
-        ).length || 0;
-
-      setStats({
-        totalPegawai: totalPegawai || 0,
-        evaluasiSelesai,
-        rataSkor,
-        asnTeladan,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal memuat data statistik. Silakan coba lagi.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, toast]);
-
-  useEffect(() => {
-    if (!authLoading && isInitialized && !user) {
-      navigate("/auth");
-      return;
-    }
-
-    if (user) {
-      fetchStats();
-    }
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else if (event === "SIGNED_IN") {
-        fetchStats();
-      }
-    });
-
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, [user, authLoading, isInitialized, navigate, fetchStats]);
-
-  const { data: assessments } = useQuery({
-    queryKey: ["active-assessments"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("assessment_templates")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
+  const { toast } = useToast();
+  
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [stats, setStats] = useState({
+    totalPegawai: 0,
+    totalPenilaian: 0,
+    avgScore: 0,
+    pendingApproval: 0
   });
+  const [assessments, setAssessments] = useState<any[]>([]);
+  const [pegawaiList, setPegawaiList] = useState<any[]>([]);
+  const [selectedAssessment, setSelectedAssessment] = useState<string>('');
 
-  const handleSignOut = async () => {
-    const { error } = await authSignOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Gagal logout. Silakan coba lagi.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Logout Berhasil",
-        description: "Anda telah berhasil keluar dari sistem.",
-      });
-      navigate("/auth");
+  const loadUserData = async () => {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      
+      setUser(data.user);
+      setProfile(data.user?.user_metadata);
+      
+      if (data.user?.user_metadata?.role === 'super_admin') {
+        setIsSuperAdmin(true);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
     }
   };
 
-  if (isLoading) {
+  const loadAssessments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assessment_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAssessments(data || []);
+    } catch (error) {
+      console.error('Error loading assessments:', error);
+    }
+  };
+
+  const loadPegawaiList = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pegawai')
+        .select('id, nama, nip, jabatan')
+        .order('nama');
+
+      if (error) throw error;
+      setPegawaiList(data || []);
+    } catch (error) {
+      console.error('Error loading pegawai:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadUserData();
+    loadAssessments();
+    loadPegawaiList();
+  }, []);
+
+  const handleStartAssessment = (assessmentId: string, pegawaiId: string) => {
+    navigate(`/assessment/${assessmentId}/pegawai/${pegawaiId}`);
+  };
+
+  const getAssessmentTypeColor = (type: string) => {
+    switch (type) {
+      case 'asn_teladan':
+        return 'bg-blue-100 text-blue-800';
+      case 'flexing':
+        return 'bg-green-100 text-green-800';
+      case 'custom':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
-  const menuItems = [
-    {
-      title: "Data Pegawai",
-      description: "Kelola data pegawai ASN",
-      icon: Users,
-      href: "/pegawai",
-      color: "bg-blue-500/10 text-blue-600",
-    },
-    {
-      title: "Tambah Pegawai",
-      description: "Daftarkan pegawai baru",
-      icon: UserPlus,
-      href: "/pegawai/tambah",
-      color: "bg-green-500/10 text-green-600",
-    },
-    {
-      title: "Evaluasi Pegawai",
-      description: "Lakukan penilaian pegawai",
-      icon: ClipboardCheck,
-      href: "/evaluasi",
-      color: "bg-orange-500/10 text-orange-600",
-    },
-    {
-      title: "Laporan Analisis",
-      description: "Lihat hasil analisis dan laporan",
-      icon: BarChart3,
-      href: "/laporan",
-      color: "bg-purple-500/10 text-purple-600",
-    },
-    {
-      title: "Ranking ASN",
-      description: "Peringkat pegawai teladan",
-      icon: TrendingUp,
-      href: "/ranking",
-      color: "bg-yellow-500/10 text-yellow-600",
-    },
-    {
-      title: "Pengaturan",
-      description: "Konfigurasi sistem",
-      icon: Settings,
-      href: "/settings",
-      color: "bg-gray-500/10 text-gray-600",
-    },
-    ...(isSuperAdmin
-      ? [
-          {
-            title: "Admin Tools",
-            description: "Perbaiki skor & validasi data",
-            icon: Wrench,
-            href: "/admin/score-fix",
-            color: "bg-red-500/10 text-red-600",
-          },
-        ]
-      : []),
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold">ASN Insight Hub</h1>
-                <p className="text-sm text-muted-foreground">
-                  Sistem Evaluasi ASN
-                </p>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Selamat datang, {profile?.nama_lengkap || user?.email}
+              </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium">
-                  {user?.user_metadata?.nama_lengkap || user?.email}
-                </p>
-                <Badge variant="secondary" className="text-xs">
-                  {user?.user_metadata?.username || "User"}
-                </Badge>
-              </div>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Keluar
+            <div className="flex space-x-3">
+              {isSuperAdmin && (
+                <>
+                  <Button
+                    onClick={() => navigate('/assessment-management')}
+                    variant="outline"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Kelola Assessment
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/pegawai/tambah')}
+                    variant="outline"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Tambah Pegawai
+                  </Button>
+                </>
+              )}
+              <Button onClick={() => navigate('/evaluasi')}>
+                <FileText className="mr-2 h-4 w-4" />
+                ASN Teladan (Legacy)
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-          <p className="text-muted-foreground">
-            Selamat datang di sistem evaluasi dan eliminasi ASN. Pilih menu di
-            bawah untuk memulai.
-          </p>
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Total Pegawai
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.totalPegawai}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <FileText className="h-8 w-8 text-green-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Total Penilaian
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.totalPenilaian}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <TrendingUp className="h-8 w-8 text-yellow-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Rata-rata Skor
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.avgScore.toFixed(1)}%
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Award className="h-8 w-8 text-purple-600" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Pending Approval
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {stats.pendingApproval}
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {/* Available Assessments */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Total Pegawai</CardDescription>
-              <CardTitle className="text-2xl">{stats.totalPegawai}</CardTitle>
+            <CardHeader>
+              <CardTitle>Assessment Tersedia</CardTitle>
+              <CardDescription>
+                Pilih assessment yang ingin Anda lakukan
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Users className="h-4 w-4 mr-1" />
-                Terdaftar
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Evaluasi Selesai</CardDescription>
-              <CardTitle className="text-2xl">
-                {stats.evaluasiSelesai}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <ClipboardCheck className="h-4 w-4 mr-1" />
-                Tahun {new Date().getFullYear()}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Rata-rata Skor</CardDescription>
-              <CardTitle className="text-2xl">
-                {stats.rataSkor ? `${stats.rataSkor.toFixed(1)}%` : "-"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <BarChart3 className="h-4 w-4 mr-1" />
-                {stats.evaluasiSelesai > 0 ? "Rata-rata" : "Belum Ada Data"}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>ASN Teladan</CardDescription>
-              <CardTitle className="text-2xl">{stats.asnTeladan}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                Skor ≥85%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Super Admin Management */}
-        {isSuperAdmin && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">Super Admin</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card
-                className="cursor-pointer hover:shadow-md transition-shadow border-primary/50"
-                onClick={() => navigate("/assessment-management")}
-              >
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                      <Settings className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">Kelola Assessment</CardTitle>
-                      <CardDescription>Buat dan kelola template assessment</CardDescription>
+              <div className="space-y-4">
+                {assessments.map((assessment) => (
+                  <div
+                    key={assessment.id}
+                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900">
+                          {assessment.nama_assessment}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {assessment.deskripsi}
+                        </p>
+                        <div className="mt-2">
+                          <Badge className={getAssessmentTypeColor(assessment.assessment_type)}>
+                            {assessment.assessment_type.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => setSelectedAssessment(assessment.id)}
+                        variant={selectedAssessment === assessment.id ? "default" : "outline"}
+                      >
+                        {selectedAssessment === assessment.id ? "Dipilih" : "Pilih"}
+                      </Button>
                     </div>
                   </div>
-                </CardHeader>
-              </Card>
-            </div>
-          </div>
-        )}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Active Assessments */}
-        {assessments && assessments.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Assessment Aktif</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {assessments.map((assessment) => (
-                <Card
-                  key={assessment.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow group"
-                  onClick={() => {
-                    if (assessment.assessment_type === "asn_teladan") {
-                      navigate("/pegawai");
-                    } else {
-                      navigate(`/assessment/${assessment.id}`);
-                    }
-                  }}
-                >
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 group-hover:scale-110 transition-transform">
-                        <ClipboardList className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{assessment.nama_assessment}</CardTitle>
-                        <CardDescription>{assessment.deskripsi}</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Menu ASN Teladan (Legacy) */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Menu ASN Teladan</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {menuItems.map((item) => (
-              <Card
-                key={item.href}
-                className="cursor-pointer hover:shadow-md transition-shadow group"
-                onClick={() => navigate(item.href)}
-              >
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`p-2 rounded-lg ${item.color} group-hover:scale-110 transition-transform`}
-                    >
-                      <item.icon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <CardDescription>{item.description}</CardDescription>
-                    </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Mulai Penilaian</CardTitle>
+              <CardDescription>
+                Pilih pegawai yang akan dinilai
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {selectedAssessment ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Assessment: {assessments.find(a => a.id === selectedAssessment)?.nama_assessment}
+                    </label>
                   </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+                  <div className="space-y-2">
+                    {pegawaiList.map((pegawai) => (
+                      <div
+                        key={pegawai.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                      >
+                        <div>
+                          <p className="font-medium">{pegawai.nama}</p>
+                          <p className="text-sm text-gray-600">
+                            {pegawai.nip} • {pegawai.jabatan}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handleStartAssessment(selectedAssessment, pegawai.id)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Nilai
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    Pilih Assessment
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Pilih assessment terlebih dahulu untuk melihat daftar pegawai
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Workflow Tracker */}
-        <div className="mt-8">
-          <WorkflowTracker />
-        </div>
-
-        {/* Recent Activity */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="h-5 w-5 mr-2" />
-              Aktivitas Terbaru
-            </CardTitle>
-            <CardDescription>
-              Aktivitas akan muncul saat Anda berhasil menambahkan atau mengubah
-              data
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Belum ada aktivitas terbaru</p>
-              <p className="text-sm">
-                Mulai dengan menambahkan data pegawai atau melakukan evaluasi
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );
-};
-
-export default Dashboard;
+}

@@ -7,13 +7,108 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
   public: {
     Tables: {
+      assessment_criteria: {
+        Row: {
+          assessment_template_id: string
+          bobot: number | null
+          created_at: string
+          deskripsi: string | null
+          id: string
+          is_required: boolean
+          kode_kriteria: string
+          max_value: number | null
+          min_value: number | null
+          nama_kriteria: string
+          options: Json | null
+          tipe_input: Database["public"]["Enums"]["criteria_input_type"]
+          urutan: number
+        }
+        Insert: {
+          assessment_template_id: string
+          bobot?: number | null
+          created_at?: string
+          deskripsi?: string | null
+          id?: string
+          is_required?: boolean
+          kode_kriteria: string
+          max_value?: number | null
+          min_value?: number | null
+          nama_kriteria: string
+          options?: Json | null
+          tipe_input?: Database["public"]["Enums"]["criteria_input_type"]
+          urutan?: number
+        }
+        Update: {
+          assessment_template_id?: string
+          bobot?: number | null
+          created_at?: string
+          deskripsi?: string | null
+          id?: string
+          is_required?: boolean
+          kode_kriteria?: string
+          max_value?: number | null
+          min_value?: number | null
+          nama_kriteria?: string
+          options?: Json | null
+          tipe_input?: Database["public"]["Enums"]["criteria_input_type"]
+          urutan?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_criteria_assessment_template_id_fkey"
+            columns: ["assessment_template_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_templates: {
+        Row: {
+          assessment_type: Database["public"]["Enums"]["assessment_type"]
+          created_at: string
+          created_by: string | null
+          deskripsi: string | null
+          formula_perhitungan: string | null
+          id: string
+          is_active: boolean
+          metadata: Json | null
+          nama_assessment: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_type?: Database["public"]["Enums"]["assessment_type"]
+          created_at?: string
+          created_by?: string | null
+          deskripsi?: string | null
+          formula_perhitungan?: string | null
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          nama_assessment: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_type?: Database["public"]["Enums"]["assessment_type"]
+          created_at?: string
+          created_by?: string | null
+          deskripsi?: string | null
+          formula_perhitungan?: string | null
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          nama_assessment?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pegawai: {
         Row: {
           bebas_temuan: boolean
@@ -108,6 +203,7 @@ export type Database = {
           analisis_ai_kelebihan: string | null
           analisis_ai_kontra: string | null
           analisis_ai_pro: string | null
+          assessment_template_id: string
           bebas_temuan: boolean | null
           berorientasi_pelayanan_desc: string | null
           bukti_inovasi: string | null
@@ -118,6 +214,7 @@ export type Database = {
           inovasi_dampak_score: number
           inspiratif_score: number
           integritas_moralitas_score: number
+          is_data_valid: boolean | null
           kerjasama_kolaborasi_score: number
           kinerja_perilaku_score: number
           kolaboratif_desc: string | null
@@ -127,6 +224,7 @@ export type Database = {
           loyal_desc: string | null
           memiliki_inovasi: boolean | null
           memiliki_penghargaan: boolean | null
+          original_score: number | null
           pegawai_id: string
           penilai_user_id: string
           persentase_akhir: number | null
@@ -138,6 +236,11 @@ export type Database = {
           tidak_hukuman_disiplin: boolean | null
           tidak_pemeriksaan_disiplin: boolean | null
           updated_at: string
+          verification_label: string | null
+          verification_notes: string | null
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           adaptif_desc?: string | null
@@ -146,6 +249,7 @@ export type Database = {
           analisis_ai_kelebihan?: string | null
           analisis_ai_kontra?: string | null
           analisis_ai_pro?: string | null
+          assessment_template_id: string
           bebas_temuan?: boolean | null
           berorientasi_pelayanan_desc?: string | null
           bukti_inovasi?: string | null
@@ -156,6 +260,7 @@ export type Database = {
           inovasi_dampak_score: number
           inspiratif_score: number
           integritas_moralitas_score: number
+          is_data_valid?: boolean | null
           kerjasama_kolaborasi_score: number
           kinerja_perilaku_score: number
           kolaboratif_desc?: string | null
@@ -165,6 +270,7 @@ export type Database = {
           loyal_desc?: string | null
           memiliki_inovasi?: boolean | null
           memiliki_penghargaan?: boolean | null
+          original_score?: number | null
           pegawai_id: string
           penilai_user_id: string
           persentase_akhir?: number | null
@@ -176,6 +282,11 @@ export type Database = {
           tidak_hukuman_disiplin?: boolean | null
           tidak_pemeriksaan_disiplin?: boolean | null
           updated_at?: string
+          verification_label?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           adaptif_desc?: string | null
@@ -184,6 +295,7 @@ export type Database = {
           analisis_ai_kelebihan?: string | null
           analisis_ai_kontra?: string | null
           analisis_ai_pro?: string | null
+          assessment_template_id?: string
           bebas_temuan?: boolean | null
           berorientasi_pelayanan_desc?: string | null
           bukti_inovasi?: string | null
@@ -194,6 +306,7 @@ export type Database = {
           inovasi_dampak_score?: number
           inspiratif_score?: number
           integritas_moralitas_score?: number
+          is_data_valid?: boolean | null
           kerjasama_kolaborasi_score?: number
           kinerja_perilaku_score?: number
           kolaboratif_desc?: string | null
@@ -203,6 +316,7 @@ export type Database = {
           loyal_desc?: string | null
           memiliki_inovasi?: boolean | null
           memiliki_penghargaan?: boolean | null
+          original_score?: number | null
           pegawai_id?: string
           penilai_user_id?: string
           persentase_akhir?: number | null
@@ -214,13 +328,70 @@ export type Database = {
           tidak_hukuman_disiplin?: boolean | null
           tidak_pemeriksaan_disiplin?: boolean | null
           updated_at?: string
+          verification_label?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "penilaian_assessment_template_id_fkey"
+            columns: ["assessment_template_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_templates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "penilaian_pegawai_id_fkey"
             columns: ["pegawai_id"]
             isOneToOne: false
             referencedRelation: "pegawai"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      penilaian_detail: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          criteria_id: string
+          id: string
+          nilai: Json
+          penilaian_id: string
+          updated_at: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          criteria_id: string
+          id?: string
+          nilai: Json
+          penilaian_id: string
+          updated_at?: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          criteria_id?: string
+          id?: string
+          nilai?: Json
+          penilaian_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "penilaian_detail_criteria_id_fkey"
+            columns: ["criteria_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_criteria"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "penilaian_detail_penilaian_id_fkey"
+            columns: ["penilaian_id"]
+            isOneToOne: false
+            referencedRelation: "penilaian"
             referencedColumns: ["id"]
           },
         ]
@@ -289,7 +460,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      assessment_type: "asn_teladan" | "flexing" | "custom"
+      criteria_input_type:
+        | "number"
+        | "boolean"
+        | "text"
+        | "select"
+        | "file_upload"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -416,6 +593,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      assessment_type: ["asn_teladan", "flexing", "custom"],
+      criteria_input_type: [
+        "number",
+        "boolean",
+        "text",
+        "select",
+        "file_upload",
+      ],
+    },
   },
 } as const
