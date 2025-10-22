@@ -30,17 +30,39 @@ export default function Dashboard() {
 
   const loadUserData = async () => {
     try {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      // First check if we have a session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      setUser(data.user);
-      setProfile(data.user?.user_metadata);
+      if (sessionError || !session) {
+        // If no session, redirect to auth
+        navigate("/auth");
+        return;
+      }
+
+      // Now we can safely get the user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
       
-      if (data.user?.user_metadata?.role === 'super_admin') {
-        setIsSuperAdmin(true);
+      setUser(user);
+      
+      // Load profile data
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+      
+      setProfile(profileData);
+      
+      // Check if user is super admin using RPC
+      const { data: isSuperAdminData, error: adminError } = await supabase.rpc('is_super_admin');
+      if (!adminError) {
+        setIsSuperAdmin(isSuperAdminData || false);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      // On error, redirect to auth
+      navigate("/auth");
     }
   };
 
