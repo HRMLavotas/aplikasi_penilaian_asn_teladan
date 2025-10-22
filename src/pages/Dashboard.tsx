@@ -96,9 +96,21 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadUserData();
-    loadAssessments();
-    loadPegawaiList();
+    const loadAllData = async () => {
+      try {
+        await Promise.all([
+          loadUserData(),
+          loadAssessments(),
+          loadPegawaiList()
+        ]);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
   }, []);
 
   const handleStartAssessment = (assessmentId: string, pegawaiId: string) => {
