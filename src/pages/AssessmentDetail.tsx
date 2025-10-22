@@ -137,11 +137,13 @@ export default function AssessmentDetail() {
 
   const handleApprove = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('penilaian')
         .update({
           verification_status: 'approved',
           verified_at: new Date().toISOString(),
+          verified_by: user?.id,
           verification_notes: 'Disetujui oleh admin'
         })
         .eq('id', id);
@@ -166,11 +168,13 @@ export default function AssessmentDetail() {
 
   const handleReject = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('penilaian')
         .update({
           verification_status: 'rejected',
           verified_at: new Date().toISOString(),
+          verified_by: user?.id,
           verification_notes: 'Ditolak oleh admin'
         })
         .eq('id', id);

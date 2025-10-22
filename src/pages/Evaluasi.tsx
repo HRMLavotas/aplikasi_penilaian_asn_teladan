@@ -87,18 +87,12 @@ export default function Evaluasi() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error) throw error;
-      setUser(data);
+      setUser(session.user);
       
-      // Check if user is super admin
-      const isSuperAdmin = data.role === 'super_admin';
-      setIsSuperAdmin(isSuperAdmin);
+      // Check if user is super admin using the database function
+      const { data: isSuperAdminData, error } = await supabase.rpc('is_super_admin');
+      if (error) throw error;
+      setIsSuperAdmin(isSuperAdminData || false);
     } catch (error) {
       console.error('Error loading user data:', error);
     }
@@ -161,6 +155,66 @@ export default function Evaluasi() {
 
   const getPenilaianByAssessment = (assessmentId: string) => {
     return penilaianData.filter(p => p.assessment_template_id === assessmentId);
+  };
+
+  const handleApprove = async (penilaianId: string) => {
+    try {
+      const { error } = await supabase
+        .from('penilaian')
+        .update({
+          verification_status: 'approved',
+          verified_at: new Date().toISOString(),
+          verified_by: user?.id
+        })
+        .eq('id', penilaianId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Berhasil",
+        description: "Penilaian telah disetujui",
+      });
+
+      // Reload penilaian data
+      loadPenilaianData();
+    } catch (error) {
+      console.error('Error approving penilaian:', error);
+      toast({
+        title: "Error",
+        description: "Gagal menyetujui penilaian",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReject = async (penilaianId: string) => {
+    try {
+      const { error } = await supabase
+        .from('penilaian')
+        .update({
+          verification_status: 'rejected',
+          verified_at: new Date().toISOString(),
+          verified_by: user?.id
+        })
+        .eq('id', penilaianId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Berhasil",
+        description: "Penilaian telah ditolak",
+      });
+
+      // Reload penilaian data
+      loadPenilaianData();
+    } catch (error) {
+      console.error('Error rejecting penilaian:', error);
+      toast({
+        title: "Error",
+        description: "Gagal menolak penilaian",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderPenilaianTable = (assessmentPenilaian: any[]) => {
