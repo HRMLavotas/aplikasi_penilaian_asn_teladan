@@ -148,9 +148,21 @@ export default function Evaluasi() {
   };
 
   useEffect(() => {
-    loadUserData();
-    loadAssessments();
-    loadPenilaianData();
+    const loadAllData = async () => {
+      try {
+        await Promise.all([
+          loadUserData(),
+          loadAssessments(),
+          loadPenilaianData()
+        ]);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
   }, []);
 
   const getPenilaianByAssessment = (assessmentId: string) => {
