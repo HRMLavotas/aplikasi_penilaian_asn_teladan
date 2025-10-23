@@ -25,8 +25,6 @@ export default function Dashboard() {
     pendingApproval: 0
   });
   const [assessments, setAssessments] = useState<any[]>([]);
-  const [pegawaiList, setPegawaiList] = useState<any[]>([]);
-  const [selectedAssessment, setSelectedAssessment] = useState<string>('');
 
   const loadUserData = async () => {
     try {
@@ -81,17 +79,33 @@ export default function Dashboard() {
     }
   };
 
-  const loadPegawaiList = async () => {
+  const loadStats = async () => {
     try {
-      const { data, error } = await supabase
+      // Load pegawai count
+      const { count: pegawaiCount } = await supabase
         .from('pegawai')
-        .select('id, nama, nip, jabatan')
-        .order('nama');
+        .select('*', { count: 'exact', head: true });
 
-      if (error) throw error;
-      setPegawaiList(data || []);
+      // Load penilaian count and average score
+      const { data: penilaianData } = await supabase
+        .from('penilaian')
+        .select('persentase_akhir, verification_status');
+
+      const totalPenilaian = penilaianData?.length || 0;
+      const avgScore = penilaianData && penilaianData.length > 0
+        ? penilaianData.reduce((sum, p) => sum + (Number(p.persentase_akhir) || 0), 0) / penilaianData.length
+        : 0;
+      
+      const pendingApproval = penilaianData?.filter(p => p.verification_status === 'pending').length || 0;
+
+      setStats({
+        totalPegawai: pegawaiCount || 0,
+        totalPenilaian,
+        avgScore,
+        pendingApproval
+      });
     } catch (error) {
-      console.error('Error loading pegawai:', error);
+      console.error('Error loading stats:', error);
     }
   };
 
@@ -101,7 +115,7 @@ export default function Dashboard() {
         await Promise.all([
           loadUserData(),
           loadAssessments(),
-          loadPegawaiList()
+          loadStats()
         ]);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -113,20 +127,32 @@ export default function Dashboard() {
     loadAllData();
   }, []);
 
-  const handleStartAssessment = (assessmentId: string, pegawaiId: string) => {
-    navigate(`/assessment/${assessmentId}/pegawai/${pegawaiId}`);
+  const handleAssessmentClick = (assessment: any) => {
+    // Navigate to the assessment selection page
+    navigate(`/dynamic-assessment/${assessment.id}`);
   };
 
-  const getAssessmentTypeColor = (type: string) => {
+  const getAssessmentIcon = (type: string) => {
     switch (type) {
       case 'asn_teladan':
-        return 'bg-blue-100 text-blue-800';
+        return Award;
       case 'flexing':
-        return 'bg-green-100 text-green-800';
-      case 'custom':
-        return 'bg-purple-100 text-purple-800';
+        return TrendingUp;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return FileText;
+    }
+  };
+
+  const getAssessmentColor = (type: string) => {
+    switch (type) {
+      case 'asn_teladan':
+        return 'from-blue-500 to-blue-600';
+      case 'flexing':
+        return 'from-green-500 to-green-600';
+      case 'custom':
+        return 'from-purple-500 to-purple-600';
+      default:
+        return 'from-gray-500 to-gray-600';
     }
   };
 
@@ -261,101 +287,85 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Available Assessments */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Assessment Tersedia</CardTitle>
-              <CardDescription>
-                Pilih assessment yang ingin Anda lakukan
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {assessments.map((assessment) => (
-                  <div
-                    key={assessment.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">
-                          {assessment.nama_assessment}
-                        </h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {assessment.deskripsi}
-                        </p>
-                        <div className="mt-2">
-                          <Badge className={getAssessmentTypeColor(assessment.assessment_type)}>
-                            {assessment.assessment_type.replace('_', ' ').toUpperCase()}
-                          </Badge>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => setSelectedAssessment(assessment.id)}
-                        variant={selectedAssessment === assessment.id ? "default" : "outline"}
-                      >
-                        {selectedAssessment === assessment.id ? "Dipilih" : "Pilih"}
-                      </Button>
+        {/* Assessment Shortcuts */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Sistem Assessment</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Pilih sistem assessment yang ingin Anda gunakan
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {assessments.map((assessment) => {
+              const IconComponent = getAssessmentIcon(assessment.assessment_type);
+              const gradientColor = getAssessmentColor(assessment.assessment_type);
+              
+              return (
+                <Card 
+                  key={assessment.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                  onClick={() => handleAssessmentClick(assessment)}
+                >
+                  <div className={`h-32 bg-gradient-to-br ${gradientColor} relative overflow-hidden`}>
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    <div className="relative h-full flex items-center justify-center">
+                      <IconComponent className="h-16 w-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-300" />
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {assessment.nama_assessment}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {assessment.deskripsi || 'Sistem penilaian komprehensif untuk evaluasi pegawai'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">
+                        {assessment.assessment_type.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                      <Button size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground">
+                        Mulai <Eye className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Mulai Penilaian</CardTitle>
-              <CardDescription>
-                Pilih pegawai yang akan dinilai
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {selectedAssessment ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Assessment: {assessments.find(a => a.id === selectedAssessment)?.nama_assessment}
-                    </label>
-                  </div>
-                  <div className="space-y-2">
-                    {pegawaiList.map((pegawai) => (
-                      <div
-                        key={pegawai.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-                      >
-                        <div>
-                          <p className="font-medium">{pegawai.nama}</p>
-                          <p className="text-sm text-gray-600">
-                            {pegawai.nip} • {pegawai.jabatan}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => handleStartAssessment(selectedAssessment, pegawai.id)}
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Nilai
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+            {/* Legacy ASN Teladan Card */}
+            <Card 
+              className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 border-dashed"
+              onClick={() => navigate('/evaluasi')}
+            >
+              <div className="h-32 bg-gradient-to-br from-gray-400 to-gray-500 relative overflow-hidden">
+                <div className="absolute inset-0 bg-black/10"></div>
+                <div className="relative h-full flex items-center justify-center">
+                  <FileText className="h-16 w-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-300" />
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    Pilih Assessment
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Pilih assessment terlebih dahulu untuk melihat daftar pegawai
-                  </p>
+              </div>
+              <CardHeader>
+                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  ASN Teladan (Legacy)
+                </CardTitle>
+                <CardDescription className="line-clamp-2">
+                  Sistem penilaian ASN Teladan versi sebelumnya
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">LEGACY</Badge>
+                  <Button size="sm" variant="outline" className="group-hover:bg-primary group-hover:text-primary-foreground">
+                    Buka <Eye className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
