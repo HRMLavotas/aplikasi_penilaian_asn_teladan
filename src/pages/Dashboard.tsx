@@ -73,7 +73,9 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAssessments(data || []);
+      // Filter out ASN Teladan karena akan menggunakan sistem legacy
+      const filteredData = (data || []).filter(a => a.assessment_type !== 'asn_teladan');
+      setAssessments(filteredData);
     } catch (error) {
       console.error('Error loading assessments:', error);
     }
@@ -337,30 +339,30 @@ export default function Dashboard() {
               );
             })}
 
-            {/* Legacy ASN Teladan Card */}
+            {/* ASN Teladan - Sistem Legacy */}
             <Card 
-              className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 border-dashed"
+              className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
               onClick={() => navigate('/evaluasi')}
             >
-              <div className="h-32 bg-gradient-to-br from-gray-400 to-gray-500 relative overflow-hidden">
+              <div className="h-32 bg-gradient-to-br from-blue-500 to-blue-600 relative overflow-hidden">
                 <div className="absolute inset-0 bg-black/10"></div>
                 <div className="relative h-full flex items-center justify-center">
-                  <FileText className="h-16 w-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-300" />
+                  <Award className="h-16 w-16 text-white opacity-90 group-hover:scale-110 transition-transform duration-300" />
                 </div>
               </div>
               <CardHeader>
                 <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                  ASN Teladan (Legacy)
+                  ASN Teladan
                 </CardTitle>
                 <CardDescription className="line-clamp-2">
-                  Sistem penilaian ASN Teladan versi sebelumnya
+                  Sistem penilaian ASN Teladan untuk evaluasi pegawai teladan
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline">LEGACY</Badge>
-                  <Button size="sm" variant="outline" className="group-hover:bg-primary group-hover:text-primary-foreground">
-                    Buka <Eye className="ml-2 h-4 w-4" />
+                  <Badge variant="secondary">ASN TELADAN</Badge>
+                  <Button size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground">
+                    Mulai <Eye className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
