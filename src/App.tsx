@@ -21,6 +21,8 @@ import AssessmentManagement from "./pages/AssessmentManagement";
 import AssessmentCriteria from "./pages/AssessmentCriteria";
 import DynamicAssessment from "./pages/DynamicAssessment";
 import AssessmentDetail from "./pages/AssessmentDetail";
+import AssessmentLayout from "./layouts/AssessmentLayout";
+import AssessmentDashboard from "./pages/assessment/AssessmentDashboard";
 
 // Import tempo routes conditionally
 let routes: any = null;
@@ -46,6 +48,8 @@ const AppRoutes = () => {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* Legacy ASN Teladan Routes */}
         <Route path="/pegawai" element={<Pegawai />} />
         <Route path="/pegawai/tambah" element={<TambahPegawai />} />
         <Route path="/pegawai/:id/edit" element={<EditPegawai />} />
@@ -56,9 +60,21 @@ const AppRoutes = () => {
         <Route path="/laporan" element={<Laporan />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin/score-fix" element={<AdminScoreFix />} />
+        
+        {/* Assessment Management (Super Admin) */}
         <Route path="/assessment-management" element={<AssessmentManagement />} />
         <Route path="/assessment/:id/criteria" element={<AssessmentCriteria />} />
         <Route path="/assessment/:assessmentId/pegawai/:pegawaiId" element={<DynamicAssessment />} />
+        
+        {/* New Assessment System Routes with Layout */}
+        <Route path="/assessment/:assessmentId" element={<AssessmentLayout />}>
+          <Route path="dashboard" element={<AssessmentDashboard />} />
+          <Route path="pegawai" element={<Pegawai />} />
+          <Route path="evaluasi" element={<Evaluasi />} />
+          <Route path="ranking" element={<Ranking />} />
+          <Route path="laporan" element={<Laporan />} />
+        </Route>
+        
         {/* Tempo catch-all route - disabled */}
         {/* {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />} */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -129,9 +129,14 @@ export default function Dashboard() {
     loadAllData();
   }, []);
 
-  const handleAssessmentClick = (assessment: any) => {
-    // Navigate to the assessment selection page
-    navigate(`/dynamic-assessment/${assessment.id}`);
+  const handleAssessmentClick = (assessmentId: string, assessmentType: string) => {
+    // If ASN Teladan (legacy), go to old system
+    if (assessmentType === 'asn_teladan') {
+      navigate('/evaluasi');
+    } else {
+      // For new assessments, go to their dedicated dashboard
+      navigate(`/assessment/${assessmentId}/dashboard`);
+    }
   };
 
   const getAssessmentIcon = (type: string) => {
@@ -309,7 +314,7 @@ export default function Dashboard() {
                 <Card 
                   key={assessment.id}
                   className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                  onClick={() => handleAssessmentClick(assessment)}
+                  onClick={() => handleAssessmentClick(assessment.id, assessment.assessment_type)}
                 >
                   <div className={`h-32 bg-gradient-to-br ${gradientColor} relative overflow-hidden`}>
                     <div className="absolute inset-0 bg-black/10"></div>
@@ -342,7 +347,7 @@ export default function Dashboard() {
             {/* ASN Teladan - Sistem Legacy */}
             <Card 
               className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
-              onClick={() => navigate('/evaluasi')}
+              onClick={() => handleAssessmentClick('', 'asn_teladan')}
             >
               <div className="h-32 bg-gradient-to-br from-blue-500 to-blue-600 relative overflow-hidden">
                 <div className="absolute inset-0 bg-black/10"></div>
