@@ -22,6 +22,7 @@ import AssessmentCriteria from "./pages/AssessmentCriteria";
 import DynamicAssessment from "./pages/DynamicAssessment";
 import AssessmentDetail from "./pages/AssessmentDetail";
 import AssessmentLayout from "./layouts/AssessmentLayout";
+import LegacyAsnTeladanLayout from "./layouts/LegacyAsnTeladanLayout";
 import AssessmentDashboard from "./pages/assessment/AssessmentDashboard";
 
 // Import tempo routes conditionally
@@ -49,15 +50,19 @@ const AppRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
         
-        {/* Legacy ASN Teladan Routes */}
-        <Route path="/pegawai" element={<Pegawai />} />
+        {/* Legacy ASN Teladan Routes with Sidebar Layout */}
+        <Route element={<LegacyAsnTeladanLayout />}>
+          <Route path="/evaluasi" element={<Evaluasi />} />
+          <Route path="/pegawai" element={<Pegawai />} />
+          <Route path="/ranking" element={<Ranking />} />
+          <Route path="/laporan" element={<Laporan />} />
+        </Route>
+        
+        {/* Legacy Routes without Sidebar */}
         <Route path="/pegawai/tambah" element={<TambahPegawai />} />
         <Route path="/pegawai/:id/edit" element={<EditPegawai />} />
-        <Route path="/evaluasi" element={<Evaluasi />} />
         <Route path="/evaluasi/:id" element={<FormEvaluasi />} />
         <Route path="/assessment-detail/:id" element={<AssessmentDetail />} />
-        <Route path="/ranking" element={<Ranking />} />
-        <Route path="/laporan" element={<Laporan />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/admin/score-fix" element={<AdminScoreFix />} />
         

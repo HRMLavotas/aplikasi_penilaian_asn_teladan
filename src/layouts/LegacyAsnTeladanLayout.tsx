@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams, Outlet, NavLink } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useNavigate, Outlet, NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -21,69 +20,33 @@ import {
   ClipboardCheck,
   TrendingUp,
   FileText,
-  Settings,
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface AssessmentTemplate {
-  id: string;
-  nama_assessment: string;
-  deskripsi: string;
-  assessment_type: string;
-}
-
-export function AssessmentSidebar() {
-  const { assessmentId } = useParams();
+export function LegacyAsnTeladanSidebar() {
   const navigate = useNavigate();
   const { open } = useSidebar();
-  const [assessment, setAssessment] = useState<AssessmentTemplate | null>(null);
-
-  useEffect(() => {
-    loadAssessment();
-  }, [assessmentId]);
-
-  const loadAssessment = async () => {
-    if (!assessmentId) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('assessment_templates')
-        .select('*')
-        .eq('id', assessmentId)
-        .single();
-
-      if (error) throw error;
-      setAssessment(data);
-    } catch (error) {
-      console.error('Error loading assessment:', error);
-    }
-  };
 
   const menuItems = [
     {
       title: "Dashboard",
-      url: `/assessment/${assessmentId}/dashboard`,
+      url: "/evaluasi",
       icon: LayoutDashboard,
     },
     {
       title: "Data Pegawai",
-      url: `/assessment/${assessmentId}/pegawai`,
+      url: "/pegawai",
       icon: Users,
     },
     {
-      title: "Evaluasi",
-      url: `/assessment/${assessmentId}/evaluasi`,
-      icon: ClipboardCheck,
-    },
-    {
       title: "Ranking",
-      url: `/assessment/${assessmentId}/ranking`,
+      url: "/ranking",
       icon: TrendingUp,
     },
     {
       title: "Laporan",
-      url: `/assessment/${assessmentId}/laporan`,
+      url: "/laporan",
       icon: FileText,
     },
   ];
@@ -108,11 +71,11 @@ export function AssessmentSidebar() {
         </div>
 
         {/* Assessment Info */}
-        {open && assessment && (
+        {open && (
           <div className="p-4 border-b">
-            <h3 className="font-semibold text-sm mb-1">{assessment.nama_assessment}</h3>
+            <h3 className="font-semibold text-sm mb-1">ASN Teladan</h3>
             <p className="text-xs text-muted-foreground line-clamp-2">
-              {assessment.deskripsi}
+              Sistem Penilaian ASN Teladan
             </p>
           </div>
         )}
@@ -140,7 +103,7 @@ export function AssessmentSidebar() {
   );
 }
 
-export default function AssessmentLayout() {
+export default function LegacyAsnTeladanLayout() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -161,7 +124,7 @@ export default function AssessmentLayout() {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <AssessmentSidebar />
+        <LegacyAsnTeladanSidebar />
         <main className="flex-1 overflow-auto">
           {/* Global trigger in header */}
           <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 flex items-center px-4">

@@ -363,32 +363,7 @@ export default function Evaluasi() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Evaluasi & Approval</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Kelola dan setujui hasil penilaian
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <Button onClick={() => navigate('/dashboard')} variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Kembali
-              </Button>
-              {isSuperAdmin && (
-                <Button onClick={() => navigate('/pegawai')}>
-                  <Users className="mr-2 h-4 w-4" />
-                  Kelola Pegawai
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen">
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>

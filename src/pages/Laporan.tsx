@@ -267,39 +267,16 @@ Generated: ${new Date().toLocaleString("id-ID")}
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/dashboard")}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Kembali
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Laporan Analisis</h1>
-                <p className="text-sm text-muted-foreground">
-                  Laporan evaluasi ASN Teladan {new Date().getFullYear()}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button onClick={exportReport} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export Laporan
-              </Button>
-              <BarChart3 className="h-8 w-8 text-primary" />
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen">
       <main className="container mx-auto px-4 py-8">
+        {/* Export Button */}
+        <div className="flex justify-end mb-4">
+          <Button onClick={exportReport} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Export Laporan
+          </Button>
+        </div>
+
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
