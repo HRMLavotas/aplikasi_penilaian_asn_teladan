@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, FileText, Award, TrendingUp, Plus, Eye, Loader2 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { AdminPanel } from "@/components/AdminPanel";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ export default function Dashboard() {
     pendingApproval: 0
   });
   const [assessments, setAssessments] = useState<any[]>([]);
+  const { isAdminPusat, isLoading: roleLoading } = useUserRole();
 
   const loadUserData = async () => {
     try {
@@ -163,7 +166,7 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -211,6 +214,13 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Admin Panel - Only for Admin Pusat */}
+        {isAdminPusat && (
+          <div className="mb-8">
+            <AdminPanel />
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>

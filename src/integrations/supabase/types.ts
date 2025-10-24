@@ -449,17 +449,56 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          unit_kerja_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          unit_kerja_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          unit_kerja_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_unit_kerja_id_fkey"
+            columns: ["unit_kerja_id"]
+            isOneToOne: false
+            referencedRelation: "unit_kerja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
         Returns: boolean
       }
+      is_admin_pusat: { Args: never; Returns: boolean }
+      is_admin_unit: { Args: never; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
+      app_role: "admin_pusat" | "admin_unit" | "user"
       assessment_type: "asn_teladan" | "flexing" | "custom"
       criteria_input_type:
         | "number"
@@ -594,6 +633,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin_pusat", "admin_unit", "user"],
       assessment_type: ["asn_teladan", "flexing", "custom"],
       criteria_input_type: [
         "number",
